@@ -14,6 +14,12 @@
 # EXTERNAL cache entries
 ########################
 
+//Build the testing tree.
+BUILD_TESTING:BOOL=ON
+
+//Path to a program.
+BZRCOMMAND:FILEPATH=/usr/bin/bzr
+
 //Path to a program.
 CMAKE_AR:FILEPATH=/usr/bin/ar
 
@@ -165,6 +171,497 @@ CMAKE_STRIP:FILEPATH=/usr/bin/strip
 // Studio IDE projects all commands are done without /nologo.
 CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 
+//Path to a file.
+COLIBRIAPI_INCLUDE_DIR:PATH=COLIBRIAPI_INCLUDE_DIR-NOTFOUND
+
+//Path to a library.
+COLIBRIAPI_LIBRARY:FILEPATH=COLIBRIAPI_LIBRARY-NOTFOUND
+
+//Root directory to search for Colibri API
+COLIBRIAPI_ROOT_DIR:PATH=
+
+//Path to the coverage program that CTest uses for performing coverage
+// inspection
+COVERAGE_COMMAND:FILEPATH=/usr/bin/gcov
+
+//Extra command line flags to pass to the coverage tool
+COVERAGE_EXTRA_FLAGS:STRING=-l
+
+//Path to a program.
+CPPCHECK_EXECUTABLE:FILEPATH=CPPCHECK_EXECUTABLE-NOTFOUND
+
+//Path to search for cppcheck
+CPPCHECK_ROOT_DIR:PATH=
+
+//How many times to retry timed-out CTest submissions.
+CTEST_SUBMIT_RETRY_COUNT:STRING=3
+
+//How long to wait between timed-out CTest submissions.
+CTEST_SUBMIT_RETRY_DELAY:STRING=5
+
+//Path to a program.
+CVSCOMMAND:FILEPATH=CVSCOMMAND-NOTFOUND
+
+//Options passed to the cvs update command.
+CVS_UPDATE_OPTIONS:STRING=-d -A -P
+
+//Maximum time allowed before CTest will kill the test.
+DART_TESTING_TIMEOUT:STRING=1500
+
+//Path to a file.
+GHOST_INCLUDE_DIR:PATH=GHOST_INCLUDE_DIR-NOTFOUND
+
+//Path to a library.
+GHOST_LIBRARY:FILEPATH=GHOST_LIBRARY-NOTFOUND
+
+//Path to search for GHOST
+GHOST_ROOT_DIR:PATH=
+
+//Path to a program.
+GITCOMMAND:FILEPATH=/usr/bin/git
+
+//Using vrpn library
+GPC_USE_VRPN:BOOL=OFF
+
+//Path to a file.
+GPM_INCLUDE_DIR:PATH=GPM_INCLUDE_DIR-NOTFOUND
+
+//Path to a library.
+GPM_LIBRARY:FILEPATH=GPM_LIBRARY-NOTFOUND
+
+//Path to a file.
+HDAPI_HDU_INCLUDE_DIR:PATH=HDAPI_HDU_INCLUDE_DIR-NOTFOUND
+
+//Path to a library.
+HDAPI_HDU_LIBRARY_DEBUG:FILEPATH=HDAPI_HDU_LIBRARY_DEBUG-NOTFOUND
+
+//Path to a library.
+HDAPI_HDU_LIBRARY_RELEASE:FILEPATH=HDAPI_HDU_LIBRARY_RELEASE-NOTFOUND
+
+//Path to a file.
+HDAPI_HDU_SOURCE_DIR:PATH=HDAPI_HDU_SOURCE_DIR-NOTFOUND
+
+//Path to a file.
+HDAPI_INCLUDE_DIR:PATH=HDAPI_INCLUDE_DIR-NOTFOUND
+
+//Path to a library.
+HDAPI_LIBRARY_DEBUG:FILEPATH=HDAPI_LIBRARY_DEBUG-NOTFOUND
+
+//Path to a library.
+HDAPI_LIBRARY_RELEASE:FILEPATH=HDAPI_LIBRARY_RELEASE-NOTFOUND
+
+//Path to a library.
+HDAPI_PHANToMIO_LIBRARY:FILEPATH=HDAPI_PHANToMIO_LIBRARY-NOTFOUND
+
+//Path to a program.
+HGCOMMAND:FILEPATH=/usr/bin/hg
+
+//Path to a file.
+HIDAPI_HIDRAW_INCLUDE_DIR:PATH=/usr/include
+
+//Path to a file.
+HIDAPI_INCLUDE_DIR:PATH=HIDAPI_INCLUDE_DIR-NOTFOUND
+
+//Path to a library.
+HIDAPI_LIBRARY:FILEPATH=HIDAPI_LIBRARY-NOTFOUND
+
+//Path to a library.
+HIDAPI_LIBUDEV:FILEPATH=/usr/lib/x86_64-linux-gnu/libudev.so
+
+//Path to a file.
+HIDAPI_LIBUDEV_INCLUDE_DIR:PATH=/usr/include
+
+//Path to a file.
+HLAPI_HLU_INCLUDE_DIR:PATH=HLAPI_HLU_INCLUDE_DIR-NOTFOUND
+
+//Path to a library.
+HLAPI_HLU_LIBRARY_DEBUG:FILEPATH=HLAPI_HLU_LIBRARY_DEBUG-NOTFOUND
+
+//Path to a library.
+HLAPI_HLU_LIBRARY_RELEASE:FILEPATH=HLAPI_HLU_LIBRARY_RELEASE-NOTFOUND
+
+//Path to a file.
+HLAPI_HLU_SOURCE_DIR:PATH=HLAPI_HLU_SOURCE_DIR-NOTFOUND
+
+//Path to a file.
+HLAPI_INCLUDE_DIR:PATH=HLAPI_INCLUDE_DIR-NOTFOUND
+
+//Path to a library.
+HLAPI_LIBRARY_DEBUG:FILEPATH=HLAPI_LIBRARY_DEBUG-NOTFOUND
+
+//Path to a library.
+HLAPI_LIBRARY_RELEASE:FILEPATH=HLAPI_LIBRARY_RELEASE-NOTFOUND
+
+//Path to a file.
+I2CDEV_INCLUDE_DIR:PATH=/usr/include
+
+//Directory to search for libi2c-dev
+I2CDEV_ROOT_DIR:PATH=
+
+//Path to a file.
+INTERSENSE_INCLUDE_DIR:PATH=INTERSENSE_INCLUDE_DIR-NOTFOUND
+
+//Path to a file.
+INTERSENSE_ISENSEC_DIR:PATH=INTERSENSE_ISENSEC_DIR-NOTFOUND
+
+//Path to a library.
+INTERSENSE_LIBRARY:FILEPATH=INTERSENSE_LIBRARY-NOTFOUND
+
+//Directory to search for the Intersense SDK
+INTERSENSE_ROOT_DIR:PATH=
+
+//Path to a program.
+JAVAH_EXECUTABLE:FILEPATH=JAVAH_EXECUTABLE-NOTFOUND
+
+//Path to a file.
+JAVA_AWT_INCLUDE_PATH:PATH=JAVA_AWT_INCLUDE_PATH-NOTFOUND
+
+//Path to a library.
+JAVA_AWT_LIBRARY:FILEPATH=/usr/lib/jvm/default-java/jre/lib/amd64/libjawt.so
+
+//Path to a file.
+JAVA_INCLUDE_PATH:PATH=JAVA_INCLUDE_PATH-NOTFOUND
+
+//Path to a file.
+JAVA_INCLUDE_PATH2:PATH=JAVA_INCLUDE_PATH2-NOTFOUND
+
+//Path to a library.
+JAVA_JVM_LIBRARY:FILEPATH=/usr/lib/jvm/default-java/jre/lib/amd64/server/libjvm.so
+
+//Path to a program.
+Java_IDLJ_EXECUTABLE:FILEPATH=Java_IDLJ_EXECUTABLE-NOTFOUND
+
+//Path to a program.
+Java_JARSIGNER_EXECUTABLE:FILEPATH=Java_JARSIGNER_EXECUTABLE-NOTFOUND
+
+//Path to a program.
+Java_JAR_EXECUTABLE:FILEPATH=Java_JAR_EXECUTABLE-NOTFOUND
+
+//Path to a program.
+Java_JAVAC_EXECUTABLE:FILEPATH=Java_JAVAC_EXECUTABLE-NOTFOUND
+
+//Path to a program.
+Java_JAVADOC_EXECUTABLE:FILEPATH=Java_JAVADOC_EXECUTABLE-NOTFOUND
+
+//Path to a program.
+Java_JAVAH_EXECUTABLE:FILEPATH=Java_JAVAH_EXECUTABLE-NOTFOUND
+
+//Path to a program.
+Java_JAVA_EXECUTABLE:FILEPATH=/usr/bin/java
+
+//Path to a file.
+LIBFREESPACE_INCLUDE_DIR:PATH=LIBFREESPACE_INCLUDE_DIR-NOTFOUND
+
+//Path to a library.
+LIBFREESPACE_LIBRARY:FILEPATH=LIBFREESPACE_LIBRARY-NOTFOUND
+
+//Directory to search for libfreespace
+LIBFREESPACE_ROOT_DIR:PATH=
+
+//Path to a file.
+LIBNIFALCON_INCLUDE_DIR:PATH=LIBNIFALCON_INCLUDE_DIR-NOTFOUND
+
+//Path to a library.
+LIBNIFALCON_LIBRARY:FILEPATH=LIBNIFALCON_LIBRARY-NOTFOUND
+
+//Path to a file.
+LIBNIFALCON_LIBUSB1_INCLUDE_DIR:PATH=/usr/include
+
+//Path to a library.
+LIBNIFALCON_LIBUSB1_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libusb-1.0.so
+
+//Where to start searching
+LIBNIFALCON_ROOT_DIR:PATH=
+
+//Path to a file.
+LIBUSB1_INCLUDE_DIR:PATH=/usr/include/libusb-1.0
+
+//Path to a library.
+LIBUSB1_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libusb-1.0.so
+
+//Root directory to search for libusb-1
+LIBUSB1_ROOT_DIR:PATH=
+
+//Command to build the project
+MAKECOMMAND:STRING=/usr/bin/cmake --build . --config "${CTEST_CONFIGURATION_TYPE}" -- -i
+
+//Path to the memory checking command, used for memory error detection.
+MEMORYCHECK_COMMAND:FILEPATH=/usr/bin/valgrind
+
+//File that contains suppressions for the memory checker
+MEMORYCHECK_SUPPRESSIONS_FILE:FILEPATH=
+
+//Path to a file.
+MODBUS_INCLUDE_DIR:PATH=MODBUS_INCLUDE_DIR-NOTFOUND
+
+//Path to a library.
+MODBUS_LIBRARY:FILEPATH=MODBUS_LIBRARY-NOTFOUND
+
+//Root directory to search for libmodbus
+MODBUS_ROOT_DIR:PATH=
+
+//Executable for running MPI programs.
+MPIEXEC:FILEPATH=/usr/bin/mpiexec
+
+//Maximum number of processors available to run MPI applications.
+MPIEXEC_MAX_NUMPROCS:STRING=2
+
+//Flag used by MPI to specify the number of processes for MPIEXEC;
+// the next option will be the number of processes.
+MPIEXEC_NUMPROC_FLAG:STRING=-np
+
+//These flags will come after all flags given to MPIEXEC.
+MPIEXEC_POSTFLAGS:STRING=
+
+//These flags will be directly before the executable that is being
+// run by MPIEXEC.
+MPIEXEC_PREFLAGS:STRING=
+
+//Path to a program.
+MPI_CXX_COMPILER:FILEPATH=/usr/bin/mpicxx
+
+//MPI CXX compilation flags
+MPI_CXX_COMPILE_FLAGS:STRING=
+
+//MPI CXX include path
+MPI_CXX_INCLUDE_PATH:STRING=/usr/lib/openmpi/include/openmpi/opal/mca/event/libevent2021/libevent;/usr/lib/openmpi/include/openmpi/opal/mca/event/libevent2021/libevent/include;/usr/lib/openmpi/include;/usr/lib/openmpi/include/openmpi
+
+//MPI CXX libraries to link against
+MPI_CXX_LIBRARIES:STRING=/usr/lib/openmpi/lib/libmpi_cxx.so;/usr/lib/openmpi/lib/libmpi.so
+
+//MPI CXX linking flags
+MPI_CXX_LINK_FLAGS:STRING= -Wl,-rpath  -Wl,/usr/lib/openmpi/lib  -Wl,--enable-new-dtags
+
+//Path to a program.
+MPI_C_COMPILER:FILEPATH=/usr/bin/mpicc
+
+//MPI C compilation flags
+MPI_C_COMPILE_FLAGS:STRING=
+
+//MPI C include path
+MPI_C_INCLUDE_PATH:STRING=/usr/lib/openmpi/include/openmpi/opal/mca/event/libevent2021/libevent;/usr/lib/openmpi/include/openmpi/opal/mca/event/libevent2021/libevent/include;/usr/lib/openmpi/include;/usr/lib/openmpi/include/openmpi
+
+//MPI C libraries to link against
+MPI_C_LIBRARIES:STRING=/usr/lib/openmpi/lib/libmpi.so
+
+//MPI C linking flags
+MPI_C_LINK_FLAGS:STRING= -Wl,-rpath  -Wl,/usr/lib/openmpi/lib  -Wl,--enable-new-dtags
+
+//Extra MPI libraries to link against
+MPI_EXTRA_LIBRARY:STRING=/usr/lib/openmpi/lib/libmpi.so
+
+//MPI library to link against
+MPI_LIBRARY:FILEPATH=/usr/lib/openmpi/lib/libmpi_cxx.so
+
+//Path to a file.
+NIDAQMX_INCLUDE_DIR:PATH=NIDAQMX_INCLUDE_DIR-NOTFOUND
+
+//Path to a library.
+NIDAQMX_LIBRARY:FILEPATH=NIDAQMX_LIBRARY-NOTFOUND
+
+//Whether we should compile HDU and HLU, if needed, as a part of
+// the solution
+OPENHAPTICS_NESTED_TARGETS:BOOL=ON
+
+//Path to search for OpenHaptics
+OPENHAPTICS_ROOT_DIR:PATH=
+
+//Path to a program.
+P4COMMAND:FILEPATH=P4COMMAND-NOTFOUND
+
+//No location found for module Parse::RecDescent
+PERLMODULES_PARSE_RECDESCENT_MODULE:FILEPATH=NOTFOUND
+
+//Path to a program.
+PERL_EXECUTABLE:FILEPATH=/usr/bin/perl
+
+//location of PhaseSpace headers
+PHASESPACE_INCLUDE_DIR:PATH=/home/sarahaguasvivas/gpc_controller/phasespace
+
+//location of PhaseSpace libraries (libowlsock.so, etc
+PHASESPACE_LIBRARY_DIR:PATH=/home/sarahaguasvivas/gpc_controller/phasespace
+
+//pkg-config executable
+PKG_CONFIG_EXECUTABLE:FILEPATH=/usr/bin/pkg-config
+
+//Path to a file.
+PYTHON_INCLUDE_DIR:PATH=/usr/include/python2.7
+
+//Path to a library.
+PYTHON_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libpython2.7.so
+
+//Path to a library.
+PYTHON_LIBRARY_DEBUG:FILEPATH=PYTHON_LIBRARY_DEBUG-NOTFOUND
+
+//Enable to build quatlib examples
+QUATLIB_BUILD_EXAMPLES:BOOL=OFF
+
+//Path to a file.
+QUATLIB_INCLUDE_DIR:PATH=/usr/local/include
+
+//Path to scp command, used by CTest for submitting results to
+// a Dart server
+SCPCOMMAND:FILEPATH=/usr/bin/scp
+
+//Name of the computer/site where compile is being run
+SITE:STRING=arrakis
+
+//Path to the SLURM sbatch executable
+SLURM_SBATCH_COMMAND:FILEPATH=SLURM_SBATCH_COMMAND-NOTFOUND
+
+//Path to the SLURM srun executable
+SLURM_SRUN_COMMAND:FILEPATH=SLURM_SRUN_COMMAND-NOTFOUND
+
+//Path to a program.
+SVNCOMMAND:FILEPATH=/usr/bin/svn
+
+//Path to a program.
+SWIG_EXECUTABLE:FILEPATH=SWIG_EXECUTABLE-NOTFOUND
+
+//Path to a file.
+VIEWPOINT_INCLUDE_DIR:PATH=VIEWPOINT_INCLUDE_DIR-NOTFOUND
+
+//Path to a library.
+VIEWPOINT_LIBRARY:FILEPATH=VIEWPOINT_LIBRARY-NOTFOUND
+
+//Directory to search for Arrington Research ViewPoint EyeTracker
+// SDK
+VIEWPOINT_ROOT_DIR:PATH=
+
+//Value Computed by CMake
+VRPN_BINARY_DIR:STATIC=/home/sarahaguasvivas/gpc_controller/build/lib/vrpn
+
+//Build with flags to enable extra warnings.
+VRPN_BUILD_EXTRA_COMPILER_WARNINGS:BOOL=OFF
+
+//Build VRPN Java bindings
+VRPN_BUILD_JAVA:BOOL=OFF
+
+//Build with flags to enable profiling.
+VRPN_BUILD_PROFILING_SUPPORT:BOOL=OFF
+
+//Build VRPN Python 2.x SWIG-based bindings
+VRPN_BUILD_PYTHON:BOOL=OFF
+
+//Build VRPN Python handcoded bindings for Python 2.x
+VRPN_BUILD_PYTHON_HANDCODED_2X:BOOL=OFF
+
+//Build VRPN Python handcoded bindings for Python 3.x
+VRPN_BUILD_PYTHON_HANDCODED_3X:BOOL=OFF
+
+//Build VRPN RPC generation
+VRPN_BUILD_TEST_RPC_GENERATION:BOOL=OFF
+
+//Build with InterSense support
+VRPN_INCLUDE_INTERSENSE:BOOL=OFF
+
+//Build with PhaseSpace library support
+VRPN_INCLUDE_PHASESPACE:BOOL=OFF
+
+//Value Computed by CMake
+VRPN_SOURCE_DIR:STATIC=/home/sarahaguasvivas/gpc_controller/lib/vrpn
+
+//Build with Trivisio ColibriAPI support
+VRPN_USE_COLIBRIAPI:BOOL=OFF
+
+//Build with flags to enable the use of DevInput. (Uses kernel
+// header - may make servers GPL)
+VRPN_USE_DEV_INPUT:BOOL=OFF
+
+//Build with Hillcrest Labs' Freespace devices support
+VRPN_USE_FREESPACE:BOOL=OFF
+
+//Allow SensAble Phantom support through GHOST - VRPN_USE_PHANTOM_SERVER
+// must still be set
+VRPN_USE_GHOST:BOOL=OFF
+
+//Build with GPM Linux mouse interface support (makes servers GPL)
+VRPN_USE_GPM_MOUSE:BOOL=OFF
+
+//Allow SensAble Phantom support through HDAPI/HLAPI - VRPN_USE_PHANTOM_SERVER
+// must still be set
+VRPN_USE_HDAPI:BOOL=OFF
+
+//Build with support for HID devices using HIDAPI
+VRPN_USE_HID:BOOL=OFF
+
+//Build devices requiring libi2c-dev
+VRPN_USE_I2CDEV:BOOL=OFF
+
+//Build with support for Linux kernel joystick interface (Uses
+// kernel header - may make servers GPL)
+VRPN_USE_JOYLIN:BOOL=OFF
+
+//Build with JSONCPP (for Android widgets and other UDP JSON-based
+// APIs)
+VRPN_USE_JSONNET:BOOL=OFF
+
+//Build with libnifalcon support to access Novint Falcon devices
+VRPN_USE_LIBNIFALCON:BOOL=OFF
+
+//Attempt to use LibUSB-1.0 to talk directly to USB devices.
+VRPN_USE_LIBUSB_1_0:BOOL=OFF
+
+//Build with HIDAPI code from within VRPN source directory
+VRPN_USE_LOCAL_HIDAPI:BOOL=OFF
+
+//Build with JSONCPP code from within VRPN source directory
+VRPN_USE_LOCAL_JSONCPP:BOOL=OFF
+
+//Build with MicroScribe3D library support
+VRPN_USE_MICROSCRIBE:BOOL=OFF
+
+//Build with Modbus support
+VRPN_USE_MODBUS:BOOL=OFF
+
+//Build with MotionNode tracker support
+VRPN_USE_MOTIONNODE:BOOL=OFF
+
+//Build with MPI support
+VRPN_USE_MPI:BOOL=OFF
+
+//Build with National Instruments (old library) support
+VRPN_USE_NATIONAL_INSTRUMENTS:BOOL=OFF
+
+//Build with National Instruments NIDAQMX support
+VRPN_USE_NATIONAL_INSTRUMENTS_MX:BOOL=OFF
+
+//Build with NIDAQ support ca. 1999
+VRPN_USE_NIDAQ:BOOL=OFF
+
+//Build with flags to enable the use of Polhemus DVI library.
+VRPN_USE_PDI:BOOL=OFF
+
+//Build with SensAble Phantom support
+VRPN_USE_PHANTOM_SERVER:BOOL=OFF
+
+//Use some compile-time assertions
+VRPN_USE_STATIC_ASSERTIONS:BOOL=ON
+
+//Use the std::chrono class for time
+VRPN_USE_STD_CHRONO:BOOL=OFF
+
+//(OBSOLETE) Build with support for TrivisioColibri tracker
+VRPN_USE_TRIVISIOCOLIBRI:BOOL=OFF
+
+//Build with US Digital SEI/A2 library support
+VRPN_USE_USDIGITAL:BOOL=OFF
+
+//Build with support for ViewPoint EyeTracker
+VRPN_USE_VIEWPOINT:BOOL=OFF
+
+//Build with WiiUse library support (makes servers GPL)
+VRPN_USE_WIIUSE:BOOL=OFF
+
+//Path to a file.
+WIIUSE_INCLUDE_DIR:PATH=WIIUSE_INCLUDE_DIR-NOTFOUND
+
+//Path to a library.
+WIIUSE_LIBRARY:FILEPATH=WIIUSE_LIBRARY-NOTFOUND
+
+//Directory to search for WiiUse
+WIIUSE_ROOT_DIR:PATH=
+
 //Value Computed by CMake
 block_controller_BINARY_DIR:STATIC=/home/sarahaguasvivas/gpc_controller/build
 
@@ -174,11 +671,25 @@ block_controller_SOURCE_DIR:STATIC=/home/sarahaguasvivas/gpc_controller
 //Dependencies for target
 gpc_core_LIB_DEPENDS:STATIC=
 
+//The directory containing a CMake configuration file for jsoncpp.
+jsoncpp_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/jsoncpp
+
+//Dependencies for the target
+quat_LIB_DEPENDS:STATIC=general;-lm;
+
+//Value Computed by CMake
+quatlib_BINARY_DIR:STATIC=/home/sarahaguasvivas/gpc_controller/build/lib/vrpn/quat
+
+//Value Computed by CMake
+quatlib_SOURCE_DIR:STATIC=/home/sarahaguasvivas/gpc_controller/lib/vrpn/quat
+
 
 ########################
 # INTERNAL cache entries
 ########################
 
+//ADVANCED property for variable: BZRCOMMAND
+BZRCOMMAND-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_AR
 CMAKE_AR-ADVANCED:INTERNAL=1
 //This is the directory where this CMakeCache.txt was created
@@ -195,6 +706,8 @@ CMAKE_COLOR_MAKEFILE-ADVANCED:INTERNAL=1
 CMAKE_COMMAND:INTERNAL=/usr/bin/cmake
 //Path to cpack program executable.
 CMAKE_CPACK_COMMAND:INTERNAL=/usr/bin/cpack
+//ADVANCED property for variable: CMAKE_CTEST_COMMAND
+CMAKE_CTEST_COMMAND-ADVANCED:INTERNAL=1
 //Path to ctest program executable.
 CMAKE_CTEST_COMMAND:INTERNAL=/usr/bin/ctest
 //ADVANCED property for variable: CMAKE_CXX_COMPILER
@@ -243,6 +756,14 @@ CMAKE_GENERATOR:INTERNAL=Unix Makefiles
 CMAKE_GENERATOR_PLATFORM:INTERNAL=
 //Name of generator toolset.
 CMAKE_GENERATOR_TOOLSET:INTERNAL=
+//Have symbol pthread_create
+CMAKE_HAVE_LIBC_CREATE:INTERNAL=
+//Have library pthreads
+CMAKE_HAVE_PTHREADS_CREATE:INTERNAL=
+//Have library pthread
+CMAKE_HAVE_PTHREAD_CREATE:INTERNAL=1
+//Have include pthread.h
+CMAKE_HAVE_PTHREAD_H:INTERNAL=1
 //Source directory with the top level CMakeLists.txt file for this
 // project
 CMAKE_HOME_DIRECTORY:INTERNAL=/home/sarahaguasvivas/gpc_controller
@@ -265,7 +786,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=2
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=10
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP
@@ -304,4 +825,274 @@ CMAKE_STRIP-ADVANCED:INTERNAL=1
 CMAKE_UNAME:INTERNAL=/bin/uname
 //ADVANCED property for variable: CMAKE_VERBOSE_MAKEFILE
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: COLIBRIAPI_INCLUDE_DIR
+COLIBRIAPI_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: COLIBRIAPI_LIBRARY
+COLIBRIAPI_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: COVERAGE_COMMAND
+COVERAGE_COMMAND-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: COVERAGE_EXTRA_FLAGS
+COVERAGE_EXTRA_FLAGS-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CPPCHECK_EXECUTABLE
+CPPCHECK_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CTEST_SUBMIT_RETRY_COUNT
+CTEST_SUBMIT_RETRY_COUNT-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CTEST_SUBMIT_RETRY_DELAY
+CTEST_SUBMIT_RETRY_DELAY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CVSCOMMAND
+CVSCOMMAND-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CVS_UPDATE_OPTIONS
+CVS_UPDATE_OPTIONS-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: DART_TESTING_TIMEOUT
+DART_TESTING_TIMEOUT-ADVANCED:INTERNAL=1
+//Details about finding I2CDEV
+FIND_PACKAGE_MESSAGE_DETAILS_I2CDEV:INTERNAL=[/usr/include][v()]
+//Details about finding Libusb1
+FIND_PACKAGE_MESSAGE_DETAILS_Libusb1:INTERNAL=[/usr/lib/x86_64-linux-gnu/libusb-1.0.so][/usr/include/libusb-1.0][v()]
+//Details about finding Threads
+FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
+//Details about finding quatlib
+FIND_PACKAGE_MESSAGE_DETAILS_quatlib:INTERNAL=[quat][/usr/local/include][v()]
+//ADVANCED property for variable: GHOST_INCLUDE_DIR
+GHOST_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: GHOST_LIBRARY
+GHOST_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: GITCOMMAND
+GITCOMMAND-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: GPM_INCLUDE_DIR
+GPM_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: GPM_LIBRARY
+GPM_LIBRARY-ADVANCED:INTERNAL=1
+//Have include linux/input.h
+HAVE_LINUX_INPUT_H:INTERNAL=1
+//Have include linux/joystick.h
+HAVE_LINUX_JOYSTICK_H:INTERNAL=1
+//ADVANCED property for variable: HDAPI_HDU_INCLUDE_DIR
+HDAPI_HDU_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: HDAPI_HDU_LIBRARY_DEBUG
+HDAPI_HDU_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: HDAPI_HDU_LIBRARY_RELEASE
+HDAPI_HDU_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: HDAPI_INCLUDE_DIR
+HDAPI_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: HDAPI_LIBRARY_DEBUG
+HDAPI_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: HDAPI_LIBRARY_RELEASE
+HDAPI_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: HDAPI_PHANToMIO_LIBRARY
+HDAPI_PHANToMIO_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: HGCOMMAND
+HGCOMMAND-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: HIDAPI_HIDRAW_INCLUDE_DIR
+HIDAPI_HIDRAW_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: HIDAPI_INCLUDE_DIR
+HIDAPI_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: HIDAPI_LIBRARY
+HIDAPI_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: HIDAPI_LIBUDEV
+HIDAPI_LIBUDEV-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: HIDAPI_LIBUDEV_INCLUDE_DIR
+HIDAPI_LIBUDEV_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: HLAPI_HLU_INCLUDE_DIR
+HLAPI_HLU_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: HLAPI_HLU_LIBRARY_DEBUG
+HLAPI_HLU_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: HLAPI_HLU_LIBRARY_RELEASE
+HLAPI_HLU_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: HLAPI_INCLUDE_DIR
+HLAPI_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: HLAPI_LIBRARY_DEBUG
+HLAPI_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: HLAPI_LIBRARY_RELEASE
+HLAPI_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: I2CDEV_INCLUDE_DIR
+I2CDEV_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: I2CDEV_ROOT_DIR
+I2CDEV_ROOT_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: INTERSENSE_INCLUDE_DIR
+INTERSENSE_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: INTERSENSE_ISENSEC_DIR
+INTERSENSE_ISENSEC_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: INTERSENSE_LIBRARY
+INTERSENSE_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: JAVAH_EXECUTABLE
+JAVAH_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: JAVA_AWT_INCLUDE_PATH
+JAVA_AWT_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: JAVA_AWT_LIBRARY
+JAVA_AWT_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: JAVA_INCLUDE_PATH
+JAVA_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: JAVA_INCLUDE_PATH2
+JAVA_INCLUDE_PATH2-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: JAVA_JVM_LIBRARY
+JAVA_JVM_LIBRARY-ADVANCED:INTERNAL=1
+JSONCPP_CACHED_JSONCPP_DIR_DETAILS:INTERNAL=[/usr/lib/x86_64-linux-gnu/cmake/jsoncpp];[SHARED_LIBRARY];[T]
+JSONCPP_IMPORTED_INCLUDE_DIRS:INTERNAL=/usr/include/jsoncpp
+JSONCPP_IMPORTED_LIBRARY:INTERNAL=jsoncpp_lib
+JSONCPP_IMPORTED_LIBRARY_IS_SHARED:INTERNAL=TRUE
+JSONCPP_IMPORTED_LIBRARY_SHARED:INTERNAL=jsoncpp_lib
+JSONCPP_IMPORTED_LIBRARY_STATIC:INTERNAL=jsoncpp_lib_static
+//ADVANCED property for variable: Java_IDLJ_EXECUTABLE
+Java_IDLJ_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Java_JARSIGNER_EXECUTABLE
+Java_JARSIGNER_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Java_JAR_EXECUTABLE
+Java_JAR_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Java_JAVAC_EXECUTABLE
+Java_JAVAC_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Java_JAVADOC_EXECUTABLE
+Java_JAVADOC_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Java_JAVAH_EXECUTABLE
+Java_JAVAH_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Java_JAVA_EXECUTABLE
+Java_JAVA_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: LIBFREESPACE_INCLUDE_DIR
+LIBFREESPACE_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: LIBFREESPACE_LIBRARY
+LIBFREESPACE_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: LIBNIFALCON_INCLUDE_DIR
+LIBNIFALCON_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: LIBNIFALCON_LIBRARY
+LIBNIFALCON_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: LIBNIFALCON_LIBUSB1_INCLUDE_DIR
+LIBNIFALCON_LIBUSB1_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: LIBNIFALCON_LIBUSB1_LIBRARY
+LIBNIFALCON_LIBUSB1_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: LIBNIFALCON_ROOT_DIR
+LIBNIFALCON_ROOT_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: LIBUSB1_INCLUDE_DIR
+LIBUSB1_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: LIBUSB1_LIBRARY
+LIBUSB1_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: LIBUSB1_ROOT_DIR
+LIBUSB1_ROOT_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MAKECOMMAND
+MAKECOMMAND-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MEMORYCHECK_COMMAND
+MEMORYCHECK_COMMAND-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MEMORYCHECK_SUPPRESSIONS_FILE
+MEMORYCHECK_SUPPRESSIONS_FILE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MODBUS_INCLUDE_DIR
+MODBUS_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MODBUS_LIBRARY
+MODBUS_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MPIEXEC
+MPIEXEC-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MPIEXEC_MAX_NUMPROCS
+MPIEXEC_MAX_NUMPROCS-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MPIEXEC_NUMPROC_FLAG
+MPIEXEC_NUMPROC_FLAG-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MPIEXEC_POSTFLAGS
+MPIEXEC_POSTFLAGS-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MPIEXEC_PREFLAGS
+MPIEXEC_PREFLAGS-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MPI_CXX_COMPILER
+MPI_CXX_COMPILER-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MPI_CXX_COMPILE_FLAGS
+MPI_CXX_COMPILE_FLAGS-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MPI_CXX_INCLUDE_PATH
+MPI_CXX_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MPI_CXX_LIBRARIES
+MPI_CXX_LIBRARIES-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MPI_CXX_LINK_FLAGS
+MPI_CXX_LINK_FLAGS-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MPI_C_COMPILER
+MPI_C_COMPILER-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MPI_C_COMPILE_FLAGS
+MPI_C_COMPILE_FLAGS-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MPI_C_INCLUDE_PATH
+MPI_C_INCLUDE_PATH-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MPI_C_LIBRARIES
+MPI_C_LIBRARIES-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: MPI_C_LINK_FLAGS
+MPI_C_LINK_FLAGS-ADVANCED:INTERNAL=1
+//Scratch variable for MPI header detection
+MPI_HEADER_PATH:INTERNAL=MPI_HEADER_PATH-NOTFOUND
+//Scratch variable for MPI lib detection
+MPI_LIB:INTERNAL=MPI_LIB-NOTFOUND
+//ADVANCED property for variable: NIDAQMX_INCLUDE_DIR
+NIDAQMX_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: NIDAQMX_LIBRARY
+NIDAQMX_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: OPENHAPTICS_NESTED_TARGETS
+OPENHAPTICS_NESTED_TARGETS-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: P4COMMAND
+P4COMMAND-ADVANCED:INTERNAL=1
+PC_LIBUSB1_CFLAGS:INTERNAL=-I/usr/include/libusb-1.0
+PC_LIBUSB1_CFLAGS_I:INTERNAL=
+PC_LIBUSB1_CFLAGS_OTHER:INTERNAL=
+PC_LIBUSB1_FOUND:INTERNAL=1
+PC_LIBUSB1_INCLUDEDIR:INTERNAL=/usr/include
+PC_LIBUSB1_INCLUDE_DIRS:INTERNAL=/usr/include/libusb-1.0
+PC_LIBUSB1_LDFLAGS:INTERNAL=-lusb-1.0
+PC_LIBUSB1_LDFLAGS_OTHER:INTERNAL=
+PC_LIBUSB1_LIBDIR:INTERNAL=/usr/lib/x86_64-linux-gnu
+PC_LIBUSB1_LIBRARIES:INTERNAL=usb-1.0
+PC_LIBUSB1_LIBRARY_DIRS:INTERNAL=
+PC_LIBUSB1_LIBS:INTERNAL=
+PC_LIBUSB1_LIBS_L:INTERNAL=
+PC_LIBUSB1_LIBS_OTHER:INTERNAL=
+PC_LIBUSB1_LIBS_PATHS:INTERNAL=
+PC_LIBUSB1_PREFIX:INTERNAL=/usr
+PC_LIBUSB1_STATIC_CFLAGS:INTERNAL=-I/usr/include/libusb-1.0
+PC_LIBUSB1_STATIC_CFLAGS_I:INTERNAL=
+PC_LIBUSB1_STATIC_CFLAGS_OTHER:INTERNAL=
+PC_LIBUSB1_STATIC_INCLUDE_DIRS:INTERNAL=/usr/include/libusb-1.0
+PC_LIBUSB1_STATIC_LDFLAGS:INTERNAL=-lusb-1.0;-ludev;-pthread
+PC_LIBUSB1_STATIC_LDFLAGS_OTHER:INTERNAL=-pthread
+PC_LIBUSB1_STATIC_LIBDIR:INTERNAL=
+PC_LIBUSB1_STATIC_LIBRARIES:INTERNAL=usb-1.0;udev
+PC_LIBUSB1_STATIC_LIBRARY_DIRS:INTERNAL=
+PC_LIBUSB1_STATIC_LIBS:INTERNAL=
+PC_LIBUSB1_STATIC_LIBS_L:INTERNAL=
+PC_LIBUSB1_STATIC_LIBS_OTHER:INTERNAL=
+PC_LIBUSB1_STATIC_LIBS_PATHS:INTERNAL=
+PC_LIBUSB1_VERSION:INTERNAL=1.0.20
+PC_LIBUSB1_libusb-1.0_INCLUDEDIR:INTERNAL=
+PC_LIBUSB1_libusb-1.0_LIBDIR:INTERNAL=
+PC_LIBUSB1_libusb-1.0_PREFIX:INTERNAL=
+PC_LIBUSB1_libusb-1.0_VERSION:INTERNAL=
+//ADVANCED property for variable: PERL_EXECUTABLE
+PERL_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: PKG_CONFIG_EXECUTABLE
+PKG_CONFIG_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: PYTHON_INCLUDE_DIR
+PYTHON_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: PYTHON_LIBRARY
+PYTHON_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: PYTHON_LIBRARY_DEBUG
+PYTHON_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: QUATLIB_INCLUDE_DIR
+QUATLIB_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: SCPCOMMAND
+SCPCOMMAND-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: SITE
+SITE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: SLURM_SBATCH_COMMAND
+SLURM_SBATCH_COMMAND-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: SLURM_SRUN_COMMAND
+SLURM_SRUN_COMMAND-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: SVNCOMMAND
+SVNCOMMAND-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: VIEWPOINT_INCLUDE_DIR
+VIEWPOINT_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: VIEWPOINT_LIBRARY
+VIEWPOINT_LIBRARY-ADVANCED:INTERNAL=1
+VRPN_CLIENT_LIBRARY:INTERNAL=
+//Definition to add if using as a subproject
+VRPN_DEFINITIONS:INTERNAL=-DVRPN_USING_CMAKE="/home/sarahaguasvivas/gpc_controller/build/lib/vrpn/vrpn_Configure.h"
+VRPN_INCLUDE_DIRS:INTERNAL=/home/sarahaguasvivas/gpc_controller/build/lib/vrpn;/home/sarahaguasvivas/gpc_controller/lib/vrpn;/home/sarahaguasvivas/gpc_controller/lib/vrpn/atmellib;/home/sarahaguasvivas/gpc_controller/lib/vrpn/quat
+VRPN_SERVER_LIBRARY:INTERNAL=
+VRPN_SERVER_LINK_FLAGS:INTERNAL=
+//ADVANCED property for variable: WIIUSE_INCLUDE_DIR
+WIIUSE_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: WIIUSE_LIBRARY
+WIIUSE_LIBRARY-ADVANCED:INTERNAL=1
+_VRPN_PYTHON_SETTINGS:INTERNAL=OFFOFFOFF
+_VRPN_PYTHON_VERSIONSEARCH:INTERNAL=
+__pkg_config_checked_PC_LIBUSB1:INTERNAL=1
+//ADVANCED property for variable: jsoncpp_DIR
+jsoncpp_DIR-ADVANCED:INTERNAL=1
+prefix_result:INTERNAL=/usr/lib/x86_64-linux-gnu
 

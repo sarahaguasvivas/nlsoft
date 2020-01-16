@@ -1,0 +1,5 @@
+if(GPC_USE_VRPN)
+    FIND_PACKAGE(vrpn REQUIRED)
+else()
+    ADD_SUBDIRECTORY(vrpn)
+endif()

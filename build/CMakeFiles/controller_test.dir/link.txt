@@ -1,0 +1,1 @@
+/usr/bin/c++      CMakeFiles/controller_test.dir/test/test.cpp.o  -o controller_test -rdynamic -lvrpn 
