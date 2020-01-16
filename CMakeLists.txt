@@ -5,20 +5,28 @@ cmake_minimum_required (VERSION 2.8.11)
 
 project (block_controller)
 
+SET (CMAKE_INCLUDE_CURRENT_DIR ON)
+
 OPTION (GPC_USE_VRPN "Using vrpn library" OFF)
+
+MESSAGE(STATUS "Packages found")
 
 # Recurse into the "Hello" and "Demo" subdirectories. This does not actually
 # cause another cmake executable to run. The same process will walk through
 # the project's entire directory structure.
+SET (CMAKE_CXX_FLAGS "-g")
+SET (CMAKE_CXX_STANDARD 11)
+
 add_subdirectory (lib)
 
+#  -lvrpn
 include_directories (src)
 include_directories (data)
 include_directories (include)
 
 file (GLOB CORE_LIB src/*.cpp src/controller/*.cpp src/dynamixels/*.cpp src/optitrack/*.cpp src/signals/*.cpp)
 
-#add_library (gpc_core SHARED ${CORE_LIB})
+add_library (gpc_core SHARED ${CORE_LIB})
 
 # Add executable called "helloDemo" that is built from the source files
 # "demo.cxx" and "demo_b.cxx". The extensions are automatically found.
@@ -29,3 +37,4 @@ add_executable (controller_test test/test.cpp)
 # helloDemo
 #target_link_libraries (controller_test gpc_core)
 target_link_libraries (controller_test vrpn)
+target_link_libraries (controller_test gpc_core)

@@ -90,6 +90,7 @@ controller_test_EXTERNAL_OBJECTS =
 
 controller_test: CMakeFiles/controller_test.dir/test/test.cpp.o
 controller_test: CMakeFiles/controller_test.dir/build.make
+controller_test: libgpc_core.so
 controller_test: CMakeFiles/controller_test.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/sarahaguasvivas/gpc_controller/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable controller_test"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/controller_test.dir/link.txt --verbose=$(VERBOSE)

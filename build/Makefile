@@ -111,6 +111,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named gpc_core
+
+# Build rule for target.
+gpc_core: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 gpc_core
+.PHONY : gpc_core
+
+# fast build rule for target.
+gpc_core/fast:
+	$(MAKE) -f CMakeFiles/gpc_core.dir/build.make CMakeFiles/gpc_core.dir/build
+.PHONY : gpc_core/fast
+
+#=============================================================================
 # Target rules for targets named controller_test
 
 # Build rule for target.
@@ -500,6 +513,33 @@ quat/fast:
 	$(MAKE) -f lib/vrpn/quat/CMakeFiles/quat.dir/build.make lib/vrpn/quat/CMakeFiles/quat.dir/build
 .PHONY : quat/fast
 
+src/optitrack/vrpn_client.o: src/optitrack/vrpn_client.cpp.o
+
+.PHONY : src/optitrack/vrpn_client.o
+
+# target to build an object file
+src/optitrack/vrpn_client.cpp.o:
+	$(MAKE) -f CMakeFiles/gpc_core.dir/build.make CMakeFiles/gpc_core.dir/src/optitrack/vrpn_client.cpp.o
+.PHONY : src/optitrack/vrpn_client.cpp.o
+
+src/optitrack/vrpn_client.i: src/optitrack/vrpn_client.cpp.i
+
+.PHONY : src/optitrack/vrpn_client.i
+
+# target to preprocess a source file
+src/optitrack/vrpn_client.cpp.i:
+	$(MAKE) -f CMakeFiles/gpc_core.dir/build.make CMakeFiles/gpc_core.dir/src/optitrack/vrpn_client.cpp.i
+.PHONY : src/optitrack/vrpn_client.cpp.i
+
+src/optitrack/vrpn_client.s: src/optitrack/vrpn_client.cpp.s
+
+.PHONY : src/optitrack/vrpn_client.s
+
+# target to generate assembly for a file
+src/optitrack/vrpn_client.cpp.s:
+	$(MAKE) -f CMakeFiles/gpc_core.dir/build.make CMakeFiles/gpc_core.dir/src/optitrack/vrpn_client.cpp.s
+.PHONY : src/optitrack/vrpn_client.cpp.s
+
 test/test.o: test/test.cpp.o
 
 .PHONY : test/test.o
@@ -534,8 +574,9 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... edit_cache"
-	@echo "... controller_test"
 	@echo "... rebuild_cache"
+	@echo "... gpc_core"
+	@echo "... controller_test"
 	@echo "... ContinuousSubmit"
 	@echo "... ContinuousCoverage"
 	@echo "... ContinuousTest"
@@ -565,6 +606,9 @@ help:
 	@echo "... ExperimentalUpdate"
 	@echo "... ContinuousConfigure"
 	@echo "... quat"
+	@echo "... src/optitrack/vrpn_client.o"
+	@echo "... src/optitrack/vrpn_client.i"
+	@echo "... src/optitrack/vrpn_client.s"
 	@echo "... test/test.o"
 	@echo "... test/test.i"
 	@echo "... test/test.s"

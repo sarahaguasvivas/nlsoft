@@ -14,15 +14,7 @@ string
 vector
 -
 
-/home/sarahaguasvivas/gpc_controller/test/test.cpp
-iostream
--
+/home/sarahaguasvivas/gpc_controller/src/optitrack/vrpn_client.cpp
 optitrack/vrpn_client.h
-/home/sarahaguasvivas/gpc_controller/test/optitrack/vrpn_client.h
-vector
--
-string
--
-typeinfo
--
+/home/sarahaguasvivas/gpc_controller/src/optitrack/optitrack/vrpn_client.h
 

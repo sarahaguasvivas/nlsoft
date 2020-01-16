@@ -1,6 +1,7 @@
 /home/sarahaguasvivas/gpc_controller/build/CMakeFiles/edit_cache.dir
-/home/sarahaguasvivas/gpc_controller/build/CMakeFiles/controller_test.dir
 /home/sarahaguasvivas/gpc_controller/build/CMakeFiles/rebuild_cache.dir
+/home/sarahaguasvivas/gpc_controller/build/CMakeFiles/gpc_core.dir
+/home/sarahaguasvivas/gpc_controller/build/CMakeFiles/controller_test.dir
 /home/sarahaguasvivas/gpc_controller/build/lib/CMakeFiles/edit_cache.dir
 /home/sarahaguasvivas/gpc_controller/build/lib/CMakeFiles/rebuild_cache.dir
 /home/sarahaguasvivas/gpc_controller/build/lib/vrpn/CMakeFiles/edit_cache.dir
