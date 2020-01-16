@@ -13,7 +13,6 @@ int main(){
     tracking_id.push_back(body2);
 
     std::string id = "192.168.50.33"; 
-    std::cout << "here0 " << id << " " << std::endl;
 
     VRPNclient * C = new VRPNclient (tracking_id, id); 
     return 0;
