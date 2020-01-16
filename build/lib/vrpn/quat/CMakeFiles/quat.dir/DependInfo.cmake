@@ -13,10 +13,11 @@ set(CMAKE_C_COMPILER_ID "GNU")
 
 # The include file search paths:
 set(CMAKE_C_TARGET_INCLUDE_PATH
+  "lib/vrpn/quat"
+  "../lib/vrpn/quat"
   "lib/vrpn"
   "../lib/vrpn"
   "../lib/vrpn/atmellib"
-  "../lib/vrpn/quat"
   )
 
 # Targets to which this target links.

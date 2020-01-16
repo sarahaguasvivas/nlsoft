@@ -6,5 +6,5 @@ C_FLAGS =
 
 C_DEFINES = 
 
-C_INCLUDES = -I/home/sarahaguasvivas/gpc_controller/build/lib/vrpn -I/home/sarahaguasvivas/gpc_controller/lib/vrpn -I/home/sarahaguasvivas/gpc_controller/lib/vrpn/atmellib -I/home/sarahaguasvivas/gpc_controller/lib/vrpn/quat 
+C_INCLUDES = -I/home/sarahaguasvivas/gpc_controller/build/lib/vrpn/quat -I/home/sarahaguasvivas/gpc_controller/lib/vrpn/quat -I/home/sarahaguasvivas/gpc_controller/build/lib/vrpn -I/home/sarahaguasvivas/gpc_controller/lib/vrpn -I/home/sarahaguasvivas/gpc_controller/lib/vrpn/atmellib 
 
