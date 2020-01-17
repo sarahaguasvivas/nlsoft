@@ -1,1 +1,0 @@
-/usr/bin/c++  -fPIC -g  -shared -Wl,-soname,libgpc_core.so -o libgpc_core.so CMakeFiles/gpc_core.dir/src/optitrack/vrpn_client.cpp.o 

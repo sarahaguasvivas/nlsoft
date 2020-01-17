@@ -1,1 +1,0 @@
-/usr/bin/c++   -g   CMakeFiles/controller_test.dir/test/test.cpp.o  -o controller_test -rdynamic -lvrpn libgpc_core.so -Wl,-rpath,/home/sarahaguasvivas/gpc_controller/build 
