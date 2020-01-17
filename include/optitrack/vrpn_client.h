@@ -10,11 +10,13 @@ class VRPNclient{
         std::string host_IP;
         std::vector<std::string> tracker_name; 
         float * data;
-        vrpn_Connection * connection;
         VRPNclient(std::vector<std::string> tracker_name, std::string host_IP);
         VRPNclient(){};
         void start_connection();
         float * sample();
+        
+        // VRPN client variables:
+        vrpn_Tracker_Remote * Tracker;
         ~VRPNclient();
 };
 
