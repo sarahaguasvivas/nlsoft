@@ -24,8 +24,8 @@ class VRPNclient:
 
 
 if __name__=='__main__':
-    C = VRPNclient("D-Head", "192.168.50.33")
-    B = VRPNclient("D-Base", "192.168.50.33")
+    C = VRPNclient("D-Head", "192.168.50.33:3883")
+    B = VRPNclient("D-Base", "192.168.50.33:3883")
     while True:
         C.sample_data()
         B.sample_data()
