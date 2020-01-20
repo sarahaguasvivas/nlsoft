@@ -10,7 +10,8 @@ class BlockGym():
         self.reward = 0
         self.info = ""
         self.dynamixels = DynamixelActor()
-        pass
+
+        self.block_or = BlockOrientation()
 
     def step(self, action):
         # return observation, reward, done, info
@@ -29,6 +30,8 @@ class BlockGym():
 
     def get_observation(self):
         # use signal reader from Arduino
+        end_eff = self.block_or.get_observation()
+        print(end_eff)
         pass
 
     def reward(self):
@@ -40,5 +43,9 @@ class BlockGym():
         pass
 
 
+if __name__ == "__main__":
+    B = BlockGym()
 
+    while True:
+        B.get_observation()
 
