@@ -9,6 +9,7 @@ class BlockGym():
         self.terminal = False
         self.reward = 0
         self.info = ""
+        self.dynamixels = DynamixelActor()
         pass
 
     def step(self, action):
