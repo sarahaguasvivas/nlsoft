@@ -1,5 +1,5 @@
 import vrpn
-
+import numpy as np
 
 class VRPNclient:
     def callback(self, userdata, data):
@@ -24,6 +24,8 @@ class VRPNclient:
         self.button = vrpn.receiver.Button(tracker_name+"@"+hostID)
         self.button.register_change_handler("button", self.callback)
 
+        self.info = []
+
     def sample_data(self):
         self.tracker.mainloop()
         self.analog.mainloop()
@@ -32,18 +34,31 @@ class VRPNclient:
     def get_observation(self):
         while not self.tracked:
             self.sample_data()
+
+        # parsing data
+        self.info = []
+        self.info+= list(self.data_read[self.tracker_name]['position'])
+
+        q = list(self.data_read[self.tracker_name]['quaternion'])
+
+        roll = np.degrees(np.arctan2(2*(q[0]*q[1] + q[2]*q[3]), 1-2*(q[1]**2 + q[2]**2)))
+        pitch = np.degrees(np.arcsin(2*(q[0]*q[2] - q[3]*q[1])))
+        yaw = np.degrees(np.arctan2(2*(q[0]*q[3] + q[1] *q[2]),  1 -2*(q[2]**2 + q[3]**2)))
+
+        self.info += q
         self.tracked = False
-        return self.data_read
+        return self.info
 
 if __name__=='__main__':
     import time
+
     C = VRPNclient("DHead", "tcp://192.168.50.33:3883")
     B = VRPNclient("DBase", "tcp://192.168.50.33:3883")
+
     while True:
-        # Collect a single observation
         start = time.time()
-        while True:
-            C.get_observation()
-            B.get_observation()
+        print C.get_observation() # collect a single observation
+        print B.get_observation() # collect a single observation
+
         elapsed = time.time() - start
         print "elapsed: ", elapsed, " ms"
