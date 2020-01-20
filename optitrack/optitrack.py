@@ -42,8 +42,8 @@ class VRPNclient:
         q = list(self.data_read[self.tracker_name]['quaternion'])
 
         roll = np.arctan2(2*(q[0]*q[1] + q[2]*q[3]), 1-2*(q[1]**2 + q[2]**2))
-        pitch = np.arcsin(2*(q[0]*q[2] - q[3]*q[1]))
-        yaw =np.arctan2(2*(q[0]*q[3] + q[1] *q[2]),  1 -2*(q[2]**2 + q[3]**2))
+        pitch =np.arcsin(2*(q[0]*q[2] - q[3]*q[1]))
+        yaw = np.arctan2(2*(q[0]*q[3] + q[1] *q[2]),  1 -2*(q[2]**2 + q[3]**2))
 
         self.info += [roll, pitch, yaw] # in radians
         self.tracked = False
