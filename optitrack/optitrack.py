@@ -4,13 +4,16 @@ import vrpn
 class VRPNclient:
     def callback(self, userdata, data):
         self.tracked = True
-        print {userdata: data};
+        self.data_read = {userdata: data}
+        print self.data_read;
 
     def __init__(self, tracker_name, hostID):
         self.tracker_name = tracker_name
         self.hostID= hostID
 
         self.tracked = False
+
+        self.data_read = None
 
         self.tracker = vrpn.receiver.Tracker(tracker_name + "@" + hostID)
         self.tracker.register_change_handler(self.tracker_name, self.callback, "position")
@@ -26,6 +29,12 @@ class VRPNclient:
         self.analog.mainloop()
         self.button.mainloop()
 
+    def get_observation(self):
+        while not self.tracked:
+            self.sample_data()
+        self.tracked = False
+        return self.data_read
+
 if __name__=='__main__':
     import time
     C = VRPNclient("DHead", "tcp://192.168.50.33:3883")
@@ -33,10 +42,8 @@ if __name__=='__main__':
     while True:
         # Collect a single observation
         start = time.time()
-        while not C.tracked:
-            C.sample_data()
-            B.sample_data()
+        while True:
+            C.get_observation()
+            B.get_observation()
         elapsed = time.time() - start
         print "elapsed: ", elapsed, " ms"
-        C.tracked = False
-        B.tracked = False
