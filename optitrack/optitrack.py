@@ -1,7 +1,7 @@
 import vrpn
 
 def callback(userdata, data):
-    print userdata + "=> " +  data
+    print (userdata, " => " , data);
 
 class VRPNclient:
     def __init__(self, tracker_name, hostID):
@@ -9,7 +9,7 @@ class VRPNclient:
         self.hostID= hostID
 
         self.tracker = vrpn.receiver.Tracker(tracker_name + "@" + hostID)
-        self.tracker.register_change_handler("tracker", callback, "position")
+        self.tracker.register_change_handler(self.tracker_name, callback, "position")
 
         self.analog = vrpn.receiver.Analog(tracker_name+"@"+hostID)
         self.analog.register_change_handler("analog", callback)
@@ -23,8 +23,8 @@ class VRPNclient:
         self.button.mainloop()
 
 if __name__=='__main__':
-    C = VRPNclient("D-Head", "192.168.50.33")
-    B = VRPNclient("D-Base", "192.168.50.33")
+    C = VRPNclient("DHead", "tcp://192.168.50.33:3883")
+    B = VRPNclient("DBase", "tcp://192.168.50.33:3883")
 
     while True:
         C.sample_data()
