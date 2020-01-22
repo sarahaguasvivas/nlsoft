@@ -22,16 +22,21 @@ class OpticalSignal:
             self.initialize_serial()
 
         self.data = []
-        with self.serial_:
-            while len(self.data) != self.num_sensors:
+        while len(self.data) != self.num_sensors:
+            x = []
+            while len(x)==0:
                 x = self.serial_.readline()
-                array_string = x.split(",")
-                array_string[-1] = array_string[-1].replace("\n", "")
-                array_string[-1] = array_string[-1].replace("\r", "")
-                array_string[-1] = array_string[-1].replace("/n", "")
-                self.data = [float(i) for i in array_string]
-            self.serial_.close()
+            array_string = x.split(",")
+            array_string[-1] = array_string[-1].replace("\n", "")
+            array_string[-1] = array_string[-1].replace("\r", "")
+            array_string[-1] = array_string[-1].replace("/n", "")
+            array_string[-1] = array_string[-1].replace("n", "")
+            array_string[-1] = array_string[-1].replace("..", ".")
+            self.data = [float(i) for i in array_string]
         return self.data
+
+    def close_network(self):
+        self.serial_.close()
 
 if __name__== '__main__':
     signal = OpticalSignal()
@@ -41,4 +46,4 @@ if __name__== '__main__':
         print signal.data
         elapsed = time.time() - start
         print "elapsed" , elapsed
-        time.sleep(1)
+    signal.close_network()
