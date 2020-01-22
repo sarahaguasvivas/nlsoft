@@ -10,7 +10,6 @@ class OpticalSignal:
         self.serial_ = None
         self.num_sensors = 11
 
-
         self.initialize_serial()
 
     def initialize_serial(self):
@@ -24,7 +23,7 @@ class OpticalSignal:
         self.data = []
         while len(self.data) != self.num_sensors:
             x = []
-            while len(x)==0:
+            while len(x)!=56:
                 x = self.serial_.readline()
             array_string = x.split(",")
             array_string[-1] = array_string[-1].replace("\n", "")
