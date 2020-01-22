@@ -31,7 +31,7 @@ String get_buffer_string(){
     buffer_string += ",";
   }
   buffer_string+= String(data_buffer[10]);
-  buffer_string+= "/n";
+  //buffer_string+= "/n";
 
   return buffer_string;
   
