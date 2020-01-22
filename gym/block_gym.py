@@ -1,16 +1,17 @@
 from optitrack.optitrack import *
-from signals.spi_read import *
+from signals.serial_client import *
 from dynamixels.dynamixels import *
 
 class BlockGym():
-    def __init__(self):
+    def __init__(self, sensor_port= "/dev/ttyACM0"):
         self.observation = []
         self.verbose = 1
         self.terminal = False
         self.reward = 0
         self.info = ""
-        self.dynamixels = DynamixelActor()
-
+        self.sensor_port = sensor_port
+        self.dynamixels = DynamixelActor(port = self.sensor_port)
+        self.sensor_signals = OpticalSignal()
         self.block_or = BlockOrientation()
 
     def step(self, action):
@@ -40,6 +41,7 @@ class BlockGym():
 
     def done(self):
         # reset
+
         pass
 
 
