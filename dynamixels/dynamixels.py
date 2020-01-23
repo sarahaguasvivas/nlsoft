@@ -1,12 +1,12 @@
 import pypot.dynamixel as pydxl
 
 class DynamixelActor:
-    def __init__(self, serial_port = '/dev/ttyUSB0', baudrate = 57600, verbose = True):
+    def __init__(self, port = '/dev/ttyUSB0', baudrate = 57600, verbose = True):
 
         self.baudrate = baudrate
-        self.serial_port = serial_port
+        self.serial_port = port
 
-        self._serial_connection = pydxl.DxlIO(serial_port,  baudrate = self.baudrate)
+        self._serial_connection = pydxl.DxlIO(self.serial_port,  baudrate = self.baudrate)
         self._dynamixel1, self._dynamixel2 =  self._serial_connection.scan([1, 2])
 
         self._zero1= 0
@@ -49,3 +49,4 @@ if __name__=="__main__":
     time.sleep(1)
     motors.reset()
     print motors.get_info()
+    motors.close_connection()

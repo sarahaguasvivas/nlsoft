@@ -5,7 +5,7 @@ class VRPNclient:
     def callback(self, userdata, data):
         self.tracked = True
         self.data_read = {userdata: data}
-        print self.data_read;
+        #print self.data_read;
 
     def __init__(self, tracker_name, hostID):
         self.tracker_name = tracker_name
@@ -49,30 +49,34 @@ class VRPNclient:
         self.tracked = False
         return self.info
 
-class BlockOrientation:
-    def __init__(self):
-        # self.wand = VRPNclient("Wand", "tcp://192.168.50.33:3883")
-        self.head = VRPNclient("DHead", "tcp://192.168.50.33:3883")
-        self.base = VRPNclient("DBase", "tcp://192.168.50.33:3883")
-
+class BlockOrientation():
+    def __init__(self, ip = "192.168.50.33:3883"):
+        self.wand = VRPNclient("Wand",  "tcp://" + ip)
+        self.head = VRPNclient("DHead", "tcp://" + ip)
+        self.base = VRPNclient("DBase", "tcp://" + ip)
         self.end_eff_orientation = None
 
     def get_observation(self):
         head_o= self.head.get_observation()
         base_o= self.base.get_observation()
-        # wand_o = self.wand.get_observation()
-    #    target = wand_o[:3] # only target position
 
         self.end_eff_orientation = np.array(head_o) - np.array(base_o)
-        self.end_eff_orientation = self.end_eff_orientation.tolist()
 
-        return self.end_eff_orientation
+        return self.end_eff_orientation.tolist()
+
+    def get_target(self):
+        wand_o = self.wand.get_observation()
+        base_o= self.base.get_observation()
+        target = wand_o[:3] # only target position
+        target_orientation = np.array(target) - np.array(base_o[:3])
+        return target_orientation
 
 if __name__=='__main__':
     import time
 
     C = VRPNclient("DHead", "tcp://192.168.50.33:3883")
     B = VRPNclient("DBase", "tcp://192.168.50.33:3883")
+
     while True:
         start = time.time()
         print C.get_observation() # collect a single observation
