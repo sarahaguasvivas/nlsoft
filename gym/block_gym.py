@@ -40,12 +40,16 @@ class BlockGym():
     def is_terminal(self):
         pass
 
+    def get_real_position(self):
+        return  self.block_or.get_observation()
+
     def get_observation(self):
         # use signal reader from Arduino
-        print "getting observation"
-        end_eff = self.block_or.get_observation()
         signals = self.sensor_signals.collect_signal_sample()
-        return  signals + end_eff
+        return  signals
+
+    def get_target(self):
+        return self.block_or.get_target()
 
     def reward(self):
         # Calculate cost
@@ -62,4 +66,5 @@ if __name__ == "__main__":
     while True:
         print "HERE"
         print "Observation: ", B.get_observation()
+        print "Target: ", B.get_target()
 
