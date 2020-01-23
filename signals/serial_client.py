@@ -23,8 +23,9 @@ class OpticalSignal:
         self.data = []
         while len(self.data) != self.num_sensors:
             x = []
-            while len(x) < 56:
+            while len(x) < 60 or len(x) > 68:
                 x = self.serial_.readline()
+                print len(x), x
             print len(x)
             array_string = x.split(",")
             array_string[-1] = array_string[-1].replace("\n", "")
@@ -32,6 +33,17 @@ class OpticalSignal:
             array_string[-1] = array_string[-1].replace("/n", "")
             array_string[-1] = array_string[-1].replace("n", "")
             array_string[-1] = array_string[-1].replace("..", ".")
+            array_string[0] = array_string[0].replace("..", ".")
+
+            for ii in array_string:
+                try:
+                    float (ii)
+                except:
+                    while array_string[ii][0] == ",":
+                        array_string[ii][0] = ""
+                    while array_string[ii][0] == ".":
+                        array_string[ii][0] = ""
+
             self.data = [float(i) for i in array_string]
         return self.data
 
