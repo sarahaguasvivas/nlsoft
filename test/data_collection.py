@@ -16,7 +16,6 @@ try:
     for i in actions1:
         for j in actions2:
             B.step(action=[i, j])
-            #time.sleep(0.1)
             print i, j
             data = B.get_observation() + B.get_real_position()
             data = data + [i, j]
