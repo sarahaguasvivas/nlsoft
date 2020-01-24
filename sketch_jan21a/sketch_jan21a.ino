@@ -27,10 +27,10 @@ String get_buffer_string(){
   data_buffer[10] = analogRead(A10);
   
   for (int i=0; i<10; i++){
-    buffer_string+= String(data_buffer[i]);
+    buffer_string+= String((int)data_buffer[i]);
     buffer_string += ",";
   }
-  buffer_string+= String(data_buffer[10]);
+  buffer_string+= String((int)data_buffer[10]);
   //buffer_string+= "/n";
 
   return buffer_string;

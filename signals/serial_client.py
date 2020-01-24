@@ -25,45 +25,39 @@ class OpticalSignal:
             x = []
             array_string = []
 
-            while len(x) < 60 or len(x) > 68 and len(array_string) != self.num_sensors:
+            while len(array_string) != self.num_sensors:
                 x = self.serial_.readline()
+                print len(x), x
                 array_string = x.split(",")
-            print x
-            array_string[-1] = array_string[-1].replace("\n", "")
-            array_string[-1] = array_string[-1].replace("\r", "")
-            array_string[-1] = array_string[-1].replace("/n", "")
-            array_string[-1] = array_string[-1].replace("n", "")
-            array_string[-1] = array_string[-1].replace("..", ".")
-            array_string[0] = array_string[0].replace("..", ".")
 
-            while array_string[0][0] == ",":
-                array_string[0][0] = ""
-            while array_string[0][0] == ".":
-                array_string[0][0] = ""
+#            array_string[-1] = array_string[-1].replace("\n", "")
+#            array_string[-1] = array_string[-1].replace("\r", "")
+#            array_string[-1] = array_string[-1].replace("/n", "")
+#            array_string[-1] = array_string[-1].replace("n", "")
 
             for ii in array_string:
                 try:
-                    float (ii)
+                    int (ii)
                 except:
-                    while array_string[ii][0] == ",":
-                        array_string[ii][0] = ""
-                    while array_string[ii][0] == ".":
-                        array_string[ii][0] = ""
+                    print ii
+   #                 while array_string[ii][0] == ",":
+   #                     array_string[ii][0] = ""
+   #                 while array_string[ii][0] == ".":
+   #                     array_string[ii][0] = ""
 
-                    array_split = array_string[ii].split(".")
-                    if len(array_split) > 2:
-                        chunk1 = array_string[:ii]
-                        chunk2 = array_string[ii+1:]
-                        array_string = chunk1 + [str(float(array_split[0]))] + \
-                                            [str(float(array_split[2]))] + chunk2
+   #                 array_split = array_string[ii].split(".")
+   #                 if len(array_split) > 2:
+   #                     chunk1 = array_string[:ii]
+   #                     chunk2 = array_string[ii+1:]
+   #                     array_string = chunk1 + [str(float(array_split[0]))] + \
+   #                                         [str(float(array_split[2]))] + chunk2
 
-                    while array_string[ii][0] == ",":
-                        array_string[ii][0] = ""
-                    while array_string[ii][0] == ".":
-                        array_string[ii][0] = ""
+   #                 while array_string[ii][0] == ",":
+   #                     array_string[ii][0] = ""
+   #                 while array_string[ii][0] == ".":
+   #                     array_string[ii][0] = ""
 
-            print array_string
-            self.data = [float(i) for i in array_string]
+            self.data = [int(i) for i in array_string]
         return self.data
 
     def close_network(self):
