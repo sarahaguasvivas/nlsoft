@@ -19,43 +19,24 @@ class OpticalSignal:
     def collect_signal_sample(self):
         if not self.serial_.is_open:
             self.initialize_serial()
-
         self.data = []
-        while len(self.data) != self.num_sensors:
-            x = []
-            array_string = []
 
-            while len(array_string) != self.num_sensors:
-                x = self.serial_.readline()
-                print len(x), x
-                array_string = x.split(",")
+        x = []
+        array_string = []
 
-#            array_string[-1] = array_string[-1].replace("\n", "")
-#            array_string[-1] = array_string[-1].replace("\r", "")
-#            array_string[-1] = array_string[-1].replace("/n", "")
-#            array_string[-1] = array_string[-1].replace("n", "")
+        while len(x) < 29 or len(array_string) != self.num_sensors:
+            x = self.serial_.readline()
+            print len(x), x
+            if x[0] == ",":
+                print "here"
+            #    x[0] = ""
+            array_string = x.split(",")
 
-            for ii in array_string:
-                try:
-                    int (ii)
-                except:
-                    print ii
-   #                 while array_string[ii][0] == ",":
-   #                     array_string[ii][0] = ""
-   #                 while array_string[ii][0] == ".":
-   #                     array_string[ii][0] = ""
-
-   #                 array_split = array_string[ii].split(".")
-   #                 if len(array_split) > 2:
-   #                     chunk1 = array_string[:ii]
-   #                     chunk2 = array_string[ii+1:]
-   #                     array_string = chunk1 + [str(float(array_split[0]))] + \
-   #                                         [str(float(array_split[2]))] + chunk2
-
-   #                 while array_string[ii][0] == ",":
-   #                     array_string[ii][0] = ""
-   #                 while array_string[ii][0] == ".":
-   #                     array_string[ii][0] = ""
+        for ii in array_string:
+            try:
+                int (ii)
+            except:
+                print ii
 
             self.data = [int(i) for i in array_string]
         return self.data
