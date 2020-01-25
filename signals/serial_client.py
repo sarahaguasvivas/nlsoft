@@ -24,18 +24,15 @@ class OpticalSignal:
         x = []
         array_string = []
 
-        while len(x) < 28 or x[0] == "," or len(array_string) != self.num_sensors:
+        while len(x) < 27 or x[0] == "," or len(array_string) != self.num_sensors:
             x = self.serial_.readline()
             print len(x), x
             array_string = x.split(",")
-
-        for ii in array_string:
             try:
-                int (ii)
+                self.data = [int(i) for i in array_string]
             except:
-                print ii
-
-            self.data = [int(i) for i in array_string]
+                print "here"
+                continue
         return self.data
 
     def close_network(self):
