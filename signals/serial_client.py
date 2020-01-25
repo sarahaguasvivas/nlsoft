@@ -24,12 +24,9 @@ class OpticalSignal:
         x = []
         array_string = []
 
-        while len(x) < 29 or len(array_string) != self.num_sensors:
+        while len(x) < 28 or x[0] == "," or len(array_string) != self.num_sensors:
             x = self.serial_.readline()
             print len(x), x
-            if x[0] == ",":
-                print "here"
-            #    x[0] = ""
             array_string = x.split(",")
 
         for ii in array_string:
