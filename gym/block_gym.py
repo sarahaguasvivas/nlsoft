@@ -74,7 +74,6 @@ if __name__ == "__main__":
     B = BlockGym()
 
     while True:
-        print "HERE"
         print "Observation: ", B.get_observation()
         print "Target: ", B.get_target()
 
