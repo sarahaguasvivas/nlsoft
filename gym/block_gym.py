@@ -55,6 +55,16 @@ class BlockGym():
         # Calculate cost
         pass
 
+    def calibrate_signals(self):
+        # calibrate signals to find out
+        # where each channel maxes
+        pass
+
+    def stretch(self):
+        # Stretch out the block before running any
+        # experiment
+        pass
+
     def done(self):
         # reset
         self.sensor_signals.close_network()
