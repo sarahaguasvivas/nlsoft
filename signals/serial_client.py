@@ -2,14 +2,13 @@ import serial
 import time
 
 class OpticalSignal:
-    def __init__(self, port = '/dev/ttyACM0', baudrate =2000000, timeout = 0.3):
+    def __init__(self, port = '/dev/ttyACM0', baudrate = 2000000, timeout = 0.3):
         self.port = port
         self.baudrate = baudrate
         self.timeout = timeout
         self.data = None
         self.serial_ = None
         self.num_sensors = 11
-
         self.initialize_serial()
 
     def initialize_serial(self):
@@ -24,14 +23,13 @@ class OpticalSignal:
         x = []
         array_string = []
 
-        while len(x) < 27 or x[0] == "," or len(array_string) != self.num_sensors:
+        while len(x) < 28 or x[0] == "," or len(array_string) != self.num_sensors:
             x = self.serial_.readline()
             print len(x), x
             array_string = x.split(",")
             try:
                 self.data = [int(i) for i in array_string]
             except:
-                print "here"
                 continue
         return self.data
 
