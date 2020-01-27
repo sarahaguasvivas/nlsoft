@@ -16,24 +16,26 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
     signals = data_array[:, :11]
     position = data_array[:, 11:17]
     inputs = data_array[:, 17:]
-
     N = max(nd, dd) # data sample where we will start first
-
     U = np.empty((signals.shape[0] - N + 1, 2))
     Y = np.empty((signals.shape[0] - N + 1, 3))
-
     L = signals.shape[0]
 
     # TODO: Test for when nd neq dd
     for i in range(nd):
         U = np.concatenate((U, inputs[ nd - i - 1 + (N-nd):L-i, :]), axis = 1)
+
     for i in range(dd):
         Y = np.concatenate((Y, position[dd - i - 1 + (N - dd) : L-i, :]), axis = 1)
 
     U = U[:, 2:]
-    Y = Y[:, 3:]
-    S = signals[:L-N + 1, :]
-    print U.shape, S.shape
+    S = signals[N - 1:, :]
+    Y = Y[:, 3:] # Y
+
+    X = np.concatenate((U, S), axis = 1)
+    return X, Y
+
+
 
 
 if __name__ == "__main__":
