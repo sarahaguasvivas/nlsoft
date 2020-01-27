@@ -70,7 +70,7 @@ class BlockGym():
                 time.sleep(1)
                 obs = self.get_observation()
                 calibration_max = np.maximum(calibration_max,obs)
-        time.sleep(1)
+            time.sleep(1)
         self.reset()
         print calibration_max
         return calibration_max
@@ -79,27 +79,10 @@ class BlockGym():
         import numpy as np
         # Stretch out the block before running any
         # experiment
-        array1 = list(np.arange(-300, 300, 0.3))
-        array2 = list(np.arange(-300, 120, 0.3))
-
-        a1, a2= self.get_info()
-
-        for i in array2:
-            self.step([a1, i])
-
-        for i in reversed(array2):
-            self.step([a1, i])
-
-        for i in array1:
-            self.step([i, a2])
-
-        a1 = array1[-1]
-        for i in array2:
-            self.step([a1, i])
-
-        for i in array1:
-            self.step([i, a2])
-
+        calibration_positions = [[300, 300], [-300, 300],[-300, -300], [300, -300]]
+        for count, pos in enumerate(calibration_positions):
+            self.step(pos)
+            time.sleep(1)
         self.reset()
 
     def done(self):
