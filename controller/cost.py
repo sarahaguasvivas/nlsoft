@@ -1,5 +1,5 @@
-from .dynamic_model import *
-import .constraints as constraints
+from dynamic_model import *
+import constraints as constraints
 
 class NN_Cost:
     def __init__(self, dynamic_model, lambd):

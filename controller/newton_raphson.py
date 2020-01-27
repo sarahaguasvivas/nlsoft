@@ -1,11 +1,11 @@
 import numpy as np
-from .optimizer import *
-from .cost import *
-from .dynamic_model import *
+from optimizer import *
+from cost import *
+from dynamic_model import *
 
 class NewtonRaphson:
 
-    def __init__(self, cost : Cost, d_model):
+    def __init__(self, cost, d_model):
         self.cost = cost
         self.d_model = d_model
 

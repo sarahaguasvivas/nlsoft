@@ -1,6 +1,6 @@
-from .functions import *
-from .cost import NN_Cost
-from .constraints import *
+from functions import *
+from cost import NN_Cost
+from constraints import *
 
 from keras import layers
 from keras.models import load_model
