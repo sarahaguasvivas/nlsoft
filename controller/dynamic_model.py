@@ -10,8 +10,8 @@ import numpy as np
 from keras import backend as K
 import tensorflow as tf
 
-sess = tf.InteractiveSession()
-sess.run(tf.initialize_all_variables())
+#sess = tf.compat.v1.global_variables_initializer()
+#sess.run(session = sess)
 
 class NeuralNetworkPredictor():
     def __init__(self, model_file, N1, N2 ,  Nu , ym , K , yn, lambd , nd = 3, dd = 3):
