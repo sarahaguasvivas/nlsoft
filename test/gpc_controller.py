@@ -71,6 +71,13 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
 def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
     data_array = np.genfromtxt(filename, delimiter=',')
     signals = data_array[:, :11]
+    max_signals = np.max(signals, axis = 0)
+    for i in range(len(max_signals)):
+        if max_signals[i] == 0:
+            max_signals[i] = 1
+
+        signals[:, i]/= max_signals[i]
+
     position = data_array[:, 11:14] # not using Euler angles
     inputs = data_array[:, 17:]
 
@@ -101,7 +108,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
 
 
 if __name__ == "__main__":
-    X, y = prepare_data_file(filename, nd=3, dd=3)
+    X, y = prepare_data_file(filename, nd=3, dd=4)
     modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)
 
