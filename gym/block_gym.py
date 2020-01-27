@@ -62,13 +62,14 @@ class BlockGym():
         import time
         # calibrate signals to find out
         # where each channel maxes
-        calibration_positions = [[300, 150], [-300, 150], [-150, -150], [150, -150], [0, -50], [150, 0], [-150, 0], [0, 150], [0, -150]]
+        calibration_positions = [[300, 150], [-300, 150], [-150, -150], [150, -150], [0, -50], [150, 0], [-150, 0], [0, 150], [0, -150], [0, 300], [0, -300], [300, 0], [150, 150], [-150, 150], [0, 0], [0, -10], [150, -300], [200, 300], [-200, 300], [-200, -300]]
 
         for count, pos in enumerate(calibration_positions):
             self.step(pos)
-            time.sleep(1)
-            obs = self.get_observation()
-            calibration_max = np.maximum(calibration_max,obs)
+            for i in range(5):
+                time.sleep(1)
+                obs = self.get_observation()
+                calibration_max = np.maximum(calibration_max,obs)
         time.sleep(1)
         self.reset()
         print calibration_max
