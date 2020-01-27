@@ -5,6 +5,9 @@ from controller.newton_raphson import *
 import numpy as np
 import os
 
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+
 import keras
 from keras.models import Sequential, load_model
 from keras.layers import Dense
@@ -13,7 +16,6 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D
 
-
 plt.style.use('dark_background')
 filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data.csv"
 
@@ -21,11 +23,11 @@ filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data.csv"
 def neural_network_training(X, y):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2)
     model = Sequential()
-    model.add(Dense(64, activation =  'linear'))
+    model.add(Dense(20, activation =  'linear'))
     model.add(Dense(3,  activation = 'linear'))
 
     model.compile(optimizer= 'rmsprop', loss ='mse', metrics=['mse'])
-    model.fit(X_train, y_train, epochs = 50, batch_size = 32)
+    model.fit(X_train, y_train, epochs = 100, batch_size = 64)
     print model.predict(X_test)
     print y_test
     model.save('sys_id.hdf5')
@@ -39,25 +41,29 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
     plt.figure()
 
     lab = ['x', 'y', 'z']
+    L = 100
 
     for i in range(3):
         plt.subplot(3, 2, 2*i+1)
-        plt.plot(yn[:, i], 'r', label = str(lab[i]) + " est")
-        plt.plot(y[:, i], '-w', label = str(lab[i]) + "true", alpha = 0.7)
+        plt.plot(yn[:L, i], 'r', label = str(lab[i]) + " est")
+        plt.plot(y[:L, i], '-w', label = str(lab[i]) + "true", alpha = 0.7)
         plt.title("Estimation vs. Truth for " + str(lab[i]) + " [m]")
         plt.legend()
 
         plt.subplot(3, 2, 2*i+2)
-        plt.plot(y[:, i] - yn[:, i], 'b', label = str(lab[i]) + " [m]")
+        plt.plot(y[:L, i] - yn[:L, i], 'cyan', linewidth = 0.5, label = str(lab[i]) + " [m]")
         plt.title("Error in estimation for " + str(lab[i]) + " [m]")
         plt.legend()
 
     plt.show()
 
+
     fig = plt.figure()
     ax = Axes3D(fig)
-    ax.plot3D(yn[:, 0], yn[:, 1], yn[:, 2], 'red')
-    ax.plot3D(y[:, 0], y[:, 1], y[:, 2], 'white', alpha = 0.7)
+    ax.plot3D(yn[:L, 0], yn[:L, 1], yn[:L, 2], 'red', linewidth = 3, alpha = 0.9, label = "estimated position")
+    ax.plot3D(y[:L, 0], y[:L, 1], y[:L, 2], 'white', alpha = 1, linewidth = 3, label = "ground truth")
+    plt.legend()
+    plt.title('Estimated position vs. Ground Truth')
     plt.show()
 
 
