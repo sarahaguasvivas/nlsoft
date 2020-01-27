@@ -1,5 +1,5 @@
 import numpy as np
-from optimizer import *
+from newton_raphson import *
 from cost import *
 from dynamic_model import *
 
