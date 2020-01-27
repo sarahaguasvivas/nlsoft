@@ -30,7 +30,7 @@ def neural_network_training(X, y):
     model.add(Dense(3,  activation = 'linear'))
 
     model.compile(optimizer= 'rmsprop', loss ='mse', metrics=['mse'])
-    model.fit(X_train, y_train, epochs = 1500, batch_size = 100)
+    model.fit(X_train, y_train, epochs = 10000, batch_size = 10, validation_split=0.33)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
@@ -43,7 +43,7 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
     plt.figure()
 
     lab = ['x', 'y', 'z']
-    L = 1000 #X.shape[0]
+    L = X.shape[0]
 
     for i in range(3):
         plt.subplot(3, 2, 2*i+1)
@@ -109,6 +109,6 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
 
 if __name__ == "__main__":
     X, y = prepare_data_file(filename, nd=3, dd=4)
-#    modelfile = neural_network_training(X, y)
+    modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)
 
