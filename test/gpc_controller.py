@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+
 from gym.block_gym import * # vrpn not installed in mac
 from controller.dynamic_model import *
 from controller.newton_raphson import *
@@ -21,15 +22,16 @@ filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data.csv"
 
 
 def neural_network_training(X, y):
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2)
+    y = 1000*y
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.1)
+
     model = Sequential()
-    model.add(Dense(20, activation =  'linear'))
+    model.add(Dense(100, activation =  'linear'))
     model.add(Dense(3,  activation = 'linear'))
 
     model.compile(optimizer= 'rmsprop', loss ='mse', metrics=['mse'])
-    model.fit(X_train, y_train, epochs = 100, batch_size = 64)
+    model.fit(X_train, y_train, epochs = 1500, batch_size = 100)
     print model.predict(X_test)
-    print y_test
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
 
@@ -41,7 +43,7 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
     plt.figure()
 
     lab = ['x', 'y', 'z']
-    L = 100
+    L = 10000
 
     for i in range(3):
         plt.subplot(3, 2, 2*i+1)
@@ -56,7 +58,6 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
         plt.legend()
 
     plt.show()
-
 
     fig = plt.figure()
     ax = Axes3D(fig)
@@ -74,17 +75,19 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
     inputs = data_array[:, 17:]
 
     N = max(nd, dd) # data sample where we will start first
+
     U = np.empty((signals.shape[0] - N + 1, 2))
     Y = np.empty((signals.shape[0] - N + 1, 3))
     L = signals.shape[0]
 
     # TODO: Test for when nd neq dd
     for i in range(nd):
-        U = np.concatenate((U, inputs[ nd - i - 1 + (N-nd):L-i, :]), axis = 1)
+        U = np.concatenate((U, inputs[nd - i - 1 + (N-nd):L-i, :]), axis = 1)
 
-    for i in range(dd):
+    for i in range(dd ):
         Y = np.concatenate((Y, position[dd - i - 1 + (N - dd) : L-i, :]), axis = 1)
 
+    print Y.shape
     U = U[:, 2:]
     S = signals[N - 1:, :]
     Y = Y[:, 3:-3] # Y
@@ -99,6 +102,6 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
 
 if __name__ == "__main__":
     X, y = prepare_data_file(filename, nd=3, dd=3)
-    #modelfile = neural_network_training(X, y)
+    modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)
 
