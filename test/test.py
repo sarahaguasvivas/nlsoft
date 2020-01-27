@@ -1,7 +1,11 @@
 #!/usr/bin/env python2.7
 from gym.block_gym import *
-
-B = BlockGym()
-B.reset()
-#B.stretch()
-B.get_signal_calibration()
+try:
+    B = BlockGym()
+    B.reset()
+    print "stretching..."
+    B.stretch()
+    print "calibrating signal..."
+    B.get_signal_calibration()
+except:
+    B.reset()
