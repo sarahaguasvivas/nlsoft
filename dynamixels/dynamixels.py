@@ -35,7 +35,7 @@ class DynamixelActor:
 
         self.__info = "Dynamixels: ID1= " + str(self._angle1) + \
                                 " degrees;ID2= " + str(self._angle2) + " degrees"
-        return self.__info
+        return self.__info, self._angle1, self._angle2
 
     def close_connection(self):
         self._serial_connection.close()

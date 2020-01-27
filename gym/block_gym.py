@@ -35,7 +35,9 @@ class BlockGym():
 
     def get_info(self):
         # get info wrt the types of verbose
-        from_motors = self.motors.get_info()
+        info, a1, a2 = self.motors.get_info()
+        print info
+        return a1, a2
 
     def is_terminal(self):
         pass
@@ -55,15 +57,49 @@ class BlockGym():
         # Calculate cost
         pass
 
-    def calibrate_signals(self):
+    def get_signal_calibration(self):
+        calibration_max = np.array([0]*self.sensor_signals.num_sensors)
+        import time
         # calibrate signals to find out
         # where each channel maxes
-        pass
+        calibration_positions = [[300, 150], [-300, 150], [-150, -150], [150, -150], [0, -50], [150, 0], [-150, 0], [0, 150], [0, -150]]
+
+        for count, pos in enumerate(calibration_positions):
+            self.step(pos)
+            time.sleep(1)
+            obs = self.get_observation()
+            calibration_max = np.maximum(calibration_max,obs)
+        time.sleep(1)
+        self.reset()
+        print calibration_max
+        return calibration_max
 
     def stretch(self):
+        import numpy as np
         # Stretch out the block before running any
         # experiment
-        pass
+        array1 = list(np.arange(-300, 300, 0.3))
+        array2 = list(np.arange(-300, 120, 0.3))
+
+        a1, a2= self.get_info()
+
+        for i in array2:
+            self.step([a1, i])
+
+        for i in reversed(array2):
+            self.step([a1, i])
+
+        for i in array1:
+            self.step([i, a2])
+
+        a1 = array1[-1]
+        for i in array2:
+            self.step([a1, i])
+
+        for i in array1:
+            self.step([i, a2])
+
+        self.reset()
 
     def done(self):
         # reset
