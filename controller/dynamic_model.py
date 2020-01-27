@@ -1,6 +1,6 @@
-from functions.functions import *
-from cost.neural_network_cost import NN_Cost
-from constraints.constraints import *
+from .functions import *
+from .cost import NN_Cost
+from .constraints import *
 
 from keras import layers
 from keras.models import load_model
@@ -14,7 +14,7 @@ sess = tf.InteractiveSession()
 sess.run(tf.initialize_all_variables())
 
 class NeuralNetworkPredictor():
-    def __init__(self, model_file, N1, N2 ,  Nu , ym , K , yn, lambd ):
+    def __init__(self, model_file, N1, N2 ,  Nu , ym , K , yn, lambd , nd = 3, dd = 3):
         self.N1 = N1
         self.N2 = N2
         self.Nu = Nu
@@ -34,8 +34,10 @@ class NeuralNetworkPredictor():
         self.output_size = self.model.layers[-1].output_shape[1]
         self.input_size = self.model.layers[0].input_shape[1]
         self.hd = len(self.model.layers) - 1
-        self.nd = 3
-        self.dd = 1
+
+        self.nd = nd
+        self.dd = dd
+
         self.Hessian = np.zeros((self.output_size, self.output_size))
 
         """
