@@ -24,7 +24,8 @@ class BlockGym():
         self.block_or = BlockOrientation(ip = self.vrpn_ip)
 
         self.target = self.block_or.get_target()
-
+        self.calibration_max = np.array([0]* \
+                    self.sensor_signals.num_sensors)
     def step(self, action = [0, 0]):
         # return observation, reward, done, info
         self.motors.step(action = action)
@@ -58,27 +59,25 @@ class BlockGym():
         pass
 
     def get_signal_calibration(self):
-        calibration_max = np.array([0]*self.sensor_signals.num_sensors)
         import time
         # calibrate signals to find out
         # where each channel maxes
-        calibration_positions = [[300, 150], [-300, 150], [-150, -150], [150, -150], [0, -50], [150, 0], [-150, 0], [0, 150], [0, -150], [0, 300], [0, -300], [300, 0], [150, 150], [-150, 150], [0, 0], [0, -10], [150, -300], [200, 300], [-200, 300], [-200, -300]]
+        calibration_positions = [[300, 150], [-300, 150], [-150, -150], [150, -150], [0, -50], [150, 0], [-150, 0], [0, 150], [0, -150], [0, 300], [0, -300], [300, 0], [150, 150], [-150, 150], [0, 0], [0, -10], [150, -300], [200, 300], [-200, 300], [-200, -300], [0, 150], [0, -200], [-150, -200], [150, -200]]
 
         for count, pos in enumerate(calibration_positions):
             self.step(pos)
-            for i in range(5):
-                time.sleep(1)
+            time.sleep(1)
+            for i in range(200):
                 obs = self.get_observation()
-                calibration_max = np.maximum(calibration_max,obs)
+                self.calibration_max = np.maximum(self.calibration_max,obs)
             time.sleep(1)
         self.reset()
-        print calibration_max
-        return calibration_max
+        print self.calibration_max
+        return self.calibration_max
 
     def stretch(self):
         import numpy as np
-        # Stretch out the block before running any
-        # experiment
+        # Stretch out the block before running any experiment
         calibration_positions = [[300, 300], [-300, 300],[-300, -300], [300, -300]]
         for count, pos in enumerate(calibration_positions):
             self.step(pos)
@@ -86,7 +85,6 @@ class BlockGym():
         self.reset()
 
     def done(self):
-        # reset
         self.sensor_signals.close_network()
         self.motors.close_connection()
 
