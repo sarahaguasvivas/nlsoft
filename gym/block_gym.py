@@ -40,6 +40,10 @@ class BlockGym():
         print info
         return a1, a2
 
+    def get_state(self):
+        position = self.get_real_position()
+        return position[:3]
+
     def is_terminal(self):
         pass
 
@@ -52,7 +56,7 @@ class BlockGym():
         return  signals
 
     def get_target(self):
-        return self.block_or.get_target()
+        return self.block_or.get_target()[:3]
 
     def reward(self):
         # Calculate cost
