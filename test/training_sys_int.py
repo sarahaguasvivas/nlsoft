@@ -38,8 +38,8 @@ def neural_network_training(X, y):
 def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
 
     model = load_model(modelfile)
-
-    yn = model.predict(X)/ 1000
+    y *= 1000 # convert meters to mm
+    yn = model.predict(X)
     plt.figure()
 
     lab = ['x', 'y', 'z']
