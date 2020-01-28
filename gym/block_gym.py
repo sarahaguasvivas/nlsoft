@@ -83,7 +83,10 @@ class BlockGym():
                 self.calibration_max = np.maximum(self.calibration_max,obs)
             time.sleep(1)
         self.reset()
-        print self.calibration_max
+        for i in range(len(self.calibration_max)):
+            if self.calibration_max[i] == 0:
+                self.calibration_max[i] = 1
+        print "BLOCK: calibration vector : ", self.calibration_max
         return self.calibration_max
 
     def stretch(self):
