@@ -2,25 +2,34 @@
 from controller.dynamic_model import *
 from controller.newton_raphson import *
 from gym.block_gym import *
-import time
+from collections import deque
 
-plt.style.use('dark_background')
-model_filename = 'test/sys_int.hdf5'
+import time, os
 
-NNP = NeuralNetworkPredictor(model_file = model_filename, N1= 0, N2 = 2, Nu = 3, \
-                                    nd = 3, dd = 2, K = 2, lambd = [1., 2.])
+model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
+
+NNP = NeuralNetworkPredictor(model_file = model_filename, N1= 0, N2 = 1, Nu = 2, \
+                                    nd = 3, dd = 2, K = 5, lambd = [1., 2.])
 
 NR_opt = NewtonRaphson(cost = NNP.Cost, d_model = NNP)
 
-B = BlockGym() # declare my block
-B.reset() # if block is not neutral, bring back to neutral
-B.stretch() # stretch block for better signal readings before calibrating
-B.get_signal_calibration() # calibrate signal of the block
+Block = BlockGym() # declare my block
+Block.reset()
+#Block.stretch() # stretch block for better signal readings before calibrating
+#Block.get_signal_calibration() # calibrate signal of the block
 
-u_optimal_old = np.array([0., 0.])
+u_optimal_old = np.array([0., -50.])
+new_state_new = Block.get_state()
 
-new_state_new = B.get_state()
 du = [0.0]*2
+
+u_deque = deque()
+y_deque = deque()
+
+for _ in range(NNP.nd):
+    u_deque.append([0, -50])
+for _ in range(NNP.dd):
+    y_deque.append(Block.get_state())
 
 elapsed = []
 u_optimal_list = []
@@ -28,16 +37,27 @@ ym = []
 state = []
 yn = []
 
-for n in range(100):
+# Remember I need to change m to mm
+for n in range(1):
     seconds = time.time()
-    future_outputs = NNP.predict(new_state_new).flatten() # need to have a deque at dynamic model
-    NNP.yn = B.get_target()
+
+    signal = Block.get_observation()
+    neural_network_input = np.array(signal + np.array(list(u_deque)).flatten().tolist() +\
+                                    np.array(list(y_deque)).flatten().tolist())
+
+    neural_network_input = np.reshape(neural_network_input, (1, -1))
+
+    predicted_states = NNP.predict(neural_network_input).flatten()
+    NNP.yn = predicted_states
+
+    NNP.ym = Block.get_target() * 1000
 
     new_state_old = new_state_new
-    u_optimal = np.reshape(NR_opt.optimize(u = u_optimal, del_u = du, rtol = 1e-8, \
-                    maxit = 6, verbose = False)[0], (-1, 1))
 
-    u_optimal_list += [ u_optimal.flatten().tolist() ]
+    u_optimal = np.reshape(NR_opt.optimize(u = u_optimal_old, del_u = du, rtol = 1e-8, \
+                    maxit = 6, verbose = False)[0], (-1, 1))
+    print u_optimal
+    u_optimal_list += [u_optimal.flatten().tolist() ]
 
     du = np.array(u_optimal_old) - np.array(u_optimal)
 
@@ -46,3 +66,4 @@ for n in range(100):
     u_optimal_old = u_optimal
 
     # need to keep adding stuff. Also need to have deque with previous signals and states
+    Block.reset()

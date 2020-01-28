@@ -49,14 +49,17 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
         plt.subplot(3, 2, 2*i+1)
         plt.plot(yn[:L, i], 'r', label = str(lab[i]) + " est")
         plt.plot(y[:L, i], '-w', label = str(lab[i]) + "true", alpha = 0.7)
-        plt.title("Estimation vs. Truth for " + str(lab[i]) + " [m]")
+        plt.ylabel(str(lab[i]) + " [mm]")
+#        plt.title("Estimation vs. Truth for " + str(lab[i]) + " [mm]")
         plt.legend()
 
         plt.subplot(3, 2, 2*i+2)
-        plt.plot(y[:L, i] - yn[:L, i], 'cyan', linewidth = 0.5, label = str(lab[i]) + " [m]")
-        plt.title("Error in estimation for " + str(lab[i]) + " [m]")
+        plt.plot(y[:L, i] - yn[:L, i], 'cyan', linewidth = 0.5, label = str(lab[i]) + " [mm]")
+#        plt.title("Error in estimation for " + str(lab[i]) + " [mm]")
+        plt.ylabel(r"$\varepsilon_{" + str(lab[i]) + "}$ [mm]")
         plt.legend()
 
+    plt.xlabel('timesteps')
     plt.show()
 
     fig = plt.figure()
@@ -64,6 +67,8 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
     ax.plot3D(yn[:L, 0], yn[:L, 1], yn[:L, 2], 'red', linewidth = 3, alpha = 0.9, label = "estimated position")
     ax.plot3D(y[:L, 0], y[:L, 1], y[:L, 2], 'white', alpha = 1, linewidth = 3, label = "ground truth")
     plt.legend()
+    plt.xlabel('x [mm]')
+    plt.ylabel('y [mm]')
     plt.title('Estimated position vs. Ground Truth')
     plt.show()
 
@@ -109,6 +114,6 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
 
 if __name__ == "__main__":
     X, y = prepare_data_file(filename, nd=3, dd=4)
-    modelfile = neural_network_training(X, y)
+#    modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)
 

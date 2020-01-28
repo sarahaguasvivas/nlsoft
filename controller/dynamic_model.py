@@ -14,14 +14,15 @@ import tensorflow as tf
 #sess.run(session = sess)
 
 class NeuralNetworkPredictor():
-    def __init__(self, model_file, N1, N2 ,  Nu , ym , K , yn, lambd , nd = 3, dd = 3):
+    def __init__(self, model_file, N1, N2 ,  Nu , \
+                            K , lambd , nd = 3, dd = 3):
         self.N1 = N1
         self.N2 = N2
         self.Nu = Nu
-        self.ym = ym
+        self.ym = None
         self.lambd = lambd
         self.Hessian = np.zeros((self.Nu, self.Nu))
-        self.yn = yn
+        self.yn = None
         self.K = K
         self.num_predicted_states = 3
         self.constraints = Constraints()
@@ -35,6 +36,7 @@ class NeuralNetworkPredictor():
         self.input_size = self.model.layers[0].input_shape[1]
         self.hd = len(self.model.layers) - 1
 
+
         self.nd = nd
         self.dd = dd
 
@@ -44,9 +46,9 @@ class NeuralNetworkPredictor():
             These attributes will be part of the recursion:
         """
         self.previous_first_der = 1
-        self.previoud_second_der = 1
+        self.previous_second_der = 1
 
-        super().__init__()
+        #super().__init__()
         self.Cost = NN_Cost(self, self.lambd)
 
     def __Phi_prime(self, x = 0):
@@ -142,7 +144,6 @@ class NeuralNetworkPredictor():
         D u(n+h)
         """
         weights = self.model.layers[j].get_weights()[0]
-        self.nd = weights.shape[1] - 1
         sum_output = 0.0
         for i in range(self.nd):
             if (self.K - self.Nu) < i:
