@@ -41,7 +41,7 @@ class NeuralNetworkPredictor():
         self.Hessian = np.zeros((self.output_size, self.output_size))
 
         """
-        These attributes will be part of the recursion:
+            These attributes will be part of the recursion:
         """
         self.previous_first_der = 1
         self.previoud_second_der = 1

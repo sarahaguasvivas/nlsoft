@@ -1,8 +1,8 @@
 #!/usr/bin/env python2.7
 
-from gym.block_gym import * # vrpn not installed in mac
-from controller.dynamic_model import *
-from controller.newton_raphson import *
+#from gym.block_gym import * # vrpn not installed in mac
+#from controller.dynamic_model import *
+#from controller.newton_raphson import *
 import numpy as np
 import os
 
