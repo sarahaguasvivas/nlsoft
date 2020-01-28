@@ -14,18 +14,16 @@ class BlockGym():
 
         self.motors_port = motors_port
         self.motors = DynamixelActor(port = self.motors_port)
-
         self.sensor_signals = OpticalSignal()
 
         self.state = None
-
         self.vrpn_ip = vrpn_ip
-
         self.block_or = BlockOrientation(ip = self.vrpn_ip)
 
         self.target = self.block_or.get_target()
         self.calibration_max = np.array([0]* \
                     self.sensor_signals.num_sensors)
+
     def step(self, action = [0, 0]):
         # return observation, reward, done, info
         self.motors.step(action = action)
@@ -66,7 +64,16 @@ class BlockGym():
         import time
         # calibrate signals to find out
         # where each channel maxes
-        calibration_positions = [[300, 150], [-300, 150], [-150, -150], [150, -150], [0, -50], [150, 0], [-150, 0], [0, 150], [0, -150], [0, 300], [0, -300], [300, 0], [150, 150], [-150, 150], [0, 0], [0, -10], [150, -300], [200, 300], [-200, 300], [-200, -300], [0, 150], [0, -200], [-150, -200], [150, -200]]
+        calibration_positions = [[300, 150], [-300, 150], \
+                                [-150, -150], [150, -150], \
+                                [0, -50], [150, 0], [-150, 0], \
+                                [0, 150], [0, -150], [0, 300], [0, -300], \
+                                [300, 0], [150, 150], [-150, 150], \
+                                [0, 0], [0, -10], [150, -300], \
+                                [200, 300], [-200, 300],\
+                                [-200, -300], [0, 150], \
+                                [0, -200], [-150, -200],\
+                                [150, -200]]
 
         for count, pos in enumerate(calibration_positions):
             self.step(pos)
@@ -82,7 +89,8 @@ class BlockGym():
     def stretch(self):
         import numpy as np
         # Stretch out the block before running any experiment
-        calibration_positions = [[300, 300], [-300, 300],[-300, -300], [300, -300]]
+        calibration_positions = [[300, 300], [-300, 300],\
+                                [-300, -300], [300, -300]]
         for count, pos in enumerate(calibration_positions):
             self.step(pos)
             time.sleep(1)

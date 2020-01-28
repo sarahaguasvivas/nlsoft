@@ -24,7 +24,7 @@ class NN_Cost:
         self.r = self.d_model.constraints.r
         self.b = self.d_model.constraints.b
         self.cost= 0.0
-        super().__init__()
+        #super().__init__()
 
     def compute_cost(self, del_u, u):
         """
