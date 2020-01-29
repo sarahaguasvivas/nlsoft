@@ -145,13 +145,14 @@ class NeuralNetworkPredictor():
         """
         weights = self.model.layers[j].get_weights()[0]
         sum_output = 0.0
+
         for i in range(self.nd):
             if (self.K - self.Nu) < i:
-                sum_output+= weights[j, i+1] * kronecker_delta(self.K - i, h)
+                sum_output+= weights[j, i] * kronecker_delta(self.K - i, h)
             else:
-                sum_output+=weights[j, i+1] * kronecker_delta(self.Nu, h)
+                sum_output+=weights[j, i] * kronecker_delta(self.Nu, h)
 
-        for i in range(1, min(self.K, self.dd)):
+        for i in range(0, min(self.K, self.dd)-1):
             sum_output+= weights[j, i+self.nd+1] * self.previous_first_der * \
                                                  step(self.K - i -1)
         return sum_output

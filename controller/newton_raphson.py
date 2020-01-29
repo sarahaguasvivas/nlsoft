@@ -14,34 +14,34 @@ class NewtonRaphson:
         """
         From Jed Brown's algebraic solver
         """
-        try:
-            u = u0
-            du = del_u
+        #try:
+        u = u0
+        du = del_u
 
+        Fu = self.d_model.Fu(u, du)
+        norm0 = np.linalg.norm(Fu)
+        enorm_last = np.linalg.norm(u - np.array([1]*len(u)))
+        for i in range(maxit):
+            Ju = self.d_model.Ju(u, du)
+
+            du = -np.linalg.solve(Ju, Fu)
+
+            u += du
+            print "NEWTON: here"
             Fu = self.d_model.Fu(u, du)
-            norm0 = np.linalg.norm(Fu)
-            enorm_last = np.linalg.norm(u - np.array([1]*len(u)))
-            for i in range(maxit):
-                Ju = self.d_model.Ju(u, du)
+            print Fu
+            norm = np.linalg.norm(Fu)
 
-                du = -np.linalg.solve(Ju, Fu)
-
-                u += du
-
-                Fu = self.d_model.Fu(u, du)
-
-                norm = np.linalg.norm(Fu)
-
-                if verbose:
-                    enorm = np.linalg.norm(u - np.array([1]*len(u)))
-                    print('Newton {:d} anorm {:6.2e} rnorm {:6.2e} eratio {:6.2f}'.
-                          format(i+1, norm, norm/norm0, enorm/enorm_last**2))
-                    enorm_last = enorm
-                if norm < rtol * norm0:
-                    break
-        except:
-                u = [0.0, 0.0]
-                du= [0.0, 0.0]
+            if verbose:
+                enorm = np.linalg.norm(u - np.array([1]*len(u)))
+                print('Newton {:d} anorm {:6.2e} rnorm {:6.2e} eratio {:6.2f}'.
+                      format(i+1, norm, norm/norm0, enorm/enorm_last**2))
+                enorm_last = enorm
+            if norm < rtol * norm0:
+                break
+        #except:
+        #        u = [0.0, 0.0]
+        #        du= [0.0, 0.0]
         return u, du
 
     def optimize(self, u = [0, 0], del_u=[0,0], rtol=1e-8, maxit = 8, verbose=False):
