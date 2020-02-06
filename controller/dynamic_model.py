@@ -10,12 +10,14 @@ import numpy as np
 from keras import backend as K
 import tensorflow as tf
 
+from collections import deque
+
 #sess = tf.compat.v1.global_variables_initializer()
 #sess.run(session = sess)
 
 class NeuralNetworkPredictor():
     def __init__(self, model_file, N1, N2 ,  Nu , \
-                            K , lambd , nd = 3, dd = 3):
+                            K , lambd , nd = 3, dd = 3, y0= [0, 0, 0]):
         self.N1 = N1
         self.N2 = N2
         self.Nu = Nu
@@ -26,7 +28,7 @@ class NeuralNetworkPredictor():
         self.K = K
         self.num_predicted_states = 3
         self.constraints = Constraints()
-
+        self.y0 = y0
         self.model = load_model(model_file)
 
         print(self.model.summary())
@@ -35,7 +37,6 @@ class NeuralNetworkPredictor():
         self.output_size = self.model.layers[-1].output_shape[1]
         self.input_size = self.model.layers[0].input_shape[1]
         self.hd = len(self.model.layers) - 1
-
 
         self.nd = nd
         self.dd = dd
@@ -48,8 +49,33 @@ class NeuralNetworkPredictor():
         self.previous_first_der = 1
         self.previous_second_der = 1
 
+        self.y_deque = deque()
+        self.delu_deque = deque()
+        self.u_deque = deque()
+
+        # Starting from all empty deques
+        for _ in range(self.N2):
+            self.y_deque.append(self.y0) # maybe need to start from first state
+
+        for _ in range(self.Nu):
+            self.u_deque.append([0, -50])
+
+        for _ in range(self.Nu):
+            self.delu_deque.append([0, 0])
+
         #super().__init__()
         self.Cost = NN_Cost(self, self.lambd)
+
+
+    def update_dynamics(u = [0, -50], del_u = [0, 0], y = [0, 0, 0]):
+        self.y_deque.pop()
+        self.u_deque.pop()
+        self.delu_deque.pop()
+
+        self.u_deque.appendleft(u)
+        self.delu_deque.appendleft(del_u)
+        self.y_deque.appendleft(y)
+
 
     def __Phi_prime(self, x = 0):
         """
@@ -84,13 +110,11 @@ class NeuralNetworkPredictor():
                          + self.__Phi_prime_prime() * self.__partial_net_partial_u(h, j) * \
                                   self.__partial_net_partial_u(m, j)
 
-
-
     def __partial_2_yn_partial_nph_partial_npm(self, h, m, j):
         """
-             D^2yn
-        ---------------
-        Du(n+h) Du(n+m)
+                 D^2yn
+            ---------------
+            Du(n+h) Du(n+m)
 
         """
         weights = self.model.layers[j].get_weights()[0]
@@ -104,9 +128,9 @@ class NeuralNetworkPredictor():
 
     def __partial_2_net_partial_u_nph_partial_npm(self, h, m, j):
         """
-          D^2 net_j
-        -------------
-        Du(n+h)Du(n+m)
+              D^2 net_j
+            -------------
+            Du(n+h)Du(n+m)
         """
         weights = self.model.layers[j].get_weights()[0]
         sum_output=0.0
@@ -116,9 +140,9 @@ class NeuralNetworkPredictor():
 
     def __partial_yn_partial_u(self, h, j):
         """
-           D yn
-        -----------
-         D u(n+h)
+               D yn
+            -----------
+             D u(n+h)
         """
         weights = self.model.layers[j].get_weights()[0]
         hid = self.model.layers[j].output_shape[1]
@@ -131,17 +155,17 @@ class NeuralNetworkPredictor():
 
     def __partial_fnet_partial_u(self, h, j):
         """
-        D f_j(net)
-        ---------
-         D u(u+h)
+            D f_j(net)
+            ---------
+             D u(u+h)
         """
         return self.__Phi_prime()*self.__partial_net_partial_u(h, j)
 
     def __partial_net_partial_u(self, h, j):
         """
-         D net_j
-        ---------
-        D u(n+h)
+             D net_j
+            ---------
+            D u(n+h)
         """
         weights = self.model.layers[j].get_weights()[0]
         sum_output = 0.0
@@ -153,16 +177,16 @@ class NeuralNetworkPredictor():
                 sum_output+=weights[j, i] * kronecker_delta(self.Nu, h)
 
         for i in range(0, min(self.K, self.dd)-1):
-            sum_output+= weights[j, i+self.nd+1] * self.previous_first_der * \
+            sum_output+= weights[j, i+self.nd ] * self.previous_first_der * \
                                                  step(self.K - i -1)
         return sum_output
 
 
     def __partial_delta_u_partial_u(self, j, h):
         """
-        D delta u
-        ---------
-        D u(n+h)
+            D delta u
+            ---------
+            D u(n+h)
 
         """
         return kronecker_delta(h, j) - kronecker_delta(h, j-1)

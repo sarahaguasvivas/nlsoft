@@ -72,6 +72,13 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
     plt.title('Estimated position vs. Ground Truth')
     plt.show()
 
+    # Testing set loss
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.5)
+    y_pred= model.predict(X_test)
+
+    diff = np.mean(np.linalg.norm(y_pred - y_test, axis = 1))
+    print "Testing set avg l2 norm:", diff
+
 
 def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
     data_array = np.genfromtxt(filename, delimiter=',')
