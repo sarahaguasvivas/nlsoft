@@ -55,19 +55,22 @@ class NeuralNetworkPredictor():
 
         # Starting from all empty deques
         for _ in range(self.N2):
-            self.y_deque.append(self.y0) # maybe need to start from first state
+            self.y_deque.appendleft(self.y0) # maybe need to start from first state
 
         for _ in range(self.Nu):
-            self.u_deque.append([0, -50])
+            self.u_deque.appendleft([0, -50])
 
         for _ in range(self.Nu):
-            self.delu_deque.append([0, 0])
+            self.delu_deque.appendleft([0, 0])
 
         #super().__init__()
         self.Cost = NN_Cost(self, self.lambd)
 
-
     def update_dynamics(u = [0, -50], del_u = [0, 0], y = [0, 0, 0]):
+        """
+            y_deque = y(n), y(n-1), y(n-2), ..., y(n-T)
+            u_deque = u(n), u(n-1), u(n-2), ...., u(n-T)
+        """
         self.y_deque.pop()
         self.u_deque.pop()
         self.delu_deque.pop()
