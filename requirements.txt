@@ -1,1 +1,11 @@
 python_version < '2.7'
+vrpn
+numpy
+threading
+time
+pypot
+keras
+tensorflow
+collections
+copy
+pyserial

@@ -5,7 +5,7 @@ from dynamixels.dynamixels import *
 class BlockGym():
     def __init__(self, sensor_port= "/dev/ttyACM0",  \
                             motors_port = "/dev/ttyUSB0", \
-                                vrpn_ip = "192.168.50.33:3883"):
+                                vrpn_ip = "192.168.50.24:3883"):
         self.observation = []
         self.verbose = 1
         self.terminal = False
