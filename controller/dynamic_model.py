@@ -16,57 +16,67 @@ from collections import deque
 #sess.run(session = sess)
 
 class NeuralNetworkPredictor():
-    def __init__(self, model_file, N1, N2 ,  Nu , \
-                            K , lambd , nd = 3, dd = 3, y0= [0, 0, 0]):
+    def __init__(self, model_file, N1 = 0 , N2 = 5 ,  Nu = 3 , \
+                            K = 0.7 , lambd = [0.3, 0.2] , nd = 3,\
+                                                dd = 3, y0= [0, 0, 0], u0= [0, 0]):
         self.N1 = N1
         self.N2 = N2
         self.Nu = Nu
+
         self.ym = None
-        self.lambd = lambd
-        self.Hessian = np.zeros((self.Nu, self.Nu))
         self.yn = None
+
+        self.y0 = y0
+        self.u0 = u0
+
+        self.lambd = lambd
         self.K = K
+
         self.num_predicted_states = 3
         self.constraints = Constraints()
-        self.y0 = y0
-        self.model = load_model(model_file)
 
-        print(self.model.summary())
-        print(self.model.get_config())
+        self.model = load_model(model_file)
 
         self.output_size = self.model.layers[-1].output_shape[1]
         self.input_size = self.model.layers[0].input_shape[1]
-        self.hd = len(self.model.layers) - 1
 
+        self.hd = len(self.model.layers) - 1
         self.nd = nd
         self.dd = dd
 
         self.Hessian = np.zeros((self.output_size, self.output_size))
 
-        """
-            These attributes will be part of the recursion:
-        """
+        # Important for recursions:
         self.previous_first_der = 1
         self.previous_second_der = 1
 
+        # Initializing deques
         self.y_deque = deque()
         self.delu_deque = deque()
         self.u_deque = deque()
+        self.ym_deque = deque()
+
+        self.initialize_deques(self.u0, self.y0)
+
+        self.Cost = NN_Cost(self, self.lambd)
+
+    def initialize_deques(self, u0, y0):
 
         # Starting from all empty deques
         for _ in range(self.N2):
-            self.y_deque.appendleft(self.y0) # maybe need to start from first state
+            self.y_deque.appendleft(self.y0)
+
+        for _ in range(self.N2):
+            self.ym_deque.appendleft(y0) # get wand location
 
         for _ in range(self.Nu):
-            self.u_deque.appendleft([0, -50])
+            self.u_deque.appendleft(u0)
 
         for _ in range(self.Nu):
             self.delu_deque.appendleft([0, 0])
 
-        #super().__init__()
-        self.Cost = NN_Cost(self, self.lambd)
 
-    def update_dynamics(u = [0, -50], del_u = [0, 0], y = [0, 0, 0]):
+    def update_dynamics(u = [0, -50], del_u = [0, 0], y = [0, 0, 0], ym = [0, 0, 0]):
         """
             y_deque = y(n), y(n-1), y(n-2), ..., y(n-T)
             u_deque = u(n), u(n-1), u(n-2), ...., u(n-T)
@@ -74,11 +84,12 @@ class NeuralNetworkPredictor():
         self.y_deque.pop()
         self.u_deque.pop()
         self.delu_deque.pop()
+        self.ym_deque.pop()
 
         self.u_deque.appendleft(u)
         self.delu_deque.appendleft(del_u)
         self.y_deque.appendleft(y)
-
+        self.ym_deque.appendleft(ym)
 
     def __Phi_prime(self, x = 0):
         """
@@ -93,23 +104,23 @@ class NeuralNetworkPredictor():
         return 0.0
 
     """
-    ---------------------------------------------------------------------
-        Soloway, D. and P.J. Haley, "Neural Generalized Predictive Control,"
-        Proceedings of the 1996 IEEE International Symposium on Intelligent
-        Control, 1996, pp. 277-281.
+        ---------------------------------------------------------------------
+            Soloway, D. and P.J. Haley, "Neural Generalized Predictive Control,"
+            Proceedings of the 1996 IEEE International Symposium on Intelligent
+            Control, 1996, pp. 277-281.
 
-        Calculating h'th element of the Jacobian
-        Calculating m'th and h'th element of the Hessian
-    ---------------------------------------------------------------------
+            Calculating h'th element of the Jacobian
+            Calculating m'th and h'th element of the Hessian
+        ---------------------------------------------------------------------
     """
 
     def __partial_2_fnet_partial_nph_partial_npm(self, h, m, j):
         """
-         D2^2f_j(net)
-         ------------
-        Du(n+h)Du(n+m)
+             D2^2f_j(net)
+             ------------
+            Du(n+h)Du(n+m)
         """
-        return self.__Phi_prime()*self.__partial_2_net_partial_u_nph_partial_npm(h, m,  j)*\
+        return self._Phi_prime()*self.__partial_2_net_partial_u_nph_partial_npm(h, m, j)*\
                          + self.__Phi_prime_prime() * self.__partial_net_partial_u(h, j) * \
                                   self.__partial_net_partial_u(m, j)
 
@@ -170,6 +181,7 @@ class NeuralNetworkPredictor():
             ---------
             D u(n+h)
         """
+
         weights = self.model.layers[j].get_weights()[0]
         sum_output = 0.0
 
@@ -196,6 +208,7 @@ class NeuralNetworkPredictor():
 
     def compute_hessian(self, u, del_u):
         Hessian = np.zeros((self.Nu, self.Nu))
+
         for h in range(self.Nu):
             for m in range(self.Nu):
                 sum_output=0.0
@@ -203,7 +216,7 @@ class NeuralNetworkPredictor():
                 for j in range(self.N1, self.N2):
                     sum_output += 2.*(self.__partial_yn_partial_u(h, j)*self.__partial_yn_partial_u(m, j) - \
                                         self.__partial_2_yn_partial_nph_partial_npm(h, m, j)* \
-                                        (self.ym[j] - self.yn[j]))
+                                        (self.y_deque[j] - self.yn_deque[j]))
 
                 for j in range(self.Nu):
                     sum_output += 2.*( self.lambd[j] * (self.__partial_delta_u_partial_u(j, h) * self.__partial_delta_u_partial_u(j, m) + del_u[j] * 0.0))
@@ -249,11 +262,7 @@ class NeuralNetworkPredictor():
         return self.Cost.compute_cost(del_u, u)
 
     def measure(self, u):
-        if (u.ndim == 1):
-            u = np.array([u])
-        model_signal = load_model('../model_data/neural_network_1.hdf5')
-        measure = model_signal.predict(u, batch_size=1)
-        return measure
+        pass
 
     def predict(self, x):
         return self.model.predict(x, batch_size=1)
