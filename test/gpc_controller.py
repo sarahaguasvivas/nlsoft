@@ -14,7 +14,7 @@ NNP = NeuralNetworkPredictor(model_file = model_filename, N1= 0, N2 = 2, Nu = 2,
 
 NR_opt = NewtonRaphson(cost = NNP.Cost, d_model = NNP)
 
-Block = BlockGym() # declare my block
+Block = BlockGym(vrpn_ip = "192.168.50.24:3883") # declare my block
 Block.reset()
 #Block.stretch() # stretch block for better signal readings before calibrating
 #Block.get_signal_calibration() # calibrate signal of the block
