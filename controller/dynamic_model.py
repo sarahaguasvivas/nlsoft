@@ -238,7 +238,8 @@ class NeuralNetworkPredictor():
         for h in range(self.Nu):
             sum_output=0.0
             for j in range(self.N1, self.N2):
-                sum_output+=-2.*(self.ym[j]-self.yn[j])*self.__partial_yn_partial_u(h, j)
+                print list(self.ym_deque)
+                sum_output+=-2.*(list(self.ym_deque)-self.yn[j])*self.__partial_yn_partial_u(h, j)
 
             for j in range(self.Nu):
                 sum_output+=2.*self.lambd[j]*del_u[j]*self.__partial_delta_u_partial_u(j, h)
