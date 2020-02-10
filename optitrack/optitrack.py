@@ -5,7 +5,7 @@ class VRPNclient:
     def callback(self, userdata, data):
         self.tracked = True
         self.data_read = {userdata: data}
-        #print self.data_read;
+        print self.data_read;
 
     def __init__(self, tracker_name, hostID):
         self.tracker_name = tracker_name
@@ -50,7 +50,7 @@ class VRPNclient:
         return self.info
 
 class BlockOrientation():
-    def __init__(self, ip = "192.168.50.33:3883"):
+    def __init__(self, ip = "192.168.50.24:3883"):
         self.wand = VRPNclient("Wand",  "tcp://" + ip)
         self.head = VRPNclient("DHead", "tcp://" + ip)
         self.base = VRPNclient("DBase", "tcp://" + ip)

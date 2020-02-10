@@ -24,6 +24,8 @@ class BlockGym():
         self.calibration_max = np.array([0]* \
                     self.sensor_signals.num_sensors)
 
+        print "Optitrack Conenction Established!"
+
     def step(self, action = [0, 0]):
         # return observation, reward, done, info
         self.motors.step(action = action)

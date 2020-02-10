@@ -17,7 +17,7 @@ class DynamixelActor:
 
         self.__info = ""
         self.verbose = verbose
-
+        print "Dynamixels started!"
 
     def get_present_position(self):
         return list(self._serial_connection.get_present_position((1,2)))

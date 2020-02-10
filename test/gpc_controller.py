@@ -15,7 +15,7 @@ NNP = NeuralNetworkPredictor(model_file = model_filename, N1= 0, N2 = 2, Nu = 2,
 NR_opt = NewtonRaphson(cost = NNP.Cost, d_model = NNP)
 
 Block = BlockGym() # declare my block
-Block.reset()
+Block.reset(vrpn_ip = "192.168.50.24:3883")
 #Block.stretch() # stretch block for better signal readings before calibrating
 #Block.get_signal_calibration() # calibrate signal of the block
 
@@ -25,14 +25,6 @@ u_optimal_old = np.array([0., -50.])
 new_state_new = Block.get_state()
 
 du = [0.0]*2
-
-u_deque = deque()
-y_deque = deque()
-
-for _ in range(NNP.nd):
-    u_deque.append([0, -50])
-for _ in range(NNP.dd):
-    y_deque.append(Block.get_state())
 
 elapsed = []
 u_optimal_list = []
