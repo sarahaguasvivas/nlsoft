@@ -68,7 +68,7 @@ while True:
     print "GPC: P. State: ", NNP.yn
     print "GPC: Ac State: ", Block.get_state()
     print "GPC: u_optimal", u_optimal
-
+    print "GPC: Cost: ", NNP.compute_cost()
     del_u = del_u[0, :].tolist()
 
     NNP.update_dynamics(u_optimal_old, del_u, NNP.yn.tolist(), NNP.ym.tolist())

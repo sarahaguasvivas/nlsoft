@@ -280,8 +280,8 @@ class NeuralNetworkPredictor():
         self.Hessian = self.compute_hessian()
         return self.Hessian
 
-    def compute_cost(self, del_u, u):
-        return self.Cost.compute_cost(del_u, u)
+    def compute_cost(self):
+        return self.Cost.compute_cost()
 
     def measure(self, u):
         pass
