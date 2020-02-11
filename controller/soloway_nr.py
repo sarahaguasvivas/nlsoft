@@ -10,18 +10,32 @@ class SolowayNR:
         self.cost = cost
         self.d_model = d_model
 
-    def __fsolve_newton(self, u0, del_u, verbose=False):
+    def __fsolve_newton(self, u0, del_u, maxit = 8, rtol = 1e-8, verbose=False):
 
         Y, YM, U, delU = self.d_model.get_computation_vectors()
 
-        Ju = self.d_model.Ju()
         Fu = self.d_model.Fu()
+        norm0 = np.linalg.norm(Fu)
+        enorm_last= np.linalg.norm(U - np.ones(U.shape))
 
-        delU[:, 0] = np.linalg.solve(Ju, -Fu[:, 0])
-        delU[:, 1] = np.linalg.solve(Ju, -Fu[:, 1])
+        for i in range(maxit):
+            Ju = self.d_model.Ju()
 
-        U += delU
-        print U
+            delU =  np.dot(np.linalg.inv(Ju),  -Fu)
+
+            U += delU
+
+            Fu = self.d_model.Fu()
+            norm = np.linalg.norm(Fu)
+
+            if verbose:
+                enorm = np.linalg.norm(U - np.ones(U.shape))
+                print "Newton: ", i, " anorm: ", norm, " rnorm: ", norm/norm0, " eratio: ", enorm/enorm_last**2
+                enorm_last = enorm
+
+            if norm < rtol * norm0:
+                break
+
         return U, delU
 
     def optimize(self, u = [0, 0], del_u=[0,0], verbose=False):
