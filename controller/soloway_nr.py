@@ -21,7 +21,7 @@ class SolowayNR:
         delU[:, 1] = np.linalg.solve(Ju, -Fu[:, 1])
 
         U += delU
-
+        print U
         return U, delU
 
     def optimize(self, u = [0, 0], del_u=[0,0], verbose=False):
