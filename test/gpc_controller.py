@@ -21,10 +21,10 @@ Block.reset()
 
 Block.calibration_max = np.array([38, 393, 86, 10, 14, 1, 279, 2, 31, 179, 21 ])
 
-u_optimal_old = np.array([0., -50.])
+u_optimal_old = [0., -50.]
 new_state_new = Block.get_state()
 
-du = [0.0]*2
+du = np.array([0.0, 0.0])
 
 elapsed = []
 u_optimal_list = []
@@ -36,82 +36,86 @@ y_deque = deque()
 
 for _ in range(NNP.nd):
     u_deque.append([0, -50])
+
 for _ in range(NNP.dd):
     y_deque.append(Block.get_state())
 
-#try:
-    # working in mm
-while True:
-    seconds = time.time()
+try:
+    # working in m
+    while True:
+        seconds = time.time()
 
-    signal = np.divide(Block.get_observation(), Block.calibration_max, dtype = np.float64).tolist()
+        signal = np.divide(Block.get_observation(), Block.calibration_max, dtype = np.float64).tolist()
 
-    neural_network_input = np.array(signal + np.array(list(u_deque)).flatten().tolist() + \
-                                    np.array(list(y_deque)).flatten().tolist())
+        neural_network_input = np.array(signal + np.array(list(u_deque)).flatten().tolist() + \
+                                        np.array(list(y_deque)).flatten().tolist())
 
-    neural_network_input = np.reshape(neural_network_input, (1, -1))
+        neural_network_input = np.reshape(neural_network_input, (1, -1))
 
-    nn_old_in = neural_network_input
+        nn_old_in = neural_network_input
 
-    predicted_states = NNP.predict(neural_network_input).flatten()/1000
+        predicted_states = NNP.predict(neural_network_input).flatten()/1000
 
-    NNP.yn = predicted_states
-    NNP.ym = Block.get_target()
+        NNP.yn = predicted_states
+        NNP.ym = Block.get_target()
 
-    NNP.update_dynamics(u_optimal_old, du, NNP.yn, NNP.ym)
+        print "GPC: Target: ", NNP.ym
+        print "GPC: P. State: ", NNP.yn
+        print "GPC: Ac State: ", Block.get_state()
 
-    print "GPC: Target: ", NNP.ym
-    print "GPC: P. State: ", NNP.yn
-    print "GPC: Ac State: ", Block.get_state()
+        new_state_old = new_state_new
 
-    new_state_old = new_state_new
+        u_optimal, del_u = NR_opt.optimize(u = u_optimal_old, del_u = [0., 0.], \
+                         verbose = False)
 
-    u_optimal = np.reshape(NR_opt.optimize(u = u_optimal_old, del_u = [0., 0.], \
-                     verbose = False)[0], (-1, 1)).flatten()
+        u_optimal = u_optimal[0, :].tolist()
+        del_u = del_u[0, :].tolist()
 
-    #u_optimal[0] = np.clip(u_optimal[0], -300, 300)
-    #u_optimal[0] = np.clip(u_optimal[0], -300, 300)
+        NNP.update_dynamics(u_optimal_old, del_u, NNP.yn.tolist(), NNP.ym.tolist())
 
-    u_optimal_list += [u_optimal.flatten().tolist() ]
+        #u_optimal[0] = np.clip(u_optimal[0], -300, 300)
+        #u_optimal[0] = np.clip(u_optimal[0], -300, 300)
 
-    du = np.array(u_optimal_old) - np.array(u_optimal)
+        u_optimal_list += [u_optimal]
 
-    du = du.flatten()
+        du = np.array(u_optimal_old) - np.array(u_optimal)
 
-    u_optimal_old = u_optimal
+        du = du.flatten()
 
-    Block.step(action = u_optimal.tolist())
+        u_optimal_old = u_optimal
 
-    print "GPC: u_optimal", u_optimal.tolist()
+        Block.step(action = u_optimal)
 
-    u_deque.pop()
-    y_deque.pop()
+        print "GPC: u_optimal", u_optimal
 
-    u_deque.appendleft(u_optimal.tolist())
-    y_deque.appendleft(predicted_states.tolist())
+        u_deque.pop()
+        y_deque.pop()
 
-    ym += [NNP.ym]
-    yn += [NNP.yn]
+        u_deque.appendleft(u_optimal)
+        y_deque.appendleft(predicted_states.tolist())
 
-    elapsed += [time.time() - seconds]
-    print elapsed[-1]
-    u_optimal_list+= [u_optimal]
-    actual_states += [Block.get_state()]
+        ym += [NNP.ym]
+        yn += [NNP.yn]
 
-#except Exception as e:
-#    print str(e)
-#    Block.reset()
-#    ym = np.reshape(ym, (-1, 3))
-#    yn = np.reshape(yn, (-1, 3))
-#    actual_states = np.reshape(actual_states, (-1, 3))
-#    u_optimal_list = np.reshape(u_optimal_list, (-1, 2))
-#
-#    labels = ['x', 'y', 'z']
-#    for i in range(3):
-#        plt.subplot(3, 1, i+1)
-#        plt.plot(ym[:, i]*1000, '--w', label = 'target')
-#        plt.plot(yn[:, i]*1000, 'cyan', label = 'predicted state')
-#        plt.plot(actual_states[:, i]*1000, label = 'actual state')
-#        plt.legend()
-#        plt.ylabel(str(labels[i]) + ' [mm]')
-#    plt.show()
+        elapsed += [time.time() - seconds]
+        print elapsed[-1]
+        u_optimal_list+= [u_optimal]
+        actual_states += [Block.get_state()]
+
+except Exception as e:
+    print str(e)
+    Block.reset()
+    ym = np.reshape(ym, (-1, 3))
+    yn = np.reshape(yn, (-1, 3))
+    actual_states = np.reshape(actual_states, (-1, 3))
+    u_optimal_list = np.reshape(u_optimal_list, (-1, 2))
+
+    labels = ['x', 'y', 'z']
+    for i in range(3):
+        plt.subplot(3, 1, i+1)
+        plt.plot(ym[:, i]*1000, '--w', label = 'target')
+        plt.plot(yn[:, i]*1000, 'cyan', label = 'predicted state')
+        plt.plot(actual_states[:, i]*1000, label = 'actual state')
+        plt.legend()
+        plt.ylabel(str(labels[i]) + ' [mm]')
+    plt.show()
