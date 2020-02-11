@@ -40,7 +40,7 @@ class NN_Cost:
             self.cost += np.mean(np.power(YM[j, :] - Y[j, :], 2))
 
         for j in range(self.Nu):
-            self.cost += np.mean(self.lambd[j]*np.power(delU[j, :], 2)
+            self.cost += np.mean(self.lambd[j]*np.power(delU[j, :], 2))
 
         for j in range(self.Nu):
             self.cost += np.mean(self.s / (U[j, :] + self.r / 2.0 - self.b) + self.s / (self.r/2.0 + self.b - u[j, :]) - 4.0 / self.r)
