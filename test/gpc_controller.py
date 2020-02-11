@@ -9,8 +9,8 @@ import time, os
 plt.style.use('dark_background')
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
-NNP = NeuralNetworkPredictor(model_file = model_filename, N1= 0, N2 = 2, Nu = 2, \
-                                    nd = 3, dd = 2, K = 1, lambd = [2., 1.])
+NNP = NeuralNetworkPredictor(model_file = model_filename, \
+                                    nd = 3, dd = 2, K = 1, lambd = [1., 1., 1.])
 
 NR_opt = NewtonRaphson(cost = NNP.Cost, d_model = NNP)
 

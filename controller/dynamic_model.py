@@ -15,9 +15,13 @@ from collections import deque
 #sess = tf.compat.v1.global_variables_initializer()
 #sess.run(session = sess)
 
+
+class ModelException(Exception):
+    pass
+
 class NeuralNetworkPredictor():
-    def __init__(self, model_file, N1 = 0 , N2 = 5 ,  Nu = 3 , \
-                            K = 0.7 , lambd = [0.3, 0.2] , nd = 3,\
+    def __init__(self, model_file, N1 = 1 , N2 = 5 ,  Nu = 3 , \
+                            K = 0.7 , lambd = [0.3, 0.2, 0.3] , nd = 3,\
                                                 dd = 3, y0= [0, 0, 0], u0= [0, 0]):
         self.N1 = N1
         self.N2 = N2
@@ -30,6 +34,10 @@ class NeuralNetworkPredictor():
         self.u0 = u0
 
         self.lambd = lambd
+
+        if len(self.lambd) != self.Nu:
+            raise ModelException("The length of lambda should be the same as Nu")
+
         self.K = K
 
         self.num_predicted_states = 3
@@ -57,24 +65,16 @@ class NeuralNetworkPredictor():
         self.ym_deque = deque()
 
         self.initialize_deques(self.u0, self.y0)
-
         self.Cost = NN_Cost(self, self.lambd)
 
     def initialize_deques(self, u0, y0):
-
-        # Starting from all empty deques
-        for _ in range(self.N2):
+        for i in range(self.N2):
             self.y_deque.appendleft(self.y0)
-
-        for _ in range(self.N2):
             self.ym_deque.appendleft(y0) # get wand location
 
         for _ in range(self.Nu):
             self.u_deque.appendleft(u0)
-
-        for _ in range(self.Nu):
             self.delu_deque.appendleft([0, 0])
-
 
     def update_dynamics(u = [0, -50], del_u = [0, 0], y = [0, 0, 0], ym = [0, 0, 0]):
         """
@@ -209,6 +209,9 @@ class NeuralNetworkPredictor():
     def compute_hessian(self, u, del_u):
         Hessian = np.zeros((self.Nu, self.Nu))
 
+        Y = np.array(list(self.y_deque))
+        YM = np.array(list(self.ym_deque))
+
         for h in range(self.Nu):
             for m in range(self.Nu):
                 sum_output=0.0
@@ -235,18 +238,23 @@ class NeuralNetworkPredictor():
     def compute_jacobian(self, u, del_u):
         # working on this now
         dJ = []
+
+        Y = np.array(list(self.y_deque))
+        YM = np.array(list(self.ym_deque))
+        delU = np.array(list(self.delu_deque))
+        U = np.array(list(self.u_deque))
+
         for h in range(self.Nu):
             sum_output=0.0
             for j in range(self.N1, self.N2):
-                print list(self.ym_deque)
-                sum_output+=-2.*(list(self.ym_deque)-self.yn[j])*self.__partial_yn_partial_u(h, j)
+                sum_output+=-2.*(YM[j, :]- Y[j, :])*self.__partial_yn_partial_u(h, j)
 
             for j in range(self.Nu):
-                sum_output+=2.*self.lambd[j]*del_u[j]*self.__partial_delta_u_partial_u(j, h)
+                sum_output+=2.*self.lambd[j]*delU[j, :]*self.__partial_delta_u_partial_u(j, h)
 
             for j in range(self.Nu):
                 sum_output+=kronecker_delta(h, j) * ( -self.constraints.s/(u[j] + self.constraints.r/2. - self.constraints.b)**2  + \
-                                            self.constraints.s / (self.constraints.r/2. + self.constraints.b - u[j])**2    )
+                                            self.constraints.s / (self.constraints.r/2. + self.constraints.b - U[j])**2    )
 
             dJ+=[sum_output]
         return dJ
