@@ -62,7 +62,7 @@ try:
         new_state_old = new_state_new
 
         u_optimal, del_u = NR_opt.optimize(u = u_optimal_old, del_u = del_u, \
-                                            verbose = False)
+                                            maxit = 1, rtol = 1e-8, verbose = False)
 
         u_optimal = u_optimal[0, :].tolist()
         del_u = del_u[0, :].tolist()
