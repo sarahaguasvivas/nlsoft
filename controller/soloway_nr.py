@@ -11,30 +11,18 @@ class SolowayNR:
         self.d_model = d_model
 
     def __fsolve_newton(self, u0, del_u, verbose=False):
-        u = u0
-        du = del_u
 
-        Ju = self.d_model.Ju(u, du)
-        Fu = self.d_model.Fu(u, du)
+        Y, YM, U, delU = self.d_model.get_computation_vectors()
 
-        Ju1 = Ju[0, :, :]
-        Fu1 = Fu[0, :]
+        Ju = self.d_model.Ju()
+        Fu = self.d_model.Fu()
 
-        Ju2 = Ju[1, :, :]
-        Fu2 = Fu[1, :]
+        delU[:, 0] = np.linalg.solve(Ju, -Fu[:, 0])
+        delU[:, 1] = np.linalg.solve(Ju, -Fu[:, 1])
 
-        print Ju1, Fu1, Ju2, Fu2
+        U += delU
 
-        du1 = np.linalg.solve(Ju1, -Fu1)
-
-        du2 = np.linalg.solve(Ju2, -Fu2)
-
-        print du1, du2
-
-        u[:, 0] += du1
-        u[:, 1] += du2
-
-        return u, du
+        return U, delU
 
     def optimize(self, u = [0, 0], del_u=[0,0], verbose=False):
        return self.__fsolve_newton(u, del_u, verbose)

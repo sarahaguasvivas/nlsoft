@@ -215,7 +215,7 @@ class NeuralNetworkPredictor():
         """
         return kronecker_delta(h, j) - kronecker_delta(h, j-1)
 
-    def compute_hessian(self, u, del_u):
+    def compute_hessian(self):
 
         Y, YM , U, delU = self.get_computation_vectors()
 
@@ -245,18 +245,19 @@ class NeuralNetworkPredictor():
 
         return Hessian
 
-    def compute_jacobian(self, u, del_u):
+    def compute_jacobian(self):
         Y, YM, U, delU = self.get_computation_vectors()
 
         dJ = np.zeros((self.Nu, U.shape[1]))
 
         for inp_ in range(U.shape[1]):
-            sum_output = [0., 0.]
             for h in range(self.Nu):
+                sum_output= [0., 0.]
                 for j in range(self.N1, self.N2):
                     sum_output[inp_]+= -2.*(YM[j, :]- Y[j, :])*self.__partial_yn_partial_u(h, j)
 
                 for j in range(self.Nu):
+
                     sum_output[inp_]+= 2.*self.lambd[j]*delU[j, inp_]*\
                                 self.__partial_delta_u_partial_u(j, h)
 
@@ -268,14 +269,15 @@ class NeuralNetworkPredictor():
                                             self.constraints.b - U[j, inp_])**2)
 
             dJ[:, inp_] = sum_output[inp_]
+        print dJ.shape
         return dJ
 
-    def Fu(self, u, del_u):
-        jacobian = self.compute_jacobian(u, del_u)
+    def Fu(self):
+        jacobian = self.compute_jacobian()
         return jacobian
 
-    def Ju(self, u, del_u):
-        self.Hessian = self.compute_hessian(u, del_u)
+    def Ju(self):
+        self.Hessian = self.compute_hessian()
         return self.Hessian
 
     def compute_cost(self, del_u, u):
