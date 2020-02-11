@@ -12,10 +12,6 @@ import tensorflow as tf
 
 from collections import deque
 
-#sess = tf.compat.v1.global_variables_initializer()
-#sess.run(session = sess)
-
-
 class ModelException(Exception):
     pass
 
@@ -23,6 +19,11 @@ class NeuralNetworkPredictor():
     def __init__(self, model_file, N1 = 1 , N2 = 5 ,  Nu = 3 , \
                             K = 0.7 , lambd = [0.3, 0.2, 0.3] , nd = 3,\
                                                 dd = 3, y0= [0, 0, 0], u0= [0, 0]):
+
+        """
+                w --> weights from input layer to hidden layer
+        """
+
         self.N1 = N1
         self.N2 = N2
         self.Nu = Nu
@@ -76,7 +77,7 @@ class NeuralNetworkPredictor():
             self.u_deque.appendleft(u0)
             self.delu_deque.appendleft([0, 0])
 
-    def update_dynamics(u = [0, -50], del_u = [0, 0], y = [0, 0, 0], ym = [0, 0, 0]):
+    def update_dynamics(self, u = [0, -50], del_u = [0, 0], y = [0, 0, 0], ym = [0, 0, 0]):
         """
             y_deque = y(n), y(n-1), y(n-2), ..., y(n-T)
             u_deque = u(n), u(n-1), u(n-2), ...., u(n-T)
@@ -128,7 +129,7 @@ class NeuralNetworkPredictor():
              ------------
             Du(n+h)Du(n+m)
         """
-        return self._Phi_prime()*self.__partial_2_net_partial_u_nph_partial_npm(h, m, j)*\
+        return self.__Phi_prime()*self.__partial_2_net_partial_u_nph_partial_npm(h, m, j)\
                          + self.__Phi_prime_prime() * self.__partial_net_partial_u(h, j) * \
                                   self.__partial_net_partial_u(m, j)
 
@@ -139,7 +140,7 @@ class NeuralNetworkPredictor():
             Du(n+h) Du(n+m)
 
         """
-        weights = self.model.layers[j].get_weights()[0]
+        weights = self.model.layers[0].get_weights()[0]
         hid = weights.shape[1]
         sum_output=0.0
         for i in range(hid):
@@ -154,9 +155,9 @@ class NeuralNetworkPredictor():
             -------------
             Du(n+h)Du(n+m)
         """
-        weights = self.model.layers[j].get_weights()[0]
+        weights = self.model.layers[0].get_weights()[0]
         sum_output=0.0
-        for i in range(1, min(self.K, self.dd)):
+        for i in range(0, min(self.K, self.dd)):
             sum_output+= weights[j, i+self.nd+1] * self.previous_second_der * step(self.K-i-1)
         return sum_output
 
@@ -166,8 +167,8 @@ class NeuralNetworkPredictor():
             -----------
              D u(n+h)
         """
-        weights = self.model.layers[j].get_weights()[0]
-        hid = self.model.layers[j].output_shape[1]
+        weights = self.model.layers[0].get_weights()[0]
+        hid = self.model.layers[0].output_shape[1]
         sum_output = 0.0
         for i in range(hid):
             sum_output += weights[j, i] * self.__partial_fnet_partial_u( h, j)
@@ -190,17 +191,17 @@ class NeuralNetworkPredictor():
             D u(n+h)
         """
 
-        weights = self.model.layers[j].get_weights()[0]
+        weights = self.model.layers[0].get_weights()[0]
         sum_output = 0.0
 
         for i in range(self.nd):
             if (self.K - self.Nu) < i:
                 sum_output+= weights[j, i] * kronecker_delta(self.K - i, h)
             else:
-                sum_output+=weights[j, i] * kronecker_delta(self.Nu, h)
+                sum_output+= weights[j, i] * kronecker_delta(self.Nu, h)
 
-        for i in range(0, min(self.K, self.dd)-1):
-            sum_output+= weights[j, i+self.nd ] * self.previous_first_der * \
+        for i in range(0, min(self.K, self.dd)):
+            sum_output += weights[j, i+self.nd + 1] * self.previous_first_der * \
                                                  step(self.K - i -1)
         return sum_output
 
@@ -215,59 +216,58 @@ class NeuralNetworkPredictor():
         return kronecker_delta(h, j) - kronecker_delta(h, j-1)
 
     def compute_hessian(self, u, del_u):
-        Hessian = np.zeros((self.Nu, self.Nu))
 
         Y, YM , U, delU = self.get_computation_vectors()
 
+        Hessian = np.zeros((self.Nu, self.Nu))
         for h in range(self.Nu):
             for m in range(self.Nu):
-                sum_output=0.0
+                sum_output = 0.0
 
                 for j in range(self.N1, self.N2):
-                    sum_output += 2.*(self.__partial_yn_partial_u(h, j)*\
+                    sum_output += np.mean(2.*(self.__partial_yn_partial_u(h, j)*\
                                 self.__partial_yn_partial_u(m, j) - \
                                 self.__partial_2_yn_partial_nph_partial_npm(h, m, j)* \
-                                    (YM[j, :] - Y[j, :]))
+                                    (YM[j, :] - Y[j, :])))
 
                 for j in range(self.Nu):
-                    sum_output += 2.*( self.lambd[j] * (self.__partial_delta_u_partial_u(j, h) * self.__partial_delta_u_partial_u(j, m) + delU[j, :] * 0.0))
-
+                    sum_output += 2.*(self.lambd[j] * (self.__partial_delta_u_partial_u(j, h) * \
+                                        self.__partial_delta_u_partial_u(j, m)))
 
                 for j in range(self.Nu):
-                    sum_output += kronecker_delta(h, j) * kronecker_delta(m, j) * \
-                            ( 2.0*self.constraints.s/ \
-                            ( U[j, :] + self.constraints.r/2. - \
-                                self.constraints.b)**3 + \
-                                    2.*self.constraints.s/(self.constraints.r/2. + \
-                                                self.constraints.b - U[j, :])**3)
-
+                    sum_output += np.mean(kronecker_delta(h, j) * kronecker_delta(m, j) * \
+                            (2.0*self.constraints.s/ \
+                                np.power(U[j, :] + self.constraints.r/2. - \
+                                    self.constraints.b, 3) + \
+                                        2.*self.constraints.s/(self.constraints.r/2. + \
+                                        self.constraints.b - np.power(U[j, :], 3))))
                 Hessian[m, h] = sum_output
 
         return Hessian
 
     def compute_jacobian(self, u, del_u):
-        dJ = []
-
         Y, YM, U, delU = self.get_computation_vectors()
 
-        for h in range(self.Nu):
-            sum_output=0.0
+        dJ = np.zeros((self.Nu, U.shape[1]))
 
-            for j in range(self.N1, self.N2):
-                sum_output+= -2.*(YM[j, :]- Y[j, :])*self.__partial_yn_partial_u(h, j)
+        for inp_ in range(U.shape[1]):
+            sum_output = [0., 0.]
+            for h in range(self.Nu):
+                for j in range(self.N1, self.N2):
+                    sum_output[inp_]+= -2.*(YM[j, :]- Y[j, :])*self.__partial_yn_partial_u(h, j)
 
-            for j in range(self.Nu):
-                sum_output+= 2.*self.lambd[j]*delU[j, :]*\
-                            self.__partial_delta_u_partial_u(j, h)
+                for j in range(self.Nu):
+                    sum_output[inp_]+= 2.*self.lambd[j]*delU[j, inp_]*\
+                                self.__partial_delta_u_partial_u(j, h)
 
-            for j in range(self.Nu):
-                sum_output += kronecker_delta(h, j) * \
-                            (-self.constraints.s/(U[j, :] + \
-                                self.constraints.r/2. - self.constraints.b)**2  + \
-                                    self.constraints.s / (self.constraints.r/2. + \
-                                        self.constraints.b - U[j, :])**2)
+                for j in range(self.Nu):
+                    sum_output[inp_] += kronecker_delta(h, j) * \
+                                (-self.constraints.s/(U[j, inp_] + \
+                                    self.constraints.r/2. - self.constraints.b)**2  + \
+                                        self.constraints.s / (self.constraints.r/2. + \
+                                            self.constraints.b - U[j, inp_])**2)
 
-            dJ+=[sum_output]
+            dJ[:, inp_] = sum_output[inp_]
         return dJ
 
     def Fu(self, u, del_u):
