@@ -5,7 +5,7 @@ class VRPNclient:
     def callback(self, userdata, data):
         self.tracked = True
         self.data_read = {userdata: data}
-        print self.data_read;
+        #print self.data_read;
 
     def __init__(self, tracker_name, hostID):
         self.tracker_name = tracker_name
@@ -55,6 +55,7 @@ class BlockOrientation():
         self.head = VRPNclient("DHead", "tcp://" + ip)
         self.base = VRPNclient("DBase", "tcp://" + ip)
         self.end_eff_orientation = None
+        print "Optitrack Comm Initialized!"
 
     def get_observation(self):
         head_o= self.head.get_observation()

@@ -31,6 +31,13 @@ u_optimal_list = []
 ym = []
 yn = []
 actual_states= []
+u_deque = deque()
+y_deque = deque()
+
+for _ in range(NNP.nd):
+    u_deque.append([0, -50])
+for _ in range(NNP.dd):
+    y_deque.append(Block.get_state())
 
 try:
     # working in mm
