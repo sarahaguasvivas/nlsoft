@@ -11,7 +11,7 @@ model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NNP = NeuralNetworkPredictor(model_file = model_filename, \
                                     nd = 3, dd = 2, K = 1, lambd = [1., 1., 1.], \
-                                    y0 = [0.07, -0.04, -0.04])
+                                    y0 = [0.07, -0.04, -0.04], u0 = [0.01, -50.])
 
 NR_opt = SolowayNR(cost = NNP.Cost, d_model = NNP)
 
@@ -32,12 +32,12 @@ elapsed = []
 u_optimal_list = []
 ym = []
 yn = []
-actual_states= []
+#actual_states= []
 u_deque = deque()
 y_deque = deque()
 
 for _ in range(NNP.nd):
-    u_deque.append([0, -50])
+    u_deque.append([0.01, -50])
 
 for _ in range(NNP.dd):
     y_deque.append(Block.get_state())
@@ -66,7 +66,7 @@ try:
 
         u_optimal = u_optimal[0, :].tolist()
         del_u = del_u[0, :].tolist()
-
+        print "-----------------------------------------------------"
         print "GPC: Target: ", NNP.ym
         print "GPC: P. State: ", NNP.yn
         print "GPC: u_optimal", u_optimal
@@ -89,6 +89,8 @@ try:
 
         elapsed += [time.time() - seconds]
         print  "GPC: elapsed time: ", elapsed[-1]
+        print "-----------------------------------------------------"
+
         u_optimal_list+= [u_optimal]
         #actual_states += [Block.get_state()]
 

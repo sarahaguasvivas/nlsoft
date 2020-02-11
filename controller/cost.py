@@ -48,6 +48,6 @@ class NN_Cost:
             self.cost += np.mean(self.s / (U[j, :] + self.r / 2.0 - self.b) + \
                                         self.s / (self.r/2.0 + self.b - U[j, :]) - 4.0 / self.r)
 
-        return self.cost
+        return np.abs(self.cost)
 
 
