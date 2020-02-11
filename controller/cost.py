@@ -1,5 +1,6 @@
 from dynamic_model import *
 import constraints as constraints
+import numpy as np
 
 class NN_Cost:
     def __init__(self, dynamic_model, lambd):
@@ -25,16 +26,17 @@ class NN_Cost:
         self.b = self.d_model.constraints.b
         self.cost= 0.0
 
-    def compute_cost(self, del_u, u):
+    def compute_cost(self):
         """
         del_u is a list of the element wise differences between current and
         previous control inputs
         n is an int that represents the current discrete timestep
         """
-        print("ym: ", self.ym, "yn: ", self.yn)
+        #print("ym: ", self.d_model.ym, "yn: ", self.d_model.yn)
+
         self.cost = 0.0
 
-        Y, YM , U, delU = self.d_model.get_computing_vectors()
+        Y, YM , U, delU = self.d_model.get_computation_vectors()
 
         for j in range(self.N1, self.N2):
             self.cost += np.mean(np.power(YM[j, :] - Y[j, :], 2))
@@ -43,7 +45,8 @@ class NN_Cost:
             self.cost += np.mean(self.lambd[j]*np.power(delU[j, :], 2))
 
         for j in range(self.Nu):
-            self.cost += np.mean(self.s / (U[j, :] + self.r / 2.0 - self.b) + self.s / (self.r/2.0 + self.b - u[j, :]) - 4.0 / self.r)
+            self.cost += np.mean(self.s / (U[j, :] + self.r / 2.0 - self.b) + \
+                                        self.s / (self.r/2.0 + self.b - U[j, :]) - 4.0 / self.r)
 
         return self.cost
 
