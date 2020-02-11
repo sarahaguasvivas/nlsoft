@@ -10,21 +10,23 @@ plt.style.use('dark_background')
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NNP = NeuralNetworkPredictor(model_file = model_filename, \
-                                    nd = 3, dd = 2, K = 1, lambd = [1., 1., 1.])
+                                    nd = 3, dd = 2, K = 1, lambd = [1., 1., 1.], \
+                                    y0 = [0.07, -0.04, -0.04])
 
 NR_opt = SolowayNR(cost = NNP.Cost, d_model = NNP)
 
 Block = BlockGym(vrpn_ip = "192.168.50.24:3883") # declare my block
 Block.reset()
+
 #Block.stretch() # stretch block for better signal readings before calibrating
 #Block.get_signal_calibration() # calibrate signal of the block
 
 Block.calibration_max = np.array([38, 393, 86, 10, 14, 1, 279, 2, 31, 179, 21 ])
 
-u_optimal_old = [0., -50.]
+u_optimal_old = [0.01, -50.]
 new_state_new = Block.get_state()
 
-del_u = [0.0, 0.0]
+del_u = [0.01, 0.01]
 
 elapsed = []
 u_optimal_list = []
@@ -61,22 +63,16 @@ try:
 
         u_optimal, del_u = NR_opt.optimize(u = u_optimal_old, del_u = del_u, \
                                             verbose = False)
-        print u_optimal
+
         u_optimal = u_optimal[0, :].tolist()
+        del_u = del_u[0, :].tolist()
 
         print "GPC: Target: ", NNP.ym
         print "GPC: P. State: ", NNP.yn
-        print "GPC: Ac State: ", Block.get_state()
         print "GPC: u_optimal", u_optimal
         print "GPC: Cost: ", NNP.compute_cost()
 
-        del_u = del_u[0, :].tolist()
-
         NNP.update_dynamics(u_optimal_old, del_u, NNP.yn.tolist(), NNP.ym.tolist())
-
-        du = np.array(u_optimal_old) - np.array(u_optimal)
-
-        du = du.flatten()
 
         u_optimal_old = u_optimal
 
@@ -94,13 +90,13 @@ try:
         elapsed += [time.time() - seconds]
         print  "GPC: elapsed time: ", elapsed[-1]
         u_optimal_list+= [u_optimal]
-        actual_states += [Block.get_state()]
+        #actual_states += [Block.get_state()]
 
 except Exception as e:
     Block.reset()
     ym = np.reshape(ym, (-1, 3))
     yn = np.reshape(yn, (-1, 3))
-    actual_states = np.reshape(actual_states, (-1, 3))
+    #actual_states = np.reshape(actual_states, (-1, 3))
     u_optimal_list = np.reshape(u_optimal_list, (-1, 2))
 
     labels = ['x', 'y', 'z']
@@ -108,7 +104,7 @@ except Exception as e:
         plt.subplot(3, 1, i+1)
         plt.plot(ym[:, i]*1000, '--w', label = 'target')
         plt.plot(yn[:, i]*1000, 'cyan', label = 'predicted state')
-        plt.plot(actual_states[:, i]*1000, label = 'actual state')
+    #    plt.plot(actual_states[:, i]*1000, label = 'actual state')
         plt.legend()
         plt.ylabel(str(labels[i]) + ' [mm]')
     plt.show()

@@ -269,7 +269,6 @@ class NeuralNetworkPredictor():
                                             self.constraints.b - U[j, inp_])**2)
 
             dJ[:, inp_] = sum_output[inp_]
-        print dJ.shape
         return dJ
 
     def Fu(self):
