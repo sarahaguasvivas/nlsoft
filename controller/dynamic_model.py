@@ -91,6 +91,14 @@ class NeuralNetworkPredictor():
         self.y_deque.appendleft(y)
         self.ym_deque.appendleft(ym)
 
+
+    def get_computation_vectors(self):
+        Y = np.array(list(self.y_deque))
+        YM = np.array(list(self.ym_deque))
+        U = np.array(list(self.u_deque))
+        delU = np.array(list(self.delu_deque))
+        return Y, YM, U, delU
+
     def __Phi_prime(self, x = 0):
         """
         Linear output function
@@ -209,52 +217,55 @@ class NeuralNetworkPredictor():
     def compute_hessian(self, u, del_u):
         Hessian = np.zeros((self.Nu, self.Nu))
 
-        Y = np.array(list(self.y_deque))
-        YM = np.array(list(self.ym_deque))
+        Y, YM , U, delU = self.get_computation_vectors()
 
         for h in range(self.Nu):
             for m in range(self.Nu):
                 sum_output=0.0
 
                 for j in range(self.N1, self.N2):
-                    sum_output += 2.*(self.__partial_yn_partial_u(h, j)*self.__partial_yn_partial_u(m, j) - \
-                                        self.__partial_2_yn_partial_nph_partial_npm(h, m, j)* \
-                                        (self.y_deque[j] - self.yn_deque[j]))
+                    sum_output += 2.*(self.__partial_yn_partial_u(h, j)*\
+                                self.__partial_yn_partial_u(m, j) - \
+                                self.__partial_2_yn_partial_nph_partial_npm(h, m, j)* \
+                                    (YM[j, :] - Y[j, :]))
 
                 for j in range(self.Nu):
-                    sum_output += 2.*( self.lambd[j] * (self.__partial_delta_u_partial_u(j, h) * self.__partial_delta_u_partial_u(j, m) + del_u[j] * 0.0))
+                    sum_output += 2.*( self.lambd[j] * (self.__partial_delta_u_partial_u(j, h) * self.__partial_delta_u_partial_u(j, m) + delU[j, :] * 0.0))
 
 
                 for j in range(self.Nu):
                     sum_output += kronecker_delta(h, j) * kronecker_delta(m, j) * \
-                                        ( 2.0*self.constraints.s/( u[j] + self.constraints.r/2. - \
-                                                self.constraints.b)**3 + 2.*self.constraints.s/(self.constraints.r/2. + \
-                                                                    self.constraints.b - u[j])**3)
+                            ( 2.0*self.constraints.s/ \
+                            ( U[j, :] + self.constraints.r/2. - \
+                                self.constraints.b)**3 + \
+                                    2.*self.constraints.s/(self.constraints.r/2. + \
+                                                self.constraints.b - U[j, :])**3)
 
                 Hessian[m, h] = sum_output
 
         return Hessian
 
     def compute_jacobian(self, u, del_u):
-        # working on this now
         dJ = []
 
-        Y = np.array(list(self.y_deque))
-        YM = np.array(list(self.ym_deque))
-        delU = np.array(list(self.delu_deque))
-        U = np.array(list(self.u_deque))
+        Y, YM, U, delU = self.get_computation_vectors()
 
         for h in range(self.Nu):
             sum_output=0.0
+
             for j in range(self.N1, self.N2):
-                sum_output+=-2.*(YM[j, :]- Y[j, :])*self.__partial_yn_partial_u(h, j)
+                sum_output+= -2.*(YM[j, :]- Y[j, :])*self.__partial_yn_partial_u(h, j)
 
             for j in range(self.Nu):
-                sum_output+=2.*self.lambd[j]*delU[j, :]*self.__partial_delta_u_partial_u(j, h)
+                sum_output+= 2.*self.lambd[j]*delU[j, :]*\
+                            self.__partial_delta_u_partial_u(j, h)
 
             for j in range(self.Nu):
-                sum_output+=kronecker_delta(h, j) * ( -self.constraints.s/(u[j] + self.constraints.r/2. - self.constraints.b)**2  + \
-                                            self.constraints.s / (self.constraints.r/2. + self.constraints.b - U[j])**2    )
+                sum_output += kronecker_delta(h, j) * \
+                            (-self.constraints.s/(U[j, :] + \
+                                self.constraints.r/2. - self.constraints.b)**2  + \
+                                    self.constraints.s / (self.constraints.r/2. + \
+                                        self.constraints.b - U[j, :])**2)
 
             dJ+=[sum_output]
         return dJ

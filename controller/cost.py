@@ -24,7 +24,6 @@ class NN_Cost:
         self.r = self.d_model.constraints.r
         self.b = self.d_model.constraints.b
         self.cost= 0.0
-        #super().__init__()
 
     def compute_cost(self, del_u, u):
         """
@@ -35,26 +34,16 @@ class NN_Cost:
         print("ym: ", self.ym, "yn: ", self.yn)
         self.cost = 0.0
 
-        self.ym = self.d_model.ym
-        self.yn = self.d_model.yn
+        Y, YM , U, delU = self.d_model.get_computing_vectors()
 
-        # FIXME : this is supposed to be from N1 to N2
-        self.cost+= (self.ym[0] - self.yn[0])
-        angle_diff = (self.ym[1] - self.yn[1])
-        if angle_diff > np.pi:
-            angle_diff -= 2*np.pi
-        if angle_diff < -np.pi:
-            angle_diff += 2*np.pi
-        self.cost += angle_diff
+        for j in range(self.N1, self.N2):
+            self.cost += (YM - Y)**2
 
         for j in range(self.Nu):
-            self.cost += (self.ym[j] - self.yn[j])**2
+            self.cost += self.lambd[j]*(delU[j])**2
 
         for j in range(self.Nu):
-            self.cost += self.lambd[j]*(del_u[j])**2
-
-        for j in range(self.Nu):
-            self.cost += self.s / (u[j] + self.r / 2.0 - self.b) + self.s / (self.r/2.0 + self.b - u[j]) - 4.0 / self.r
+            self.cost += self.s / (U[j, :] + self.r / 2.0 - self.b) + self.s / (self.r/2.0 + self.b - u[j, :]) - 4.0 / self.r
 
         return self.cost
 
