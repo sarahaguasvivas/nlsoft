@@ -3,6 +3,7 @@ from controller.dynamic_model import *
 from controller.soloway_nr import *
 from gym.block_gym import *
 from collections import deque
+
 import matplotlib.pyplot as plt
 import time, os
 
@@ -10,8 +11,8 @@ plt.style.use('dark_background')
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NNP = NeuralNetworkPredictor(model_file = model_filename, \
-                                    nd = 3, dd = 2, K = 1, lambd = [.0005, .005, .5], \
-                                    y0 = [0.07, -0.04, -0.04], u0 = [0.01, -50.])
+                                    nd = 3, dd = 2, K = 5, lambd = [.0001, .0001, .02], \
+                                    y0 = [0.07, -0.04, -0.04], u0 = [0.0, -50.])
 
 NR_opt = SolowayNR(cost = NNP.Cost, d_model = NNP)
 
@@ -30,9 +31,11 @@ del_u = [0.01, 0.01]
 
 elapsed = []
 u_optimal_list = []
+
 ym = []
 yn = []
 actual_states= []
+
 u_deque = deque()
 y_deque = deque()
 
@@ -48,7 +51,6 @@ try:
         seconds = time.time()
 
         signal = np.divide(Block.get_observation(), Block.calibration_max, dtype = np.float64).tolist()
-
         neural_network_input = np.array(signal + np.array(list(u_deque)).flatten().tolist() + \
                                         np.array(list(y_deque)).flatten().tolist())
 
@@ -66,6 +68,10 @@ try:
 
         u_optimal = u_optimal[0, :].tolist()
         del_u = del_u[0, :].tolist()
+
+        for ii in range(2):
+            u_optimal[ii] = np.clip(u_optimal[ii], -360, 360)
+
         print "-----------------------------------------------------"
         print "GPC: Target: ", NNP.ym
         print "GPC: P. State: ", NNP.yn
