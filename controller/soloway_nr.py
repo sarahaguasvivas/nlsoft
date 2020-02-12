@@ -21,7 +21,7 @@ class SolowayNR:
         for i in range(maxit):
             Ju = self.d_model.Ju()
 
-            delU =  np.linalg.solve(Ju, Fu)
+            delU =  -np.linalg.solve(Ju, Fu)
 
             U += delU
             Fu = self.d_model.Fu()
