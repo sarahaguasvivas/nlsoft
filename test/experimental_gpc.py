@@ -67,11 +67,10 @@ try:
                                             maxit = 1, rtol = 1e-8, verbose = False)
 
         u_optimal = u_optimal[0, :].tolist()
-
         del_u = del_u[0, :].tolist()
 
         for ii in range(2):
-            u_optimal[ii] = np.clip(u_optimal[ii], -250, 250)
+            u_optimal[ii] = np.clip(u_optimal[ii], -150, 250)
 
         print "-----------------------------------------------------"
         print "GPC: Target: ", NNP.ym
