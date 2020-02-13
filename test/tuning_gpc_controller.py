@@ -3,6 +3,7 @@ from controller.dynamic_model import *
 from controller.soloway_nr import *
 from gym.block_gym import *
 from collections import deque
+from scipy import signal as sig
 
 import matplotlib.pyplot as plt
 import time, os
@@ -11,20 +12,22 @@ plt.style.use('dark_background')
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NNP = NeuralNetworkPredictor(model_file = model_filename, \
-                                    nd = 3, dd = 2, K = 5, lambd = [.005, .00001, 1.], \
-                                    y0 = [0.00, -0.00, -0.00], u0 = [0.0, -50.])
+                                    nd = 3, dd = 2, K = 1, lambd = [0.0001, 0.0001, 100], \
+                                    y0 = [-0.08, -0.02, -0.014], u0 = [0.0, -50.])
 
 NR_opt = SolowayNR(cost = NNP.Cost, d_model = NNP)
 
 Block = BlockGym(vrpn_ip = "192.168.50.24:3883") # declare my block
 Block.reset()
 
+neutral_point = Block.get_state()
+
 #Block.stretch() # stretch block for better signal readings before calibrating
 #Block.get_signal_calibration() # calibrate signal of the block
 
 Block.calibration_max = np.array([38, 393, 86, 10, 14, 1, 279, 2, 31, 179, 21 ])
 
-u_optimal_old = [0.01, -50.]
+u_optimal_old = [0.0001, -50.]
 new_state_new = Block.get_state()
 
 del_u = [0.01, 0.01]
@@ -45,6 +48,7 @@ for _ in range(NNP.nd):
 for _ in range(NNP.dd):
     y_deque.append(Block.get_state())
 
+n = 0
 try:
     # working in m
     while True:
@@ -59,15 +63,17 @@ try:
         predicted_states = NNP.predict(neural_network_input).flatten()/1000
 
         NNP.yn = predicted_states
-        NNP.ym = Block.get_target()
+
+        NNP.ym = np.array([neutral_point[0], neutral_point[1] + 20./100.*sig.square(2*np.pi/10.*n),\
+                                            neutral_point[2]])
 
         new_state_old = new_state_new
 
         u_optimal, del_u = NR_opt.optimize(u = u_optimal_old, del_u = del_u, \
                                             maxit = 1, rtol = 1e-8, verbose = False)
 
-        u_optimal = u_optimal[0, :].tolist()
 
+        u_optimal = u_optimal[0, :].tolist()
         del_u = del_u[0, :].tolist()
 
         for ii in range(2):
@@ -76,6 +82,7 @@ try:
         print "-----------------------------------------------------"
         print "GPC: Target: ", NNP.ym
         print "GPC: P. State: ", NNP.yn
+        print "GPC: Act. State: ", Block.get_state()
         print "GPC: u_optimal", u_optimal
         print "GPC: Cost: ", NNP.compute_cost()
 
@@ -95,11 +102,13 @@ try:
         yn += [NNP.yn]
 
         elapsed += [time.time() - seconds]
-        print  "GPC: elapsed time: ", elapsed[-1]
-        print "-----------------------------------------------------"
+
+        print "GPC: elapsed time: ", elapsed[-1]
+        print ""
 
         u_optimal_list+= [u_optimal]
         actual_states += [Block.get_state()]
+        n += 1
 
 except:
     Block.reset()
