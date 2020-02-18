@@ -12,7 +12,7 @@ plt.style.use('dark_background')
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NNP = NeuralNetworkPredictor(model_file = model_filename, \
-                                    nd = 3, dd = 2, K = 1, lambd = [0.0001, 0.0001, 100], \
+                                    nd = 3, dd = 2, K = 5, lambd = [0.1, 0.1, 10.], \
                                     y0 = [-0.08, -0.02, -0.014], u0 = [0.0, -50.])
 
 NR_opt = SolowayNR(cost = NNP.Cost, d_model = NNP)
@@ -25,9 +25,9 @@ neutral_point = Block.get_state()
 #Block.stretch() # stretch block for better signal readings before calibrating
 #Block.get_signal_calibration() # calibrate signal of the block
 
-Block.calibration_max = np.array([38, 393, 86, 10, 14, 1, 279, 2, 31, 179, 21 ])
+Block.calibration_max = np.array([ 14, 435,  73,   5,  18,   1,  264 ,   1,  30, 182,  20 ])
 
-u_optimal_old = [0.0001, -50.]
+u_optimal_old = [0.0, -50.]
 new_state_new = Block.get_state()
 
 del_u = [0.01, 0.01]
@@ -64,8 +64,8 @@ try:
 
         NNP.yn = predicted_states
 
-        NNP.ym = np.array([neutral_point[0], neutral_point[1] + 20./100.*sig.square(2*np.pi/10.*n),\
-                                            neutral_point[2]])
+        NNP.ym = np.array([neutral_point[0], neutral_point[1],\
+                                            neutral_point[2]+ 0.2*sig.square(2*np.pi*n/10.)])
 
         new_state_old = new_state_new
 
