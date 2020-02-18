@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D
 
 plt.style.use('dark_background')
-filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data.csv"
+filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data1.csv"
 
 
 def neural_network_training(X, y):
@@ -121,6 +121,6 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
 
 if __name__ == "__main__":
     X, y = prepare_data_file(filename, nd=3, dd=4)
-#    modelfile = neural_network_training(X, y)
+    modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)
 
