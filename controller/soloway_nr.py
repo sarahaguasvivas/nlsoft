@@ -10,7 +10,7 @@ class SolowayNR:
         self.cost = cost
         self.d_model = d_model
 
-    def __fsolve_newton(self, u0, del_u, maxit = 8, rtol = 1e-8, verbose=False):
+    def __fsolve_newton(self, u0, del_u, maxit = 1, rtol = 1e-8, verbose=False):
 
         Y, YM, U, delU = self.d_model.get_computation_vectors()
 
@@ -21,6 +21,8 @@ class SolowayNR:
         for i in range(maxit):
             Ju = self.d_model.Ju()
 
+            print "OPTIMIZER: Conditioning of Hessian: ",\
+                                    np.linalg.cond(Ju)
             delU =  -np.linalg.solve(Ju, Fu)
 
             U += delU
@@ -32,10 +34,7 @@ class SolowayNR:
                 print "Newton: ", i, " anorm: ", norm, " rnorm: ", norm/norm0, " eratio: ", enorm/enorm_last**2
                 enorm_last = enorm
 
-           # if norm < rtol * norm0:
-           #     break
-
         return U, delU
 
-    def optimize(self, u = [0, 0], del_u=[0,0], maxit = 8, rtol = 1e-8, verbose=False):
+    def optimize(self, u = [0, 0], del_u=[0,0], maxit = 1, rtol = 1e-8, verbose=False):
        return self.__fsolve_newton(u0 = u, del_u = del_u,maxit = maxit, rtol = rtol,  verbose = verbose)
