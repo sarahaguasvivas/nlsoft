@@ -12,8 +12,9 @@ plt.style.use('dark_background')
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NNP = NeuralNetworkPredictor(model_file = model_filename, \
-                                    nd = 3, dd = 2, K = 5, lambd = [0.1, 0.1, 10.], \
-                                    y0 = [-0.08, -0.02, -0.014], u0 = [0.0, -50.])
+                                    nd = 3, dd = 2, K = 5, lambd = [0.005, 0.005, 1.], \
+                                    y0 = [0.03,-0.04, 0.06], \
+                                            u0 = [0.0, -50.])
 
 NR_opt = SolowayNR(cost = NNP.Cost, d_model = NNP)
 
@@ -22,15 +23,17 @@ Block.reset()
 
 neutral_point = Block.get_state()
 
+NNP.y0 = neutral_point
+
 #Block.stretch() # stretch block for better signal readings before calibrating
 #Block.get_signal_calibration() # calibrate signal of the block
 
-Block.calibration_max = np.array([ 14, 435,  73,   5,  18,   1,  264 ,   1,  30, 182,  20 ])
+Block.calibration_max = np.array([ 47., 340.,  74.,  32.,  10.,  36., 279.,  37.,  23., 108.,  26. ])
 
 u_optimal_old = [0.0, -50.]
 new_state_new = Block.get_state()
 
-del_u = [0.01, 0.01]
+del_u = [0.0, 0.0]
 
 elapsed = []
 u_optimal_list = []
@@ -43,7 +46,7 @@ u_deque = deque()
 y_deque = deque()
 
 for _ in range(NNP.nd):
-    u_deque.append([0.01, -50])
+    u_deque.append([0.0, -50])
 
 for _ in range(NNP.dd):
     y_deque.append(Block.get_state())
@@ -55,17 +58,19 @@ try:
         seconds = time.time()
 
         signal = np.divide(Block.get_observation(), Block.calibration_max, dtype = np.float64).tolist()
+
         neural_network_input = np.array(signal + np.array(list(u_deque)).flatten().tolist() + \
                                         np.array(list(y_deque)).flatten().tolist())
 
         neural_network_input = np.reshape(neural_network_input, (1, -1))
 
-        predicted_states = NNP.predict(neural_network_input).flatten()/1000
+        predicted_states = NNP.predict(neural_network_input).flatten()/1000.
 
         NNP.yn = predicted_states
 
-        NNP.ym = np.array([neutral_point[0], neutral_point[1],\
-                                            neutral_point[2]+ 0.2*sig.square(2*np.pi*n/10.)])
+        NNP.ym = np.array([neutral_point[0], neutral_point[1], \
+                                            neutral_point[2] + \
+                                            0.1*sig.square(np.pi*n/10.)])
 
         new_state_old = new_state_new
 
@@ -76,8 +81,9 @@ try:
         u_optimal = u_optimal[0, :].tolist()
         del_u = del_u[0, :].tolist()
 
-        for ii in range(2):
-            u_optimal[ii] = np.clip(u_optimal[ii], -250, 250)
+        u_optimal[0] %= 180.
+        u_optimal[1] = np.clip(u_optimal[1], -300, 200)
+
 
         print "-----------------------------------------------------"
         print "GPC: Target: ", NNP.ym

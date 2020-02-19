@@ -23,14 +23,14 @@ filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data1.csv"
 
 def neural_network_training(X, y):
     y = 1000*y
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.1)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.05)
 
     model = Sequential()
-    model.add(Dense(100, activation =  'linear'))
-    model.add(Dense(3,  activation = 'linear'))
+    model.add(Dense(15, activation =  'linear', kernel_initializer='random_normal'))
+    model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
-    model.compile(optimizer= 'rmsprop', loss ='mse', metrics=['mse'])
-    model.fit(X_train, y_train, epochs = 10000, batch_size = 10, validation_split=0.33)
+    model.compile(optimizer= 'adam', loss ='mse', metrics=['mse'])
+    model.fit(X_train, y_train, epochs = 100, batch_size = 10, validation_split=0.05)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
@@ -39,7 +39,7 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
 
     model = load_model(modelfile)
     y *= 1000 # convert meters to mm
-    yn = model.predict(X)
+    yn = model.predict(X) #*1000
     plt.figure()
 
     lab = ['x', 'y', 'z']
@@ -103,7 +103,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
     for i in range(nd):
         U = np.concatenate((U, inputs[nd - i - 1 + (N-nd):L-i, :]), axis = 1)
 
-    for i in range(dd ):
+    for i in range(dd):
         Y = np.concatenate((Y, position[dd - i - 1 + (N - dd) : L-i, :]), axis = 1)
 
     print Y.shape
