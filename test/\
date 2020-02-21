@@ -12,7 +12,7 @@ plt.style.use('dark_background')
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NNP = NeuralNetworkPredictor(model_file = model_filename, \
-                                    nd = 3, dd = 3, K = 1, lambd = [5e-2, 5e-2, 5e-2], \
+                                    nd = 3, dd = 3, K = 1, lambd = [0.001, 0.001, 0.001], \
                                     y0 = [0.03,-0.04, 0.06], \
                                             u0 = [0.0, -50.])
 
@@ -68,8 +68,8 @@ try:
 
         NNP.yn = predicted_states
 
-        NNP.ym = np.array([neutral_point[0], neutral_point[1] , \
-                                            neutral_point[2] + 0.1 * sig.square(np.pi * n / 50.) - 0.1/2.])
+        NNP.ym = np.array([neutral_point[0], neutral_point[1] + 0.01 * sig.square(np.pi * n / 50.) - 0.05/2., \
+                                            neutral_point[2]])
 
         new_state_old = new_state_new
 
@@ -81,11 +81,8 @@ try:
 
         del_u = del_u[0, :].tolist()
 
-        #u_optimal[0] = np.clip(u_optimal[0], -300, 150)
-        #u_optimal[1] = np.clip(u_optimal[1], -300, 150)
-
-        u_optimal[0] %= 250.
-        u_optimal[1] %= 250.
+        u_optimal[0] = np.clip(u_optimal[0], -300, 150)
+        u_optimal[1] %= 180. #np.clip(u_optimal[1], -300, 150)
 
         print "-----------------------------------------------------"
         print "GPC: Target: ", NNP.ym
