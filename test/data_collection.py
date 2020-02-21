@@ -19,7 +19,6 @@ sides = np.random.randint(-140, 130, (N, 1))
 random_points = np.concatenate((updown, sides), axis = 1)
 
 flag = True
-
 today = date.today()
 f = open("data_" + today.strftime("%b_%d_%Y_8")+".txt", "w+")
 # my_string = ','.join(map(str, my_list))

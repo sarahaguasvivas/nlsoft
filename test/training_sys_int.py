@@ -26,11 +26,11 @@ def neural_network_training(X, y):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.05)
 
     model = Sequential()
-    model.add(Dense(15, activation =  'linear', kernel_initializer='random_normal'))
+    model.add(Dense(30, activation =  'tanh', kernel_initializer='random_normal'))
     model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
     model.compile(optimizer= 'adam', loss ='mse', metrics=['mse'])
-    model.fit(X_train, y_train, epochs = 100, batch_size = 10, validation_split=0.05)
+    model.fit(X_train, y_train, epochs = 1000, batch_size = 15, validation_split=0.1)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
@@ -43,7 +43,7 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
     plt.figure()
 
     lab = ['x', 'y', 'z']
-    L = X.shape[0]
+    L = 1000 #X.shape[0]
 
     for i in range(3):
         plt.subplot(3, 2, 2*i+1)
@@ -120,7 +120,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
 
 
 if __name__ == "__main__":
-    X, y = prepare_data_file(filename, nd=3, dd=4)
-    modelfile = neural_network_training(X, y)
+    X, y = prepare_data_file(filename, nd=3, dd=5)
+    #modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)
 

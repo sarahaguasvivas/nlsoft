@@ -104,13 +104,13 @@ class NeuralNetworkPredictor():
         """
         Linear output function
         """
-        return 1.0
+        return 1 - np.tanh(x)**2
 
     def __Phi_prime_prime(self, x = 0):
         """
         Linear output function
         """
-        return 0.0
+        return -2*np.tanh(x)* self.__Phi_prime(x)
 
     """
         ---------------------------------------------------------------------
