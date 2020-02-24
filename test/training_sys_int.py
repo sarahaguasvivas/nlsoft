@@ -111,8 +111,11 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
     S = signals[N - 1:, :]
     Y = Y[:, 3:-3] # Y
 
-    X = np.concatenate((U, S), axis = 1)
-    X = np.concatenate((X, Y[:, 3:]), axis = 1)
+    #X = np.concatenate((U, S), axis = 1)
+    #X = np.concatenate((X, Y[:, 3:]), axis = 1)
+
+    X = np.concatenate((U, Y[:, 3:]), axis = 1)
+    X = np.concatenate((X, S), axis = 1)
 
     y = Y[:, :3] # we are using all of this to estimate current
 
@@ -121,6 +124,6 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
 
 if __name__ == "__main__":
     X, y = prepare_data_file(filename, nd=3, dd=5)
-    #modelfile = neural_network_training(X, y)
+    modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)
 

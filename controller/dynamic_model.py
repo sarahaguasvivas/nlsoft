@@ -17,7 +17,7 @@ class ModelException(Exception):
 
 class NeuralNetworkPredictor():
     def __init__(self, model_file, N1 = 1 , N2 = 5 ,  Nu = 4 , \
-                            K = 0.7 , lambd = [0.3, 0.2, 0.3] , nd = 3,\
+                            K = 7 , lambd = [0.3, 0.2, 0.3] , nd = 3,\
                                                 dd = 3, y0= [0, 0, 0], u0= [0, 0]):
 
         """
@@ -45,23 +45,26 @@ class NeuralNetworkPredictor():
 
         self.model = load_model(model_file)
 
-        self.output_size = self.model.layers[-1].output_shape[1]
-        self.input_size = self.model.layers[0].input_shape[1]
+        output_size = self.model.layers[-1].output_shape[1]
+        input_size = self.model.layers[0].input_shape[1]
 
-        self.nd = nd
-        self.dd = dd
+        self.nd = nd # associated with u( . ) not counting u(n)
+        self.dd = dd # associated with y( . )
 
-        self.Hessian = np.zeros((self.output_size, self.output_size))
+        self.Hessian = np.zeros((output_size, output_size))
 
         # Important for recursions:
-        self.previous_first_der = 1
-        self.previous_second_der = 1
+        self.previous_first_der = 1.0
+        self.previous_second_der = 1.0
 
         # Initializing deques
         self.y_deque = deque()
         self.delu_deque = deque()
         self.u_deque = deque()
         self.ym_deque = deque()
+        num_signals = 11
+        # hid does not include the weights that have to do with the signals
+        self.hid = self.model.layers[-1].input_shape[1] - num_signals
 
         self.initialize_deques(self.u0, self.y0)
         self.Cost = NN_Cost(self, self.lambd)
@@ -90,7 +93,6 @@ class NeuralNetworkPredictor():
         self.y_deque.appendleft(y)
         self.ym_deque.appendleft(ym)
 
-
     def get_computation_vectors(self):
         Y = np.array(list(self.y_deque))
         YM = np.array(list(self.ym_deque))
@@ -100,15 +102,15 @@ class NeuralNetworkPredictor():
 
     def __Phi_prime(self, x = 0):
         """
-        Linear output function
+            Linear output function
         """
-        return 1 - np.tanh(x)**2
+        return 1.0
 
     def __Phi_prime_prime(self, x = 0):
         """
-        Linear output function
+            Linear output function
         """
-        return -2*np.tanh(x)* self.__Phi_prime(x)
+        return 0.0
 
     """
         ---------------------------------------------------------------------
@@ -138,13 +140,14 @@ class NeuralNetworkPredictor():
             Du(n+h) Du(n+m)
 
         """
-        weights = self.model.layers[0].get_weights()[0]
-        hid = weights.shape[1]
+        weights = self.model.layers[-1].get_weights()[0]
         sum_output=0.0
-        for i in range(hid):
-            sum_output+= weights[j,i] * self.__partial_2_fnet_partial_nph_partial_npm(h, m, j)
+
+        for i in range(self.hid):
+            sum_output+= np.mean(np.dot(weights[i, :], self.__partial_2_fnet_partial_nph_partial_npm(h, m, j)))
 
         self.previous_second_der = sum_output
+
         return sum_output
 
     def __partial_2_net_partial_u_nph_partial_npm(self, h, m, j):
@@ -154,7 +157,9 @@ class NeuralNetworkPredictor():
             Du(n+h)Du(n+m)
         """
         weights = self.model.layers[0].get_weights()[0]
-        sum_output=0.0
+
+        sum_output = 0.0
+
         for i in range(0, min(self.K, self.dd)):
             sum_output+= weights[j, i+self.nd+1] * self.previous_second_der * step(self.K-i-1)
         return sum_output
@@ -165,12 +170,12 @@ class NeuralNetworkPredictor():
             -----------
              D u(n+h)
         """
-        weights = self.model.layers[0].get_weights()[0]
-        hid = self.model.layers[0].output_shape[1]
+        weights = self.model.layers[-1].get_weights()[0]
+        #hid = self.model.layers[0].output_shape[1]
         sum_output = 0.0
-        for i in range(hid):
-            sum_output += weights[j, i] * self.__partial_fnet_partial_u( h, j)
 
+        for i in range(self.hid):
+            sum_output += weights[i, j] * self.__partial_fnet_partial_u( h, j)
         self.previous_first_der = sum_output
         return sum_output
 
@@ -188,7 +193,6 @@ class NeuralNetworkPredictor():
             ---------
             D u(n+h)
         """
-
         weights = self.model.layers[0].get_weights()[0]
         sum_output = 0.0
 
@@ -218,6 +222,7 @@ class NeuralNetworkPredictor():
         Y, YM , U, delU = self.get_computation_vectors()
 
         Hessian = np.zeros((self.Nu, self.Nu))
+
         for h in range(self.Nu):
             for m in range(self.Nu):
                 sum_output = 0.0
@@ -234,13 +239,12 @@ class NeuralNetworkPredictor():
 
                 for j in range(self.Nu):
                     sum_output += np.mean(kronecker_delta(h, j) * kronecker_delta(m, j) * \
-                            (2.0*self.constraints.s/ \
+                            (2.0*self.constraints.s / \
                                 np.power(U[j, :] + self.constraints.r/2. - \
                                     self.constraints.b, 3) + \
-                                        2.*self.constraints.s/(self.constraints.r/2. + \
+                                        2.*self.constraints.s / (self.constraints.r/2. + \
                                         self.constraints.b - np.power(U[j, :], 3))))
                 Hessian[m, h] = sum_output
-
         return Hessian
 
     def compute_jacobian(self):
