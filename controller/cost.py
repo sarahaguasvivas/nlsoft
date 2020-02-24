@@ -15,12 +15,6 @@ class NN_Cost:
         b       : offset of the range
         """
         self.d_model = dynamic_model
-        self.N1 = dynamic_model.N1
-        self.N2 = dynamic_model.N2
-        self.Nu = dynamic_model.Nu
-        self.ym = dynamic_model.ym
-        self.yn = dynamic_model.yn
-        self.lambd = dynamic_model.lambd
         self.s = self.d_model.constraints.s
         self.r = self.d_model.constraints.r
         self.b = self.d_model.constraints.b
@@ -38,13 +32,13 @@ class NN_Cost:
 
         Y, YM , U, delU = self.d_model.get_computation_vectors()
 
-        for j in range(self.N1, self.N2):
+        for j in range(self.d_model.N1, self.d_model.N2):
             self.cost += np.mean(np.power(YM[j, :] - Y[j, :], 2))
 
-        for j in range(self.Nu):
-            self.cost += np.mean(self.lambd[j]*np.power(delU[j, :], 2))
+        for j in range(self.d_model.Nu):
+            self.cost += np.mean(self.d_model.lambd[j]*np.power(delU[j, :], 2))
 
-        for j in range(self.Nu):
+        for j in range(self.d_model.Nu):
             self.cost += np.mean(self.s / (U[j, :] + self.r / 2.0 - self.b) + \
                                         self.s / (self.r/2.0 + self.b - U[j, :]) - 4.0 / self.r)
 
