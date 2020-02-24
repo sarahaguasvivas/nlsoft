@@ -12,7 +12,7 @@ plt.style.use('dark_background')
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, N2 = 3, Nu = 4, \
-                                    nd = 3, dd = 3, K = 1, lambd = [1.]*4, \
+                                    nd = 3, dd = 3, K = 1, lambd = [1e-2]*4, \
                                     y0 = [0.03,-0.04, 0.06], \
                                             u0 = [0.0, -50.])
 
@@ -28,7 +28,7 @@ NNP.y0 = neutral_point
 #Block.stretch() # stretch block for better signal readings before calibrating
 #Block.get_signal_calibration() # calibrate signal of the block
 
-Block.calibration_max = np.array( [ 27, 348,  81,  15,   8,  18, 273,   1,  24, 106,  15 ])
+Block.calibration_max = np.array( [ 19, 273,  70,  12,   13,  17, 240,   1,  21, 109,  16 ])
 
 u_optimal_old = [0.0, -50.]
 new_state_new = Block.get_state()
@@ -59,8 +59,8 @@ try:
 
         signal = np.divide(Block.get_observation(), Block.calibration_max, dtype = np.float64).tolist()
 
-        neural_network_input = np.array(signal + np.array(list(u_deque)).flatten().tolist() + \
-                                        np.array(list(y_deque)).flatten().tolist())
+        neural_network_input = np.array(np.array(list(u_deque)).flatten().tolist() + \
+                                                np.array(list(y_deque)).flatten().tolist() + signal)
 
         neural_network_input = np.reshape(neural_network_input, (1, -1))
 
@@ -69,7 +69,7 @@ try:
         NNP.yn = predicted_states
 
         NNP.ym = np.array([neutral_point[0], neutral_point[1] , \
-                                            neutral_point[2] +  sig.square(np.pi * n / 50.)])
+                                            neutral_point[2] +  0.1*sig.square(np.pi * n / 10.) - 0.1 / 2.0])
 
         new_state_old = new_state_new
 

@@ -24,7 +24,7 @@ class SolowayNR:
             print "OPTIMIZER: Conditioning of Hessian: ",\
                                     np.linalg.cond(Ju)
 
-            delU =  -np.linalg.solve(Ju, Fu)
+            delU =  np.linalg.solve(Ju, -Fu)
 
             U += delU
             Fu = self.d_model.Fu()
