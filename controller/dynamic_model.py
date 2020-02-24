@@ -16,14 +16,13 @@ class ModelException(Exception):
     pass
 
 class NeuralNetworkPredictor():
-    def __init__(self, model_file, N1 = 1 , N2 = 5 ,  Nu = 3 , \
+    def __init__(self, model_file, N1 = 1 , N2 = 5 ,  Nu = 4 , \
                             K = 0.7 , lambd = [0.3, 0.2, 0.3] , nd = 3,\
                                                 dd = 3, y0= [0, 0, 0], u0= [0, 0]):
 
         """
                 w --> weights from input layer to hidden layer
         """
-
         self.N1 = N1
         self.N2 = N2
         self.Nu = Nu
@@ -49,7 +48,6 @@ class NeuralNetworkPredictor():
         self.output_size = self.model.layers[-1].output_shape[1]
         self.input_size = self.model.layers[0].input_shape[1]
 
-        self.hd = len(self.model.layers) - 1
         self.nd = nd
         self.dd = dd
 
@@ -231,8 +229,8 @@ class NeuralNetworkPredictor():
                                     (YM[j, :] - Y[j, :])))
 
                 for j in range(self.Nu):
-                    sum_output += 2.*(self.lambd[j] * (self.__partial_delta_u_partial_u(j, h) * \
-                                        self.__partial_delta_u_partial_u(j, m)))
+                    sum_output += np.mean(2.*(self.lambd[j] * (self.__partial_delta_u_partial_u(j, h) * \
+                                        self.__partial_delta_u_partial_u(j, m))))
 
                 for j in range(self.Nu):
                     sum_output += np.mean(kronecker_delta(h, j) * kronecker_delta(m, j) * \
@@ -252,23 +250,23 @@ class NeuralNetworkPredictor():
 
         for inp_ in range(U.shape[1]):
             for h in range(self.Nu):
-                sum_output= [0., 0.]
+                sum_output = np.array([0.0]*U.shape[1])
+
                 for j in range(self.N1, self.N2):
-                    sum_output[inp_]+= -2.*(YM[j, :]- Y[j, :])*self.__partial_yn_partial_u(h, j)
+                    sum_output[inp_]+= np.mean(-2.*(YM[j, :]- Y[j, :])*self.__partial_yn_partial_u(h, j))
 
                 for j in range(self.Nu):
-
-                    sum_output[inp_]+= 2.*self.lambd[j]*delU[j, inp_]*\
-                                self.__partial_delta_u_partial_u(j, h)
+                    sum_output[inp_]+= np.mean(2.*self.lambd[j]*delU[j, inp_]*\
+                                self.__partial_delta_u_partial_u(j, h))
 
                 for j in range(self.Nu):
-                    sum_output[inp_] += kronecker_delta(h, j) * \
+                    sum_output[inp_] += np.mean(kronecker_delta(h, j) * \
                                 (-self.constraints.s/(U[j, inp_] + \
                                     self.constraints.r/2. - self.constraints.b)**2  + \
                                         self.constraints.s / (self.constraints.r/2. + \
-                                            self.constraints.b - U[j, inp_])**2)
+                                            self.constraints.b - U[j, inp_])**2))
 
-            dJ[:, inp_] = sum_output[inp_]
+                dJ[:, inp_] = sum_output[inp_].tolist()
         return dJ
 
     def Fu(self):

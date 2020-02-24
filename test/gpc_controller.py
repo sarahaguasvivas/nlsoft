@@ -19,10 +19,10 @@ NR_opt = SolowayNR(cost = NNP.Cost, d_model = NNP)
 Block = BlockGym(vrpn_ip = "192.168.50.24:3883") # declare my block
 Block.reset()
 
-Block.stretch() # stretch block for better signal readings before calibrating
-Block.get_signal_calibration() # calibrate signal of the block
+#Block.stretch() # stretch block for better signal readings before calibrating
+#Block.get_signal_calibration() # calibrate signal of the block
 
-#Block.calibration_max = np.array([38, 393, 86, 10, 14, 1, 279, 2, 31, 179, 21 ])
+Block.calibration_max = np.array([38, 393, 86, 10, 14, 1, 279, 2, 31, 179, 21 ])
 
 u_optimal_old = [0.01, -50.]
 new_state_new = Block.get_state()
