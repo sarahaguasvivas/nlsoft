@@ -12,7 +12,7 @@ plt.style.use('dark_background')
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, N2 = 3, Nu = 4, \
-                                    nd = 3, dd = 3, K = 1, lambd = [1e-2]*4, \
+                                    nd = 3, dd = 3, K = 1, lambd = [1e2, 1e2, 1e2, 1e4], \
                                     y0 = [0.03,-0.04, 0.06], \
                                             u0 = [0.0, -50.])
 
@@ -69,7 +69,7 @@ try:
         NNP.yn = predicted_states
 
         NNP.ym = np.array([neutral_point[0], neutral_point[1] , \
-                                            neutral_point[2] +  0.1*sig.square(np.pi * n / 10.) - 0.1 / 2.0])
+                                            neutral_point[2] +  0.1*sig.square(np.pi * n / 50.) - 0.1 / 2.0])
 
         new_state_old = new_state_new
 

@@ -66,6 +66,9 @@ class NeuralNetworkPredictor():
         # hid does not include the weights that have to do with the signals
         self.hid = self.model.layers[-1].input_shape[1] - num_signals
 
+        self.num_u = 2
+        self.num_y = 3
+
         self.initialize_deques(self.u0, self.y0)
         self.Cost = NN_Cost(self, self.lambd)
 
@@ -157,11 +160,9 @@ class NeuralNetworkPredictor():
             Du(n+h)Du(n+m)
         """
         weights = self.model.layers[0].get_weights()[0]
-
         sum_output = 0.0
-
         for i in range(0, min(self.K, self.dd)):
-            sum_output+= weights[j, i+self.nd+1] * self.previous_second_der * step(self.K-i-1)
+            sum_output+= np.mean(weights[j, self.num_y*i+self.nd+1:self.num_y*i+self.nd+3] * self.previous_second_der * step(self.K-i-1))
         return sum_output
 
     def __partial_yn_partial_u(self, h, j):
