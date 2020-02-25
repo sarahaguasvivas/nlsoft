@@ -11,9 +11,9 @@ import time, os
 plt.style.use('dark_background')
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
-NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, N2 = 3, Nu = 2, \
-                                    nd = 3, dd = 3, K = 1, lambd = [1e0]*2, \
-                                    y0 = [0.03,-0.04, 0.06], \
+NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 1, N2 = 3, Nu = 1, \
+                                    nd = 3, dd = 3, K = 1, lambd = [1e-20]*1, \
+                                    y0 = [0.02,-0.05, 0.05], \
                                             u0 = [0.0, -50.], s = 1e-10, b = 1., r = 1.)
 
 NR_opt = SolowayNR(cost = NNP.Cost, d_model = NNP)
@@ -64,20 +64,22 @@ try:
 
         neural_network_input = np.reshape(neural_network_input, (1, -1))
 
-        predicted_states = NNP.predict(neural_network_input).flatten() / 1000.
+        predicted_states = NNP.predict(neural_network_input).flatten()
 
         NNP.yn = predicted_states
 
         #NNP.ym = np.array([neutral_point[0]+ 0.1*sig.square(np.pi * n / 20.) - 0.1, neutral_point[1], \
         #                                    neutral_point[2]])
 
-        NNP.ym = np.array([neutral_point[0] + 0.01, neutral_point[1], neutral_point[2]])
+        NNP.ym = np.array([neutral_point[0] + 0.1, neutral_point[1], neutral_point[2]])
+
         new_state_old = new_state_new
 
         u_optimal, del_u = NR_opt.optimize(u = u_optimal_old, del_u = del_u, \
                                             maxit = 1, rtol = 1e-8, verbose = False)
 
         u_optimal = u_optimal[0, :].tolist()
+
         del_u = del_u[0, :].tolist()
 
         u_optimal[0] = np.clip(u_optimal[0], -300, 150)

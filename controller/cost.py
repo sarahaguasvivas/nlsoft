@@ -26,14 +26,14 @@ class NN_Cost:
         previous control inputs
         n is an int that represents the current discrete timestep
         """
-        #print("ym: ", self.d_model.ym, "yn: ", self.d_model.yn)
-
         self.cost = 0.0
 
         Y, YM , U, delU = self.d_model.get_computation_vectors()
 
         for j in range(self.d_model.N1, self.d_model.N2):
             self.cost += np.mean(np.power(YM[j, :] - Y[j, :], 2))
+
+        cost1 = self.cost
 
         for j in range(self.d_model.Nu):
             self.cost += np.mean(self.d_model.lambd[j]*np.power(delU[j, :], 2))
@@ -42,6 +42,6 @@ class NN_Cost:
             self.cost += np.mean(self.s / (U[j, :] + self.r / 2.0 - self.b) + \
                                         self.s / (self.r/2.0 + self.b - U[j, :]) - 4.0 / self.r)
 
-        return np.abs(self.cost)
+        return np.abs(self.cost), cost1
 
 
