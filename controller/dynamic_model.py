@@ -53,8 +53,8 @@ class NeuralNetworkPredictor():
         self.dd = dd # associated with y( . )
         self.Hessian = None
 
-        self.previous_first_der = 1.0 # important for recursions
-        self.previous_second_der = 1.0 # important for recursions
+        self.previous_first_der = 0.0 # important for recursions
+        self.previous_second_der = 0.0 # important for recursions
 
         self.y_deque = deque()
         self.delu_deque = deque()
