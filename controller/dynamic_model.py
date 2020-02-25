@@ -15,14 +15,21 @@ from collections import deque
 class ModelException(Exception):
     pass
 
+"""
+        ---------------------------------------------------------------------
+            Soloway, D. and P.J. Haley, "Neural Generalized Predictive Control,"
+            Proceedings of the 1996 IEEE International Symposium on Intelligent
+            Control, 1996, pp. 277-281.
+
+            Calculating h'th element of the Jacobian
+            Calculating m'th and h'th element of the Hessian
+        ---------------------------------------------------------------------
+"""
 class NeuralNetworkPredictor():
     def __init__(self, model_file, N1 = 1 , N2 = 5 ,  Nu = 4 , \
                             K = 7 , lambd = [0.3, 0.2, 0.3] , nd = 3,\
-                                                dd = 3, y0= [0, 0, 0], u0= [0, 0]):
-
-        """
-                w --> weights from input layer to hidden layer
-        """
+                                    dd = 3, y0= [0, 0, 0], u0= [0, 0], \
+                                        s = 1e-20, b = 1e0, r = 1e0):
         self.N1 = N1
         self.N2 = N2
         self.Nu = Nu
@@ -39,33 +46,22 @@ class NeuralNetworkPredictor():
             raise ModelException("The length of lambda should be the same as Nu")
 
         self.K = K
-
-        self.num_predicted_states = 3
-        self.constraints = Constraints()
-
+        self.constraints = Constraints(s = s, b = b, r = r)
         self.model = load_model(model_file)
-
-        output_size = self.model.layers[-1].output_shape[1]
-        input_size = self.model.layers[0].input_shape[1]
 
         self.nd = nd # associated with u( . ) not counting u(n)
         self.dd = dd # associated with y( . )
+        self.Hessian = None
 
-        self.Hessian = np.zeros((output_size, output_size))
+        self.previous_first_der = 1.0 # important for recursions
+        self.previous_second_der = 1.0 # important for recursions
 
-        # Important for recursions:
-        self.previous_first_der = 1.0
-        self.previous_second_der = 1.0
-
-        # Initializing deques
         self.y_deque = deque()
         self.delu_deque = deque()
         self.u_deque = deque()
         self.ym_deque = deque()
-        num_signals = 11
 
-        # hid does not include the weights that have to do with the signals
-        self.hid = self.model.layers[-1].input_shape[1] - num_signals
+        self.hid = self.model.layers[-1].input_shape[1]
 
         self.num_u = 2
         self.num_y = 3
@@ -116,17 +112,6 @@ class NeuralNetworkPredictor():
         """
         return 0.0
 
-    """
-        ---------------------------------------------------------------------
-            Soloway, D. and P.J. Haley, "Neural Generalized Predictive Control,"
-            Proceedings of the 1996 IEEE International Symposium on Intelligent
-            Control, 1996, pp. 277-281.
-
-            Calculating h'th element of the Jacobian
-            Calculating m'th and h'th element of the Hessian
-        ---------------------------------------------------------------------
-    """
-
     def __partial_2_fnet_partial_nph_partial_npm(self, h, m, j):
         """
              D2^2f_j(net)
@@ -146,12 +131,9 @@ class NeuralNetworkPredictor():
         """
         weights = self.model.layers[-1].get_weights()[0]
         sum_output=0.0
-
         for i in range(self.hid):
             sum_output+= np.mean(np.dot(weights[i, :], self.__partial_2_fnet_partial_nph_partial_npm(h, m, j)))
-
         self.previous_second_der = sum_output
-
         return sum_output
 
     def __partial_2_net_partial_u_nph_partial_npm(self, h, m, j):

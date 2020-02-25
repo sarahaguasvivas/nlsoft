@@ -11,10 +11,10 @@ import time, os
 plt.style.use('dark_background')
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
-NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, N2 = 3, Nu = 4, \
-                                    nd = 3, dd = 3, K = 1, lambd = [1e2, 1e2, 1e2, 1e4], \
+NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, N2 = 3, Nu = 2, \
+                                    nd = 3, dd = 3, K = 1, lambd = [1e0]*2, \
                                     y0 = [0.03,-0.04, 0.06], \
-                                            u0 = [0.0, -50.])
+                                            u0 = [0.0, -50.], s = 1e-10, b = 1., r = 1.)
 
 NR_opt = SolowayNR(cost = NNP.Cost, d_model = NNP)
 
@@ -28,7 +28,7 @@ NNP.y0 = neutral_point
 #Block.stretch() # stretch block for better signal readings before calibrating
 #Block.get_signal_calibration() # calibrate signal of the block
 
-Block.calibration_max = np.array( [ 19, 273,  70,  12,   13,  17, 240,   1,  21, 109,  16 ])
+Block.calibration_max = np.array( [ 24, 219,  69,  13,   9,  16, 243,   1,  26, 102,  16 ])
 
 u_optimal_old = [0.0, -50.]
 new_state_new = Block.get_state()
@@ -68,17 +68,16 @@ try:
 
         NNP.yn = predicted_states
 
-        NNP.ym = np.array([neutral_point[0], neutral_point[1] , \
-                                            neutral_point[2] +  0.1*sig.square(np.pi * n / 50.) - 0.1 / 2.0])
+        #NNP.ym = np.array([neutral_point[0]+ 0.1*sig.square(np.pi * n / 20.) - 0.1, neutral_point[1], \
+        #                                    neutral_point[2]])
 
+        NNP.ym = np.array([neutral_point[0] + 0.01, neutral_point[1], neutral_point[2]])
         new_state_old = new_state_new
 
         u_optimal, del_u = NR_opt.optimize(u = u_optimal_old, del_u = del_u, \
                                             maxit = 1, rtol = 1e-8, verbose = False)
 
-
         u_optimal = u_optimal[0, :].tolist()
-
         del_u = del_u[0, :].tolist()
 
         u_optimal[0] = np.clip(u_optimal[0], -300, 150)
