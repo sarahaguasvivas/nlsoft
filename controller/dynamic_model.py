@@ -184,8 +184,9 @@ class NeuralNetworkPredictor():
                 sum_output+= np.mean(weights[j, i*self.num_u:i*self.num_u + self.num_u] *\
                                                                 kronecker_delta(self.Nu, h))
         for i in range(0, min(self.K, self.dd)):
-            sum_output += np.mean(weights[j, i*self.num_y + self.nd + 1] * self.previous_first_der * \
-                                                                step(self.K - i -1))
+            sum_output += np.mean(np.mean(weights[j, i*self.num_y + \
+                            self.nd + 1: i*self.num_y + self.nd + 1+self.num_y]) * \
+                                self.previous_first_der * step(self.K - i -1))
         return sum_output
 
     def __partial_delta_u_partial_u(self, j, h):

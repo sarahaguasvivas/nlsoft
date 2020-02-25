@@ -11,10 +11,10 @@ import time, os
 plt.style.use('dark_background')
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
-NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 1, N2 = 3, Nu = 3, \
-                                    nd = 3, dd = 3, K = 1, lambd = [1e2, 1e-10, 1e1], \
-                                    y0 = [0.02,-0.05, 0.05], \
-                                            u0 = [0.0, -50.], s = 1e-10, b = 1e-10, r = 1e-10)
+NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 1, N2 = 3, Nu = 2, \
+                                    nd = 3, dd = 3, K = 1, lambd = [1e-1, 1e1], \
+                                        y0 = [0.02,-0.05, 0.05], \
+                                            u0 = [0.0, -50.], s = 1e-10, b = 1e0, r = 1e0)
 
 NR_opt = SolowayNR(cost = NNP.Cost, d_model = NNP)
 
@@ -28,7 +28,7 @@ NNP.y0 = neutral_point
 #Block.stretch() # stretch block for better signal readings before calibrating
 #Block.get_signal_calibration() # calibrate signal of the block
 
-Block.calibration_max = np.array([24, 219,  69,  13,   9,  16, 243,   1,  26, 102, 16])
+Block.calibration_max = np.array([24, 219,  69,  13,   9,  16, 243, 1, 26, 102, 16])
 
 u_optimal_old = [0.0, -50.]
 new_state_new = Block.get_state()
@@ -64,21 +64,21 @@ try:
 
         neural_network_input = np.reshape(neural_network_input, (1, -1))
 
-        predicted_states = NNP.predict(neural_network_input).flatten()
+        predicted_states = NNP.predict(neural_network_input).flatten()*1000
 
         NNP.yn = predicted_states
 
-        NNP.ym = np.array([neutral_point[0], neutral_point[1] , \
-                                            neutral_point[2] + 0.1*sig.square(np.pi * n / 20.) - 0.1])
+        NNP.ym = 1000*np.array([neutral_point[0], neutral_point[1] , \
+                                            neutral_point[2] + 0.1*sig.square(np.pi * n / 10.) - 0.1])
 
         new_state_old = new_state_new
 
         u_optimal, del_u = NR_opt.optimize(u = u_optimal_old, del_u = del_u, \
                                             maxit = 1, rtol = 1e-8, verbose = False)
 
-        u_optimal = u_optimal[0, :].tolist()
+        u_optimal = u_optimal[-1, :].tolist()
 
-        del_u = del_u[0, :].tolist()
+        del_u = del_u[-1, :].tolist()
 
         u_optimal[0] = np.clip(u_optimal[0], -300, 150)
         u_optimal[1] = np.clip(u_optimal[1], -300, 150)
@@ -86,7 +86,7 @@ try:
         print "-----------------------------------------------------"
         print "GPC: Target: ", NNP.ym
         print "GPC: P. State: ", NNP.yn
-        print "GPC: Act. State: ", Block.get_state()
+        print "GPC: Act. State: ", 1000*np.array(Block.get_state())
         print "GPC: u_optimal", u_optimal
         print "GPC: Cost: ", NNP.compute_cost()
 
@@ -111,7 +111,7 @@ try:
         print ""
 
         u_optimal_list+= [u_optimal]
-        actual_states += [Block.get_state()]
+        actual_states += [(np.array(Block.get_state())*1000).tolist()]
         n += 1
 
 except:
@@ -124,9 +124,9 @@ except:
     labels = ['x', 'y', 'z']
     for i in range(3):
         plt.subplot(3, 1, i+1)
-        plt.plot(ym[:, i]*1000, '--w', label = 'target')
-        plt.plot(yn[:, i]*1000, 'cyan', label = 'predicted state')
-        plt.plot(actual_states[:, i]*1000, label = 'actual state')
+        plt.plot(ym[:, i], '--w', label = 'target')
+        plt.plot(yn[:, i], 'cyan', label = 'predicted state')
+        plt.plot(actual_states[:, i], label = 'actual state')
         plt.legend()
         plt.ylabel(str(labels[i]) + ' [mm]')
     plt.show()
