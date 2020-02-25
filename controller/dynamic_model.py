@@ -63,6 +63,7 @@ class NeuralNetworkPredictor():
         self.u_deque = deque()
         self.ym_deque = deque()
         num_signals = 11
+
         # hid does not include the weights that have to do with the signals
         self.hid = self.model.layers[-1].input_shape[1] - num_signals
 
@@ -162,7 +163,8 @@ class NeuralNetworkPredictor():
         weights = self.model.layers[0].get_weights()[0]
         sum_output = 0.0
         for i in range(0, min(self.K, self.dd)):
-            sum_output+= np.mean(weights[j, self.num_y*i+self.nd+1:self.num_y*i+self.nd+3] * self.previous_second_der * step(self.K-i-1))
+            sum_output+= np.mean(weights[j, self.num_y*i+self.nd+1:self.num_y*i+self.nd+3] * \
+                                        self.previous_second_der * step(self.K-i-1))
         return sum_output
 
     def __partial_yn_partial_u(self, h, j):
@@ -172,7 +174,6 @@ class NeuralNetworkPredictor():
              D u(n+h)
         """
         weights = self.model.layers[-1].get_weights()[0]
-        #hid = self.model.layers[0].output_shape[1]
         sum_output = 0.0
 
         for i in range(self.hid):
@@ -199,15 +200,16 @@ class NeuralNetworkPredictor():
 
         for i in range(self.nd):
             if (self.K - self.Nu) < i:
-                sum_output+= weights[j, i] * kronecker_delta(self.K - i, h)
+                sum_output+= np.mean(weights[j, i*self.num_u:i*self.num_u + self.num_u] * \
+                                                                kronecker_delta(self.K - i, h))
             else:
-                sum_output+= weights[j, i] * kronecker_delta(self.Nu, h)
+                sum_output += np.mean(weights[j, self.num_u*i:self.num_u*i+self.num_u] *\
+                                                                kronecker_delta(self.Nu, h))
 
         for i in range(0, min(self.K, self.dd)):
-            sum_output += weights[j, i+self.nd + 1] * self.previous_first_der * \
-                                                 step(self.K - i -1)
+            sum_output += np.mean(weights[j, i*self.num_y + self.nd + 1] * self.previous_first_der * \
+                                                step(self.K - i -1))
         return sum_output
-
 
     def __partial_delta_u_partial_u(self, j, h):
         """
@@ -219,9 +221,7 @@ class NeuralNetworkPredictor():
         return kronecker_delta(h, j) - kronecker_delta(h, j-1)
 
     def compute_hessian(self):
-
         Y, YM , U, delU = self.get_computation_vectors()
-
         Hessian = np.zeros((self.Nu, self.Nu))
 
         for h in range(self.Nu):
@@ -240,11 +240,10 @@ class NeuralNetworkPredictor():
 
                 for j in range(self.Nu):
                     sum_output += np.mean(kronecker_delta(h, j) * kronecker_delta(m, j) * \
-                            (2.0*self.constraints.s / \
-                                np.power(U[j, :] + self.constraints.r/2. - \
-                                    self.constraints.b, 3) + \
-                                        2.*self.constraints.s / (self.constraints.r/2. + \
-                                        self.constraints.b - np.power(U[j, :], 3))))
+                            (np.divide(2.0*self.constraints.s , np.power(U[j, :] + self.constraints.r/2. - \
+                                    self.constraints.b, 3)) + np.divide(2.*self.constraints.s , \
+                                        (self.constraints.r/2. + self.constraints.b - \
+                                                np.power(U[j, :], 3)))))
                 Hessian[m, h] = sum_output
         return Hessian
 
