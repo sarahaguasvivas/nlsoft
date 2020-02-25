@@ -1,19 +1,22 @@
 import vrpn
 import numpy as np
+import threading import Thread, Queue
 
-class VRPNclient:
-    def callback(self, userdata, data):
-        self.tracked = True
-        self.data_read = {userdata: data}
-        #print self.data_read;
+
+class VRPNclientThread:
 
     def __init__(self, tracker_name, hostID):
         self.tracker_name = tracker_name
         self.hostID= hostID
 
         self.tracked = False
-
         self.data_read = None
+
+        self.q = Queue.Queue()
+
+        def callback(self, userdata, data):
+            self.tracked = True
+            self.data_read = {userdata: data}
 
         self.tracker = vrpn.receiver.Tracker(tracker_name + "@" + hostID)
         self.tracker.register_change_handler(self.tracker_name, self.callback, "position")
@@ -26,36 +29,32 @@ class VRPNclient:
 
         self.info = []
 
-    def sample_data(self):
-        self.tracker.mainloop()
-        self.analog.mainloop()
-        self.button.mainloop()
+        self.start_thread()
+
+    def thread_data_collect(self):
+        """
+            This function will be called
+            in a separate thread
+        """
+        while True:
+            self.tracker.mainloop()
+            self.analog.mainloop()
+            self.button.mainloop()
+
+    def start_thread(self):
+        self.thread = Thread(target= self.thread_data_collect
+        self.thread.start()
+        self.thread.join()
 
     def get_observation(self):
-        while not self.tracked:
-            self.sample_data()
-
-        # parsing data
-        self.info = []
-        self.info+= list(self.data_read[self.tracker_name]['position'])
-
-        q = list(self.data_read[self.tracker_name]['quaternion'])
-
-        roll = np.arctan2(2*(q[0]*q[1] + q[2]*q[3]), 1-2*(q[1]**2 + q[2]**2))
-        pitch =np.arcsin(2*(q[0]*q[2] - q[3]*q[1]))
-        yaw = np.arctan2(2*(q[0]*q[3] + q[1] *q[2]),  1 -2*(q[2]**2 + q[3]**2))
-
-        self.info += [roll, pitch, yaw] # in radians
-        self.tracked = False
-        return self.info
+        return self.data_read
 
 class BlockOrientation():
-    def __init__(self, ip = "192.168.50.24:3883"):
+    def __init__(self, ip = "192.168.50.33:3883"):
         self.wand = VRPNclient("Wand",  "tcp://" + ip)
         self.head = VRPNclient("DHead", "tcp://" + ip)
         self.base = VRPNclient("DBase", "tcp://" + ip)
         self.end_eff_orientation = None
-        print "Optitrack Comm Initialized!"
 
     def get_observation(self):
         head_o= self.head.get_observation()

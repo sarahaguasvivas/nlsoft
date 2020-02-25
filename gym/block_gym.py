@@ -5,7 +5,7 @@ from dynamixels.dynamixels import *
 class BlockGym():
     def __init__(self, sensor_port= "/dev/ttyACM0",  \
                             motors_port = "/dev/ttyUSB0", \
-                                vrpn_ip = "192.168.50.33:3883"):
+                                vrpn_ip = "192.168.50.24:3883"):
         self.observation = []
         self.verbose = 1
         self.terminal = False
@@ -23,6 +23,8 @@ class BlockGym():
         self.target = self.block_or.get_target()
         self.calibration_max = np.array([0]* \
                     self.sensor_signals.num_sensors)
+
+        print "Optitrack Conenction Established!"
 
     def step(self, action = [0, 0]):
         # return observation, reward, done, info
