@@ -25,6 +25,9 @@ neutral_point = Block.get_state()
 
 NNP.y0 = neutral_point
 
+def custom_loss(y_true, y_pred):
+    pass
+
 #Block.stretch() # stretch block for better signal readings before calibrating
 #Block.get_signal_calibration() # calibrate signal of the block
 
@@ -69,7 +72,7 @@ try:
         NNP.yn = predicted_states
 
         NNP.ym = 1000*np.array([neutral_point[0], neutral_point[1] , \
-                                            neutral_point[2] + 0.053*sig.square(np.pi * n / 10.) - 0.012])
+                                            neutral_point[2] + 0.0325*sig.square(np.pi * n / 10.) - 0.0325/2.0 ])
 
         new_state_old = new_state_new
 

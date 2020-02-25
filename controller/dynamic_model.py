@@ -12,6 +12,13 @@ import tensorflow as tf
 
 from collections import deque
 
+def custom_loss(y_true, y_pred):
+    return 1000*K.mean(K.square(y_pred - y_true), axis = 1)
+
+keras.losses.custom_loss = custom_loss
+
+
+
 class ModelException(Exception):
     pass
 

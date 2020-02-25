@@ -16,13 +16,12 @@ from sklearn.model_selection import train_test_split
 import keras.backend as K
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D
-
 plt.style.use('dark_background')
 filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data1.csv"
 
 def custom_loss(y_true, y_pred):
     return 1000*K.mean(K.square(y_pred - y_true), axis = -1)
-
+keras.losses.custom_loss = custom_loss
 def neural_network_training(X, y):
 #    y = 1000*y
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.05)
@@ -32,7 +31,7 @@ def neural_network_training(X, y):
     model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
     model.compile(optimizer= 'adam', loss =custom_loss, metrics=['mse'])
-    model.fit(X_train, y_train, epochs = 1000, batch_size = 15, validation_split=0.1)
+    model.fit(X_train, y_train, epochs = 1000, batch_size = 25, validation_split=0.1)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
@@ -126,6 +125,6 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
 
 if __name__ == "__main__":
     X, y = prepare_data_file(filename, nd=3, dd=5)
-    modelfile = neural_network_training(X, y)
+    #modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)
 
