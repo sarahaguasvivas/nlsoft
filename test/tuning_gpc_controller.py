@@ -11,10 +11,10 @@ import time, os
 plt.style.use('dark_background')
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
-NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 1, N2 = 3, Nu = 2, \
-                                    nd = 3, dd = 3, K = 1, lambd = [1e-1, 1e1], \
+NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 1, N2 = 3, Nu = 5, \
+                                    nd = 3, dd = 3, K = 1, lambd = [.1, .1, .1, 0.1, 1e3], \
                                         y0 = [0.02,-0.05, 0.05], \
-                                            u0 = [0.0, -50.], s = 1e-10, b = 1e0, r = 1e0)
+                                            u0 = [0.0, -50.], s = 1e-10, b = 1e-2, r = 1e-2)
 
 NR_opt = SolowayNR(cost = NNP.Cost, d_model = NNP)
 
