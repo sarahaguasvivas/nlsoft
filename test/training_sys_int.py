@@ -23,14 +23,14 @@ def custom_loss(y_true, y_pred):
     return 1000*K.mean(K.square(y_pred - y_true), axis = -1)
 keras.losses.custom_loss = custom_loss
 def neural_network_training(X, y):
-#    y = 1000*y
+    y = 1000*y
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.05)
 
     model = Sequential()
     model.add(Dense(30, activation =  'tanh', kernel_initializer='random_normal'))
     model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
-    model.compile(optimizer= 'adam', loss =custom_loss, metrics=['mse'])
+    model.compile(optimizer= 'adam', loss ='mse', metrics=['mse'])
     model.fit(X_train, y_train, epochs = 1000, batch_size = 25, validation_split=0.1)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
@@ -39,7 +39,7 @@ def neural_network_training(X, y):
 def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
 
     model = load_model(modelfile)
-#    y *= 1000 # convert meters to mm
+    y *= 1000 # convert meters to mm
     yn = model.predict(X) #*1000
     plt.figure()
 
@@ -92,6 +92,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
         signals[:, i]/= max_signals[i]
 
     position = data_array[:, 11:14] # not using Euler angles
+    print position
     inputs = data_array[:, 17:]
 
     N = max(nd, dd) # data sample where we will start first
@@ -125,6 +126,6 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
 
 if __name__ == "__main__":
     X, y = prepare_data_file(filename, nd=3, dd=5)
-    #modelfile = neural_network_training(X, y)
+    modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)
 

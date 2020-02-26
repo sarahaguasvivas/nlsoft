@@ -204,7 +204,7 @@ class NeuralNetworkPredictor():
         """
         return kronecker_delta(h, j) - kronecker_delta(h, j-1)
 
-    def compute_hessian(self):
+    def compute_hessian(self, u, del_u):
         Y, YM , U, delU = self.get_computation_vectors()
         Hessian = np.zeros((self.Nu, self.Nu))
         for h in range(self.Nu):
@@ -220,14 +220,14 @@ class NeuralNetworkPredictor():
                                         self.__partial_delta_u_partial_u(j, m))))
                 for j in range(self.Nu):
                     sum_output += np.mean(kronecker_delta(h, j) * kronecker_delta(m, j) * \
-                            (np.divide(2.0*self.constraints.s , np.power(U[j, :] + self.constraints.r/2. - \
+                            (np.divide(2.0*self.constraints.s , np.power(u[j, :] + self.constraints.r/2. - \
                                     self.constraints.b, 3)) + np.divide(2.*self.constraints.s , \
                                         (self.constraints.r/2. + self.constraints.b - \
-                                                np.power(U[j, :], 3)))))
+                                                np.power(u[j, :], 3)))))
                 Hessian[m, h] = sum_output
         return Hessian
 
-    def compute_jacobian(self):
+    def compute_jacobian(self, u, del_u):
         Y, YM, U, delU = self.get_computation_vectors()
 
         dJ = np.zeros((self.Nu, U.shape[1]))
@@ -240,24 +240,24 @@ class NeuralNetworkPredictor():
                     sum_output[inp_]+= np.mean(-2.*(YM[j, :]- Y[j, :]))*self.__partial_yn_partial_u(h, j)
 
                 for j in range(self.Nu):
-                    sum_output[inp_]+= np.mean(2.*self.lambd[j]*delU[j, inp_]*\
+                    sum_output[inp_]+= np.mean(2.*self.lambd[j]*del_u[j, inp_]*\
                                 self.__partial_delta_u_partial_u(j, h))
 
                 for j in range(self.Nu):
                     sum_output[inp_] += np.mean(kronecker_delta(h, j) * \
-                                (-self.constraints.s/(U[j, inp_] + \
+                                (-self.constraints.s/(u[j, inp_] + \
                                     self.constraints.r/2. - self.constraints.b)**2  + \
                                         self.constraints.s / (self.constraints.r/2. + \
-                                            self.constraints.b - U[j, inp_])**2))
+                                            self.constraints.b - u[j, inp_])**2))
                 dJ[:, inp_] = sum_output[inp_].tolist()
         return dJ
 
-    def Fu(self):
-        jacobian = self.compute_jacobian()
+    def Fu(self, u, del_u):
+        jacobian = self.compute_jacobian(u, del_u)
         return jacobian
 
-    def Ju(self):
-        self.Hessian = self.compute_hessian()
+    def Ju(self, u, del_u):
+        self.Hessian = self.compute_hessian(u, del_u)
         return self.Hessian
 
     def compute_cost(self):
