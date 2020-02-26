@@ -1,7 +1,7 @@
 import numpy as np
-from newton_raphson import *
 from cost import *
 from dynamic_model import *
+from scipy import optimize
 import copy
 
 class SolowayNR:
@@ -10,32 +10,36 @@ class SolowayNR:
         self.cost = cost
         self.d_model = d_model
 
-    def __fsolve_newton(self, u0, del_u, maxit = 1, rtol = 1e-8, verbose=False):
+    def __fsolve_newton(self, u0, rtol=1e-10, maxit=50, verbose=False):
+        u = np.array(u0).copy()
 
-        Y, YM, U, delU = self.d_model.get_computation_vectors()
+        del_u = np.zeros(u.shape)
 
-        Fu = self.d_model.Fu()
+        Fu = -self.d_model.Fu(u, del_u)
+
         norm0 = np.linalg.norm(Fu)
-        enorm_last= np.linalg.norm(U - np.ones(U.shape))
+
+        enorm_last = np.linalg.norm(u - np.array([1,1]))
 
         for i in range(maxit):
-            Ju = self.d_model.Ju()
 
-            print "OPTIMIZER: Conditioning of Hessian: ",\
-                                    np.linalg.cond(Ju)
+            du = np.linalg.solve(self.d_model.Ju(u, del_u), Fu)
+            u += du
 
-            delU =  np.linalg.solve(Ju, -Fu)
+            del_u = u - u0
 
-            U += delU
-            Fu = self.d_model.Fu()
+            Fu = -self.d_model.Fu(u, del_u)
             norm = np.linalg.norm(Fu)
-
             if verbose:
-                enorm = np.linalg.norm(U - np.ones(U.shape))
-                print "Newton: ", i, " anorm: ", norm, " rnorm: ", norm/norm0, " eratio: ", enorm/enorm_last**2
+                enorm = np.linalg.norm(u - np.array([1,1]))
+                print('Newton {:d} anorm {:6.2e} rnorm {:6.2e} eratio {:6.2f}'.
+                                format(i+1, norm, norm/norm0, enorm/enorm_last**2))
                 enorm_last = enorm
+            if norm < rtol * norm0:
+                break
+        del_u = u - u0
+        return u, del_u, i
 
-        return U, delU
 
-    def optimize(self, u = [0, 0], del_u=[0,0], maxit = 1, rtol = 1e-8, verbose=False):
-       return self.__fsolve_newton(u0 = u, del_u = del_u,maxit = maxit, rtol = rtol,  verbose = verbose)
+    def optimize(self, u, maxit = 1, rtol = 1e-8, verbose=False):
+       return self.__fsolve_newton(u0 = u, rtol = rtol, maxit = maxit,  verbose = verbose)
