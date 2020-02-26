@@ -75,7 +75,7 @@ try:
         #NNP.ym = np.array([neutral_point[0], neutral_point[1] , \
         #                        neutral_point[2] + 0.03*sig.square(np.pi * n / 20.) - 0.03/2.0 ])
 
-        NNP.ym = np.array([neutral_point[0] + 0.1*sig.square(np.pi*n/20.) - 0.1/2., neutral_point[1] , \
+        NNP.ym = np.array([neutral_point[0] + 0.05*sig.square(np.pi*n/20.) - 0.05/2., neutral_point[1] , \
                                 neutral_point[2]]) #+ 0.05*np.sin(np.pi * n / 20.) - 0.05/2. ])
 
         new_state_old = new_state_new
