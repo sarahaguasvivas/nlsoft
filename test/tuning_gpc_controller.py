@@ -86,8 +86,7 @@ try:
         u_action = u_optimal[0, :].tolist()
 
         u_action[0] = np.clip(1000*u_action[0], -300, 150)
-
-        u_action[1] = np.clip(u_action[1] * -(1 - (u_action[1] + 50)/50*1000), -300, 150)
+        u_action[1] = np.clip(u_action[1], -300, 150)
 
         del_u_action = del_u[0, :].tolist()
 
