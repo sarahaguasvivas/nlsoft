@@ -15,7 +15,7 @@ class SolowayNR:
 
         del_u = np.zeros(u.shape)
 
-        Fu = self.d_model.Fu(u, del_u)
+        Fu = -self.d_model.Fu(u, del_u)
 
         norm0 = np.linalg.norm(Fu)
 
@@ -23,12 +23,12 @@ class SolowayNR:
 
         for i in range(maxit):
 
-            du = np.linalg.solve(self.d_model.Ju(u, del_u), -Fu)
+            du = np.linalg.solve(self.d_model.Ju(u, del_u), Fu)
             u += du
 
             del_u = u - u0
 
-            Fu = self.d_model.Fu(u, del_u)
+            Fu = -self.d_model.Fu(u, del_u)
             norm = np.linalg.norm(Fu)
             if verbose:
                 enorm = np.linalg.norm(u - np.array([1,1]))
