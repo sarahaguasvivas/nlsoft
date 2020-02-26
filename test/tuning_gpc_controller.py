@@ -12,9 +12,9 @@ plt.style.use('dark_background')
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 1, N2 = 3, Nu = 2, \
-                                    nd = 3, dd = 3, K = 0, lambd = [.1, 1e2], \
+                                    nd = 3, dd = 3, K = 5, lambd = [0.3, 7e-2], \
                                         y0 = [0.02,-0.05, 0.05], \
-                                            u0 = [0.0, -50.], s = 1e-10, b = 1e-2, r = 1e-2)
+                                            u0 = [0.0, -50.], s = 1e-10, b = 1e1, r = 1e1)
 
 NR_opt = SolowayNR(cost = NNP.Cost, d_model = NNP)
 
@@ -33,7 +33,7 @@ def custom_loss(y_true, y_pred):
 
 Block.calibration_max = np.array([24, 219,  69,  13,   9,  16, 243, 1, 26, 102, 16])
 
-u_optimal_old = np.reshape([0.0, -50.]*2, (-1, 2))
+u_optimal_old = np.reshape([0.0, -50.]*NNP.Nu, (-1, 2))
 
 new_state_new = Block.get_state()
 
@@ -68,17 +68,17 @@ try:
 
         neural_network_input = np.reshape(neural_network_input, (1, -1))
 
-        predicted_states = NNP.predict(neural_network_input).flatten()
+        predicted_states = NNP.predict(neural_network_input).flatten() / 1000.
 
         NNP.yn = predicted_states
 
-        NNP.ym = 1000*np.array([neutral_point[0], neutral_point[1] , \
-                                            neutral_point[2] + 0.0325*sig.square(np.pi * n / 10.) - 0.0325/2.0 ])
+        NNP.ym = np.array([neutral_point[0], neutral_point[1] , \
+                                neutral_point[2] + 0.0325*sig.square(np.pi * n / 10.) - 0.0325/2.0 ])
 
         new_state_old = new_state_new
 
         u_optimal, del_u,  _ = NR_opt.optimize(u = u_optimal_old, \
-                                            maxit = 10, rtol = 1e-8, verbose = True)
+                                            maxit = 8, rtol = 1e-8, verbose = True)
 
         u_action = u_optimal[0, :].tolist()
 

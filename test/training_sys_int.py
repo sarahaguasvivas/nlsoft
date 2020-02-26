@@ -27,11 +27,11 @@ def neural_network_training(X, y):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.05)
 
     model = Sequential()
-    model.add(Dense(30, activation =  'tanh', kernel_initializer='random_normal'))
+    model.add(Dense(100, activation =  'tanh', kernel_initializer='random_normal'))
     model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
     model.compile(optimizer= 'adam', loss ='mse', metrics=['mse'])
-    model.fit(X_train, y_train, epochs = 1000, batch_size = 25, validation_split=0.1)
+    model.fit(X_train, y_train, epochs = 1500, batch_size = 100, validation_split=0.2)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'

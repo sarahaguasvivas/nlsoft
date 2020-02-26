@@ -15,24 +15,29 @@ class SolowayNR:
 
         del_u = np.zeros(u.shape)
 
-        Fu = -self.d_model.Fu(u, del_u)
+        Fu = self.d_model.Fu(u, del_u)
 
         norm0 = np.linalg.norm(Fu)
+
         enorm_last = np.linalg.norm(u - np.array([1,1]))
 
         for i in range(maxit):
-            du = -np.linalg.solve(self.d_model.Ju(u, del_u), Fu)
+
+            du = np.linalg.solve(self.d_model.Ju(u, del_u), -Fu)
             u += du
-            del_u = du
-            Fu = -self.d_model.Fu(u, del_u)
+
+            del_u = u - u0
+
+            Fu = self.d_model.Fu(u, del_u)
             norm = np.linalg.norm(Fu)
             if verbose:
                 enorm = np.linalg.norm(u - np.array([1,1]))
                 print('Newton {:d} anorm {:6.2e} rnorm {:6.2e} eratio {:6.2f}'.
-                format(i+1, norm, norm/norm0, enorm/enorm_last**2))
+                                format(i+1, norm, norm/norm0, enorm/enorm_last**2))
                 enorm_last = enorm
             if norm < rtol * norm0:
                 break
+        del_u = u - u0
         return u, del_u, i
 
 
