@@ -23,7 +23,7 @@ def custom_loss(y_true, y_pred):
     return 1000*K.mean(K.square(y_pred - y_true), axis = -1)
 keras.losses.custom_loss = custom_loss
 def neural_network_training(X, y):
-    y = 1000*y
+    #y = 1000*y
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.05)
 
     model = Sequential()
@@ -39,7 +39,7 @@ def neural_network_training(X, y):
 def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
 
     model = load_model(modelfile)
-    y *= 1000 # convert meters to mm
+    #y *= 1000 # convert meters to mm
     yn = model.predict(X) #*1000
     plt.figure()
 
