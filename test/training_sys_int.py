@@ -13,24 +13,25 @@ import keras
 from keras.models import Sequential, load_model
 from keras.layers import Dense
 from sklearn.model_selection import train_test_split
-
+import keras.backend as K
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D
-
 plt.style.use('dark_background')
 filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data1.csv"
 
-
+def custom_loss(y_true, y_pred):
+    return 1000*K.mean(K.square(y_pred - y_true), axis = -1)
+keras.losses.custom_loss = custom_loss
 def neural_network_training(X, y):
-    y = 1000*y
+    #y = 1000*y
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.05)
 
     model = Sequential()
-    model.add(Dense(30, activation =  'tanh', kernel_initializer='random_normal'))
+    model.add(Dense(100, activation =  'tanh', kernel_initializer='random_normal'))
     model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
     model.compile(optimizer= 'adam', loss ='mse', metrics=['mse'])
-    model.fit(X_train, y_train, epochs = 1000, batch_size = 15, validation_split=0.1)
+    model.fit(X_train, y_train, epochs = 1500, batch_size = 100, validation_split=0.2)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
@@ -38,7 +39,7 @@ def neural_network_training(X, y):
 def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
 
     model = load_model(modelfile)
-    y *= 1000 # convert meters to mm
+    #y *= 1000 # convert meters to mm
     yn = model.predict(X) #*1000
     plt.figure()
 
@@ -91,6 +92,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
         signals[:, i]/= max_signals[i]
 
     position = data_array[:, 11:14] # not using Euler angles
+    print position
     inputs = data_array[:, 17:]
 
     N = max(nd, dd) # data sample where we will start first
