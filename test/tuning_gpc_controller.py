@@ -14,7 +14,7 @@ model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 1, N2 = 3, Nu = 1, \
                                     nd = 3, dd = 3, K = 2, lambd = [1e-4], \
                                         y0 = [0.02,-0.05, 0.05], \
-                                            u0 = [0.0, -50.], s = 1e-10, b = 5e-1, r = 1e-1)
+                                            u0 = [0.0, -50.], s = 1e-10, b = 1e1, r = 1e1)
 
 NR_opt = SolowayNR(cost = NNP.Cost, d_model = NNP)
 
@@ -72,8 +72,11 @@ try:
 
         NNP.yn = predicted_states
 
-        NNP.ym = np.array([neutral_point[0], neutral_point[1] , \
-                                neutral_point[2] + 0.03*sig.square(np.pi * n / 20.) - 0.03/2.0 ])
+        #NNP.ym = np.array([neutral_point[0], neutral_point[1] , \
+        #                        neutral_point[2] + 0.03*np.sin(np.pi * n / 20.) - 0.03/2.0 ])
+
+        NNP.ym = np.array([neutral_point[0], neutral_point[1], \
+                                neutral_point[2] + 0.05*np.sin(np.pi * n / 20.) - 0.05/2.])
 
         new_state_old = new_state_new
 
