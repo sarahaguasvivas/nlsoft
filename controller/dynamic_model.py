@@ -56,6 +56,13 @@ class NeuralNetworkPredictor():
         self.constraints = Constraints(s = s, b = b, r = r)
         self.model = load_model(model_file)
 
+        self.first_layer_index = 0 # first layer may be Gaussian noise
+        layertype = self.model.layers[self.first_layer_index]
+
+        while not isinstance(layertype, layers.Dense):
+            self.first_layer_index += 1
+            layertype = self.model.layers[self.first_layer_index]
+
         self.nd = nd # associated with u( . ) not counting u(n)
         self.dd = dd # associated with y( . )
         self.Hessian = None
@@ -109,10 +116,16 @@ class NeuralNetworkPredictor():
         return Y, YM, U, delU
 
     def __Phi_prime(self, x = 0):
-        return 1.0 # linear activation on output
+        if self.model.layers[self.first_layer_index].get_config()['activation'] == 'linear':
+            return 1.0 # linear activation on output
+        if self.model.layers[self.first_layer_index].get_config()['activation'] == 'tanh':
+            return  1. / np.cosh(x)**2.
 
     def __Phi_prime_prime(self, x = 0):
-        return 0.0 # linear activation on output
+        if self.model.layers[self.first_layer_index].get_config()['activation'] == 'linear':
+            return 0.0 # linear activation on output
+        if self.model.layers[self.first_layer_index].get_config()['activation'] == 'tanh':
+            return-2.*np.tanh(x)/ np.cosh(x)**2.
 
     def __partial_2_fnet_partial_nph_partial_npm(self, h, m, j):
         """
@@ -147,7 +160,7 @@ class NeuralNetworkPredictor():
             -------------
             Du(n+h)Du(n+m)
         """
-        weights = self.model.layers[0].get_weights()[0]
+        weights = self.model.layers[self.first_layer_index].get_weights()[0]
         sum_output = 0.0
         for i in range(0, min(self.K, self.dd)):
             sum_output += np.mean(weights[j, self.num_y*i+self.nd+1:self.num_y*i+self.nd+3] * \
@@ -181,7 +194,7 @@ class NeuralNetworkPredictor():
             ---------
             D u(n+h)
         """
-        weights = self.model.layers[0].get_weights()[0]
+        weights = self.model.layers[self.first_layer_index].get_weights()[0]
         sum_output = 0.0
         for i in range(self.nd):
             if (self.K - self.Nu) < i:
