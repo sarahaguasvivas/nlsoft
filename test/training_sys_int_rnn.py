@@ -11,37 +11,37 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 import keras
 from keras.models import Sequential, load_model
-from keras.layers import Dense, GaussianNoise
+from keras.layers import Dense, SimpleRNN, LSTM
 from sklearn.model_selection import train_test_split
 import keras.backend as K
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D
-
 #plt.style.use('dark_background')
-plt.style.use('dark_background')
+plt.style.use('seaborn-pastel')
 filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data1.csv"
+
+DATA_WINDOW = 3
 
 def custom_loss(y_true, y_pred):
     return 1000*K.mean(K.square(y_pred - y_true), axis = -1)
 
 keras.losses.custom_loss = custom_loss
+
 def neural_network_training(X, y):
     #y = 1000*y
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2)
 
     model = Sequential()
-    model.add(GaussianNoise(0.1))
-    model.add(Dense(100, activation =  'tanh', kernel_initializer='random_normal'))
-    model.add(GaussianNoise(0.01))
+    model.add(SimpleRNN(20, activation =  'tanh'))
     model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
     model.compile(optimizer= 'adam', loss ='mse', metrics=['mse'])
     model.fit(X_train, y_train, epochs = 1500, batch_size = 100, validation_split=0.2)
     print model.predict(X_test)
-    model.save('sys_id.hdf5')
-    return 'sys_id.hdf5'
+    model.save('sys_id_rnn.hdf5')
+    return 'sys_id_rnn.hdf5'
 
-def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
+def plot_sys_id(X, y, modelfile= 'sys_id_rnn.hdf5'):
 
     model = load_model(modelfile)
     #y *= 1000 # convert meters to mm
@@ -53,29 +53,28 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
 
     for i in range(3):
         plt.subplot(3, 2, 2*i+1)
-        plt.plot(yn[1:L, i],  label = str(lab[i]) + " est")
-        plt.plot(y[1:L, i],  label = str(lab[i]) + "true", alpha = 0.7)
-        plt.ylabel(str(lab[i]) + " [m]")
+        plt.plot(yn[:L, i], 'r', label = str(lab[i]) + " est")
+        plt.plot(y[:L, i], '-w', label = str(lab[i]) + "true", alpha = 0.7)
+        plt.ylabel(str(lab[i]) + " [mm]")
 #        plt.title("Estimation vs. Truth for " + str(lab[i]) + " [mm]")
         plt.legend()
 
         plt.subplot(3, 2, 2*i+2)
-        plt.plot(y[1:L, i] - yn[1:L, i], linewidth = 0.5, label = str(lab[i]) + " [m]")
+        plt.plot(y[:L, i] - yn[:L, i], 'cyan', linewidth = 0.5, label = str(lab[i]) + " [mm]")
 #        plt.title("Error in estimation for " + str(lab[i]) + " [mm]")
-        plt.ylabel(r"$\varepsilon_{" + str(lab[i]) + "}$ [m]")
+        plt.ylabel(r"$\varepsilon_{" + str(lab[i]) + "}$ [mm]")
         plt.legend()
 
     plt.xlabel('timesteps')
     plt.show()
-
-    L = 300
+    L  = 300
     fig = plt.figure()
     ax = Axes3D(fig)
-    ax.plot3D(yn[1:L, 0], yn[1:L, 1], yn[1:L, 2],  linewidth = 3, alpha = 0.9, label = "estimated position")
-    ax.plot3D(y[1:L, 0], y[1:L, 1], y[1:L, 2], alpha = 1, linewidth = 3, label = "ground truth")
+    ax.plot3D(yn[:L, 0], yn[:L, 1], yn[:L, 2], 'red', linewidth = 3, alpha = 0.9, label = "estimated position")
+    ax.plot3D(y[:L, 0], y[:L, 1], y[:L, 2], 'white', alpha = 1, linewidth = 3, label = "ground truth")
     plt.legend()
-    plt.xlabel('x [m]')
-    plt.ylabel('y [m]')
+    plt.xlabel('x [mm]')
+    plt.ylabel('y [mm]')
     plt.title('Estimated position vs. Ground Truth')
     plt.show()
 
@@ -114,7 +113,6 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
     for i in range(dd):
         Y = np.concatenate((Y, position[dd - i - 1 + (N - dd) : L-i, :]), axis = 1)
 
-    print Y.shape
     U = U[:, 2:]
     S = signals[N - 1:, :]
     Y = Y[:, 3:-3] # Y
@@ -129,9 +127,27 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
 
     return X, y
 
+def prepare_data_chunks(X, y, window = 4):
+
+    X = np.split(X, window)
+    y = np.split(y, window)
+
+
+    X = np.array(X).transpose((1, 0, 2))
+    y = np.array(y).transpose((1, 0, 2))
+
+    print X.shape, y.shape
+
+    yy = y[:, -1, :]
+
+    print yy.shape
+
+    return X, yy
+
 
 if __name__ == "__main__":
     X, y = prepare_data_file(filename, nd=3, dd=5)
-#    modelfile = neural_network_training(X, y)
+    X, y = prepare_data_chunks(X, y, window=4)
+    modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)
 
