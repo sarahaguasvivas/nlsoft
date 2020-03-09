@@ -19,7 +19,7 @@ from mpl_toolkits.mplot3d import axes3d, Axes3D
 
 #plt.style.use('dark_background')
 plt.style.use('dark_background')
-filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data1.csv"
+filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data2.csv"
 
 def custom_loss(y_true, y_pred):
     return 1000*K.mean(K.square(y_pred - y_true), axis = -1)
@@ -30,9 +30,9 @@ def neural_network_training(X, y):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.4)
 
     model = Sequential()
-#    model.add(GaussianNoise(0.1))
-    model.add(Dense(100, activation =  'tanh', kernel_initializer='random_normal'))
-#    model.add(GaussianNoise(0.01))
+    model.add(GaussianNoise(0.1))
+    model.add(Dense(50, activation =  'tanh', kernel_initializer='random_normal'))
+    model.add(GaussianNoise(0.01))
     model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
     model.compile(optimizer= 'adam', loss ='mse', metrics=['mse'])
