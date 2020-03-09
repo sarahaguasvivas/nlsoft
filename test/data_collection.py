@@ -9,6 +9,7 @@ B = BlockGym()
 
 B.reset()
 
+actions11 = list(np.arange(-150, 150, 5))
 actions1 = list(np.arange(150, -150, -5.))
 actions2 = list(np.arange(130, -150, -1.)) # need to change this
 actions3 = list(np.arange(-250, 130, 1.))  # need to change this
@@ -38,6 +39,20 @@ try:
             print >> f, data
         flag = not flag
 
+    for i in actions11:
+        if flag:
+            aactions = actions2
+        if not flag:
+            aactions = actions3
+
+        for j in aactions:
+            B.step(action=[i, j])
+            print i, j
+            data = B.get_observation() + B.get_real_position()
+            data = data + [i, j]
+            print >> f, data
+        flag = not flag
+
     for ii in range(N):
         aaction = random_points[ii, :].tolist()
         B.step(action = aaction)
@@ -47,6 +62,7 @@ try:
         data = data + aaction
         print >> f, data
     B.reset()
+
 except Exception as e:
     print str(e)
     B.reset()
