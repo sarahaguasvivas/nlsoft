@@ -12,9 +12,9 @@ plt.style.use('dark_background')
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, N2 = 3, Nu = 1, \
-                                    nd = 3, dd = 3, K = 2, lambd = [9e-4], \
+                                    nd = 3, dd = 3, K = 2, lambd = [1e-4], \
                                         y0 = [0.02,-0.05, 0.05], \
-                                            u0 = [0.0, -50.], s = 1e-5, b = 5e5, r = 1.)
+                                            u0 = [0.0, -50.], s = 1e-10, b = 1., r = 5e10)
 
 NR_opt = SolowayNR(cost = NNP.Cost, d_model = NNP)
 
@@ -31,7 +31,7 @@ def custom_loss(y_true, y_pred):
 #Block.stretch() # stretch block for better signal readings before calibrating
 #Block.get_signal_calibration() # calibrate signal of the block
 
-Block.calibration_max = np.array([ 23, 256,  70,  16,  11,  12, 227,   1,   1,  99,  14  ])
+Block.calibration_max = np.array([14, 275,  73,  20,  12,   6, 239,   1,   2, 109,  12 ])
 
 u_optimal_old = np.reshape([0.0, -50.]*NNP.Nu, (-1, 2))
 
@@ -72,20 +72,18 @@ try:
 
         NNP.yn = predicted_states
 
-        #NNP.ym = np.array([neutral_point[0], neutral_point[1] , \
-        #                        neutral_point[2] + 0.03*np.sin(np.pi * n / 20.) - 0.03/2.0 ])
 
         NNP.ym = np.array([neutral_point[0], neutral_point[1], \
-                                neutral_point[2] + 0.03*sig.square(2*np.pi * n / 50.)])
+                                neutral_point[2] + 0.03*sig.square(2*np.pi * n / 100)])
 
         new_state_old = new_state_new
 
         u_optimal, del_u,  _ = NR_opt.optimize(u = u_optimal_old, \
-                                            maxit = 3, rtol = 1e-10, verbose = True)
+                                            maxit = 2, rtol = 1e-10, verbose = True)
 
         u_action = u_optimal[0, :].tolist()
 
-        u_action[0] = np.clip(1000*u_action[0], -300, 150)
+        u_action[0] = np.clip(1000*u_action[0], -150, 150)
         u_action[1] = np.clip(u_action[1], -300, 150)
 
         del_u_action = del_u[0, :].tolist()
@@ -128,6 +126,7 @@ except:
     actual_states = np.reshape(actual_states, (-1, 3))
     u_optimal_list = np.reshape(u_optimal_list, (-1, 2))
 
+    print "Block calibration vector: ", Block.calibration_max
     labels = ['x', 'y', 'z']
     for i in range(3):
         plt.subplot(3, 1, i+1)
