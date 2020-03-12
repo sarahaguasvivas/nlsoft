@@ -36,7 +36,7 @@ def neural_network_training(X, y):
     model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
     model.compile(optimizer= 'adam', loss ='mse', metrics=['mse'])
-    model.fit(X_train, y_train, epochs = 500, batch_size = 100, validation_split=0.2)
+    model.fit(X_train, y_train, epochs = 1500, batch_size = 100, validation_split=0.2)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
@@ -57,12 +57,14 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
         plt.plot(y[1:L, i],  label = str(lab[i]) + "true", alpha = 0.7)
         plt.ylabel(str(lab[i]) + " [m]")
 #        plt.title("Estimation vs. Truth for " + str(lab[i]) + " [mm]")
+        plt.ylim([-0.07, 0.1])
         plt.legend()
 
         plt.subplot(3, 2, 2*i+2)
         plt.plot(y[1:L, i] - yn[1:L, i], linewidth = 0.5, label = str(lab[i]) + " [m]")
 #        plt.title("Error in estimation for " + str(lab[i]) + " [mm]")
         plt.ylabel(r"$\varepsilon_{" + str(lab[i]) + "}$ [m]")
+        plt.ylim([-0.07, 0.1])
         plt.legend()
 
     plt.xlabel('timesteps')
@@ -132,6 +134,6 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
 
 if __name__ == "__main__":
     X, y = prepare_data_file(filename, nd=3, dd=5)
-    modelfile = neural_network_training(X, y)
+#    modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)
 
