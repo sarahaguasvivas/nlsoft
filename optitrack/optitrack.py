@@ -61,7 +61,7 @@ class BlockOrientation():
         head_o= self.head.get_observation()
         base_o= self.base.get_observation()
 
-        self.end_eff_orientation = np.array(head_o) - np.array(base_o)
+        self.end_eff_orientation = -(np.array(head_o) - np.array(base_o))
 
         return self.end_eff_orientation.tolist()
 
@@ -69,7 +69,7 @@ class BlockOrientation():
         wand_o = self.wand.get_observation()
         base_o= self.base.get_observation()
         target = wand_o[:3] # only target position
-        target_orientation = np.array(target) - np.array(base_o[:3])
+        target_orientation = -(np.array(target) - np.array(base_o[:3]))
         return target_orientation
 
 if __name__=='__main__':
