@@ -31,7 +31,7 @@ def neural_network_training(X, y):
 
     model = Sequential()
     #model.add(GaussianNoise(0.1))
-    model.add(Dense(30, activation =  'sigmoid', kernel_initializer='random_normal'))
+    model.add(Dense(30, activation =  'linear', kernel_initializer='random_normal'))
     #model.add(GaussianNoise(0.01))
     model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
@@ -134,6 +134,6 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
 
 if __name__ == "__main__":
     X, y = prepare_data_file(filename, nd=3, dd=5)
-#    modelfile = neural_network_training(X, y)
+    modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)
 
