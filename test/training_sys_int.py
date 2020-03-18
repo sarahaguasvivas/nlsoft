@@ -11,11 +11,14 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 import keras
 from keras.models import Sequential, load_model
-from keras.layers import Dense, GaussianNoise
+from keras.layers import Dense, GaussianNoise, LSTM
 from sklearn.model_selection import train_test_split
 import keras.backend as K
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D
+import random
+
+TRAIN = True
 
 #plt.style.use('dark_background')
 plt.style.use('dark_background')
@@ -31,11 +34,11 @@ def neural_network_training(X, y):
 
     model = Sequential()
     #model.add(GaussianNoise(0.1))
-    model.add(Dense(30, activation =  'linear', kernel_initializer='random_normal'))
-    #model.add(GaussianNoise(0.01))
+    model.add(Dense(15, activation =  'tanh', kernel_initializer='random_normal'))
+    model.add(GaussianNoise(0.01))
     model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
-    model.compile(optimizer= 'adam', loss ='mse', metrics=['mse'])
+    model.compile(optimizer= 'adam', loss =custom_loss, metrics=['mse'])
     model.fit(X_train, y_train, epochs = 1500, batch_size = 100, validation_split=0.2)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
@@ -71,10 +74,17 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
     plt.show()
 
     L = 300
+    START = random.randint(0, yn.shape[0] - L)
     fig = plt.figure()
     ax = Axes3D(fig)
-    ax.plot3D(yn[1:L, 0], yn[1:L, 1], yn[1:L, 2],  linewidth = 3, alpha = 0.9, label = "estimated position")
-    ax.plot3D(y[1:L, 0], y[1:L, 1], y[1:L, 2], alpha = 1, linewidth = 3, label = "ground truth")
+    ax.plot3D(yn[START:START+L, 0], yn[START:START+L, 1], yn[START:START+L, 2],  \
+                            linewidth = 3, alpha = 0.9, label = "estimated position")
+    ax.plot3D(y[START:START + L, 0], y[START:START+L, 1], y[START:START+L, 2], \
+                            alpha = 1, linewidth = 3, label = "ground truth")
+    ax.set_aspect('equal')
+    ax.set_xlim(-.05, .05)
+    ax.set_ylim(-.1, .05)
+    ax.set_zlim(-.05, .05)
     plt.legend()
     plt.xlabel('x [m]')
     plt.ylabel('y [m]')
@@ -134,6 +144,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
 
 if __name__ == "__main__":
     X, y = prepare_data_file(filename, nd=3, dd=5)
-    modelfile = neural_network_training(X, y)
+    if TRAIN:
+        modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)
 

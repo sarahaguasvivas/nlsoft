@@ -17,8 +17,6 @@ def custom_loss(y_true, y_pred):
 
 keras.losses.custom_loss = custom_loss
 
-
-
 class ModelException(Exception):
     pass
 
