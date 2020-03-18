@@ -18,9 +18,9 @@ model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 #                                            u0 = [0.0, -50.], s = 1e-5, b = 5e2, r = 5.)
 
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, N2 = 3, Nu = 1, \
-                                    nd = 3, dd = 3, K = 2, lambd = [9e-4], \
+                                    nd = 3, dd = 3, K = 2, lambd = [1e-4], \
                                         y0 = [0.02,-0.05, 0.05], \
-                                            u0 = [0.0, -50.], s = 5e-2, b = 5e2, r = 5.)
+                                            u0 = [0.0, -50.], s = 5e-2, b = 5e-3, r = 5.)
 
 NR_opt = SolowayNR(cost = NNP.Cost, d_model = NNP)
 Block = BlockGym(vrpn_ip = "192.168.50.24:3883") # declare my block
@@ -79,10 +79,12 @@ try:
 
         NNP.yn = predicted_states
 
-        omega = 5000. # frequency
-        NNP.ym = np.array([neutral_point[0],\
-                                neutral_point[1] + 0.03*np.cos(2*np.pi * n / omega), \
-                                neutral_point[2] + 0.03*np.sin(2*np.pi * n / omega)])
+        omega = 1000. # frequency
+        amplitude = 10/10 # amplitude [cm / 10] = mm
+
+        NNP.ym = np.array([neutral_point[0]+ amplitude * np.cos(2*np.pi * n / omega),\
+                                neutral_point[1], \
+                                neutral_point[2] + amplitude * np.sin(2*np.pi * n / omega)])
 
         #NNP.ym = np.array([neutral_point[0] + 0.03*np.sin(2*np.pi * n / 500) - 0.03/2., neutral_point[1], \
         #                        neutral_point[2] ])
