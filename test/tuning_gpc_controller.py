@@ -18,15 +18,16 @@ model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 #                                            u0 = [0.0, -50.], s = 1e-5, b = 5e2, r = 5.)
 
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, N2 = 3, Nu = 1, \
-                                    nd = 3, dd = 3, K = 2, lambd = [1e-4], \
+                                    nd = 3, dd = 3, K = 2, lambd = [9e-4], \
                                         y0 = [0.02,-0.05, 0.05], \
-                                            u0 = [0.0, -50.], s = 1e-2, b = 5e2, r = 5e-2)
+                                            u0 = [0.0, -50.], s = 5e-2, b = 5e2, r = 5.)
 
 NR_opt = SolowayNR(cost = NNP.Cost, d_model = NNP)
 Block = BlockGym(vrpn_ip = "192.168.50.24:3883") # declare my block
 Block.reset()
 neutral_point = Block.get_state()
 NNP.y0 = neutral_point
+verbose = 1
 
 print NNP.model.summary()
 
@@ -78,9 +79,9 @@ try:
 
         NNP.yn = predicted_states
 
-        omega = 1000 # frequency
-        NNP.ym = np.array([neutral_point[0] + 0.03*np.cos(2*np.pi * n / omega),\
-                                neutral_point[1] , \
+        omega = 5000. # frequency
+        NNP.ym = np.array([neutral_point[0],\
+                                neutral_point[1] + 0.03*np.cos(2*np.pi * n / omega), \
                                 neutral_point[2] + 0.03*np.sin(2*np.pi * n / omega)])
 
         #NNP.ym = np.array([neutral_point[0] + 0.03*np.sin(2*np.pi * n / 500) - 0.03/2., neutral_point[1], \
@@ -89,7 +90,7 @@ try:
         new_state_old = new_state_new
 
         u_optimal, del_u,  _ = NR_opt.optimize(u = u_optimal_old, \
-                                            maxit = 3, rtol = 1e-3, verbose = True)
+                                            maxit = 3, rtol = 1e-3, verbose = False)
 
         u_action = u_optimal[0, :].tolist()
 
@@ -97,13 +98,16 @@ try:
         u_action[1] = np.clip((u_action[1]+50)*100 - 50., -150, 150)
 
         del_u_action = del_u[0, :].tolist()
+        if verbose == 0:
+            print "-----------------------------------------------------"
+            print "GPC: Target: ", NNP.ym
+            print "GPC: P. State: ", NNP.yn
+            print "GPC: Act. State: ", np.array(Block.get_state())
+            print "GPC: u_optimal", u_action
+            print "GPC: Cost: ", NNP.compute_cost()
 
-        print "-----------------------------------------------------"
-        print "GPC: Target: ", NNP.ym
-        print "GPC: P. State: ", NNP.yn
-        print "GPC: Act. State: ", np.array(Block.get_state())
-        print "GPC: u_optimal", u_action
-        print "GPC: Cost: ", NNP.compute_cost()
+        if verbose == 1:
+            print "GPC: u_optimal ", u_action
 
         NNP.update_dynamics(u_action, del_u_action, NNP.yn.tolist(), NNP.ym.tolist())
 
@@ -121,9 +125,9 @@ try:
         yn += [NNP.yn]
 
         elapsed += [time.time() - seconds]
-
-        print "GPC: elapsed time: ", elapsed[-1]
-        print ""
+        if verbose == 0:
+            print "GPC: elapsed time: ", elapsed[-1]
+            print ""
 
         u_optimal_list+= [u_action]
         actual_states += [(np.array(Block.get_state())).tolist()]
