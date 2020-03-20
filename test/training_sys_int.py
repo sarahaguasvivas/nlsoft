@@ -34,8 +34,8 @@ def neural_network_training(X, y):
 
     model = Sequential()
     #model.add(GaussianNoise(0.1))
-    model.add(Dense(15, activation =  'tanh', kernel_initializer='random_normal'))
-    model.add(GaussianNoise(0.01))
+    model.add(Dense(20, activation =  'tanh', kernel_initializer='random_normal'))
+    model.add(GaussianNoise(0.1))
     model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
     model.compile(optimizer= 'adam', loss =custom_loss, metrics=['mse'])

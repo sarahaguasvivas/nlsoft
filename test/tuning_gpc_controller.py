@@ -18,9 +18,9 @@ model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 #                                            u0 = [0.0, -50.], s = 1e-5, b = 5e2, r = 5.)
 
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, N2 = 3, Nu = 1, \
-                                    nd = 3, dd = 3, K = 2, lambd = [1e-4], \
+                                    nd = 3, dd = 3, K = 2, lambd = [5e-4], \
                                         y0 = [0.02,-0.05, 0.05], \
-                                            u0 = [0.0, -50.], s = 5e-2, b = 5e-3, r = 5.)
+                                            u0 = [0.0, -50.], s = 1e-2, b = 5e2, r = 5e0)
 
 NR_opt = SolowayNR(cost = NNP.Cost, d_model = NNP)
 Block = BlockGym(vrpn_ip = "192.168.50.24:3883") # declare my block
@@ -37,7 +37,7 @@ def custom_loss(y_true, y_pred):
 Block.stretch() # stretch block for better signal readings before calibrating
 #Block.get_signal_calibration() # calibrate signal of the block
 
-Block.calibration_max = np.array([ 16, 285,  60,  25,   4,   1, 224,   1,   4,  94,   6 ])
+Block.calibration_max = np.array([ 10, 251,  54,  10,   13,   1, 228,   1,   2,  96,   5 ])
 
 u_optimal_old = np.reshape([0.0, -50.]*NNP.Nu, (-1, 2))
 
@@ -79,15 +79,12 @@ try:
 
         NNP.yn = predicted_states
 
-        omega = 1000. # frequency
-        amplitude = 10/10 # amplitude [cm / 10] = mm
+        omega = 10000. # frequency
+        amplitude = .5/10 # amplitude [cm / 10] = mm
 
-        NNP.ym = np.array([neutral_point[0]+ amplitude * np.cos(2*np.pi * n / omega),\
-                                neutral_point[1], \
+        NNP.ym = np.array([neutral_point[0],\
+                                neutral_point[1] + amplitude * np.cos(2*np.pi * n / omega), \
                                 neutral_point[2] + amplitude * np.sin(2*np.pi * n / omega)])
-
-        #NNP.ym = np.array([neutral_point[0] + 0.03*np.sin(2*np.pi * n / 500) - 0.03/2., neutral_point[1], \
-        #                        neutral_point[2] ])
 
         new_state_old = new_state_new
 
@@ -97,7 +94,7 @@ try:
         u_action = u_optimal[0, :].tolist()
 
         u_action[0] = np.clip(u_action[0]*1000, -150, 150)
-        u_action[1] = np.clip((u_action[1]+50)*100 - 50., -150, 150)
+        u_action[1] = np.clip((u_action[1]+50)*1000 - 50., -150, 150)
 
         del_u_action = del_u[0, :].tolist()
         if verbose == 0:
