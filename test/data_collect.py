@@ -24,7 +24,7 @@ f = open("data_" + today.strftime("%b_%d_%Y_8")+".txt", "w+")
 # my_string = ','.join(map(str, my_list))
 
 try:
-    for _ in range(3):
+    for _ in range(10):
         for i in actions1:
             if flag:
                 aactions = actions2
