@@ -20,6 +20,9 @@ class DynamixelActor:
         self.verbose = verbose
         print "Dynamixels started!"
 
+    def reboot(self):
+        print dir(self._serial_connection)
+
     def get_present_position(self):
         return list(self._serial_connection.get_present_position((1,2)))
 
@@ -50,4 +53,5 @@ if __name__=="__main__":
     time.sleep(1)
     motors.reset()
     print motors.get_info()
+    motors.flush()
     motors.close_connection()
