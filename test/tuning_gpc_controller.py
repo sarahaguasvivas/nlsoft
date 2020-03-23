@@ -20,7 +20,7 @@ model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, N2 = 3, Nu = 1, \
                                     nd = 3, dd = 3, K = 2, lambd = [1e-4], \
                                         y0 = [0.02,-0.05, 0.05], \
-                                            u0 = [0.0, -50.], s = 1e-20, b = 1., r = 1.)
+                                            u0 = [0.0, -50.], s = 1e-20, b = 5., r = 5.)
 
 NR_opt = SolowayNR(cost = NNP.Cost, d_model = NNP)
 Block = BlockGym(vrpn_ip = "192.168.50.24:3883") # declare my block
@@ -37,8 +37,8 @@ def custom_loss(y_true, y_pred):
 Block.stretch() # stretch block for better signal readings before calibrating
 #Block.get_signal_calibration() # calibrate signal of the block
 
-Block.calibration_max = np.array([  9, 164,  54,   1,   9 ,  1, 217,   1,   1,  96,   1 ])
-#  9 164  54   1   9   1 217   1   1  96   1
+Block.calibration_max = np.array([ 12, 188,  64,   1,  19,   1, 205,   1,   1,  88,   1 ])
+
 u_optimal_old = np.reshape([0.0, -50.]*NNP.Nu, (-1, 2))
 
 new_state_new = Block.get_state()
@@ -79,12 +79,13 @@ try:
 
         NNP.yn = predicted_states
 
-        omega = 1000. # frequency
-        amplitude = .5/10 # amplitude [cm / 10] = mm
+        omega = 5000.       # frequency
+        amplitude = .3/10  # amplitude [cm / 10] = [mm]
+        shifting = .0     # [m]
 
-        NNP.ym = np.array([neutral_point[0] + amplitude * np.cos(2*np.pi * n / omega),\
-                                neutral_point[1], \
-                                neutral_point[2] + amplitude * np.sin(2*np.pi * n / omega)])
+        NNP.ym = np.array([neutral_point[0] - shifting ,\
+                            neutral_point[1] + amplitude * np.sin(2*np.pi * n / omega),  \
+                            neutral_point[2] + amplitude * np.cos(2*np.pi * n / omega)])
 
         new_state_old = new_state_new
 
@@ -93,8 +94,11 @@ try:
 
         u_action = u_optimal[0, :].tolist()
 
-        u_action[0] = np.clip(u_action[0]*10, -150, 150)
-        u_action[1] = np.clip((u_action[1]+50) - 50., -150, 150)
+        SCALING1 = 10
+        SCALING2 = 100
+
+        u_action[0] = np.clip(u_action[0]*SCALING1, -150, 150)
+        u_action[1] = np.clip((u_action[1]+50)*SCALING2 - 50., -150, 150)
 
         del_u_action = del_u[0, :].tolist()
 
@@ -152,6 +156,7 @@ except:
         plt.ylim([-0.1, 0.09])
         plt.legend()
         plt.ylabel(str(labels[i]) + ' [mm]')
+        plt.plot(neutral_point[i], marker = 'h')
     plt.show()
 
     plt.figure()
@@ -161,13 +166,14 @@ except:
         plt.legend()
         plt.ylabel(str(labels[-1]) + ' [degrees]')
     plt.show()
-
+    neutral_point = np.array(neutral_point).reshape(-1, 3)
     fig = plt.figure()
     ax = Axes3D(fig)
     ax.plot3D(yn[:, 0], yn[:, 1], yn[:, 2], linewidth = 1, alpha = 0.9, label = 'estimated position')
     ax.plot3D(ym[:, 0], ym[:, 1], ym[:, 2], '--w', linewidth = 1, alpha = 1, label = 'target')
     ax.plot3D(actual_states[:, 0], actual_states[:, 1], actual_states[:, 2], \
                         linewidth = 1, alpha = 1, label = 'actual position')
+    ax.plot3D(neutral_point[:, 0], neutral_point[:, 1], neutral_point[:, 2], "r",marker='h',  label="starting point")
     ax.set_xlim(-0.1, .1)
     ax.set_ylim(-.1, .1)
     ax.set_zlim(-.1, .1)
