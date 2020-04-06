@@ -33,7 +33,7 @@ class ModelException(Exception):
 class NeuralNetworkPredictor():
     def __init__(self, model_file, N1 = 1 , N2 = 5 ,  Nu = 4 , \
                             K = 7 , lambd = [0.3, 0.2, 0.3] , nd = 3,\
-                                    dd = 3, y0= [0, 0, 0], u0= [0, 0], \
+                                    dd = 3, y0= [0, 0], u0= [0, 0], \
                                         s = 1e-20, b = 1e0, r = 1e0):
         self.N1 = N1
         self.N2 = N2
@@ -91,7 +91,7 @@ class NeuralNetworkPredictor():
             self.delu_deque.appendleft([0, 0])
 
     def update_dynamics(self, u = [0, -50], del_u = [0, 0],\
-                            y = [0, 0, 0], ym = [0, 0, 0]):
+                            y = [0, 0, 0], ym = [0, 0]):
         """
             y_deque = y(n), y(n-1), y(n-2), ..., y(n-T)
             u_deque = u(n), u(n-1), u(n-2), ...., u(n-T)
