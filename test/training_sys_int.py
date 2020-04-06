@@ -34,12 +34,12 @@ def neural_network_training(X, y):
 
     model = Sequential()
     #model.add(GaussianNoise(0.1))
-    model.add(Dense(20, activation =  'sigmoid', kernel_initializer='random_normal'))
+    model.add(Dense(15, activation =  'linear', kernel_initializer='random_normal'))
     #model.add(GaussianNoise(0.1))
     model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
     model.compile(optimizer= 'adam', loss =custom_loss, metrics=['mse'])
-    model.fit(X_train, y_train, epochs = 1500, batch_size = 1000, validation_split=0.2)
+    model.fit(X_train, y_train, epochs = 2000, batch_size = 1000, validation_split=0.2)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
@@ -127,7 +127,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
         Y = np.concatenate((Y, position[dd - i - 1 + (N - dd) : L-i, :]), axis = 1)
 
     print Y.shape
-    U = U[:, 2:]
+    U = U[:, 2:] / 150.
     S = signals[N - 1:, :]
     Y = Y[:, 3:-3] # Y
 
