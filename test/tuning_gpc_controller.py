@@ -19,8 +19,8 @@ model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, N2 = 3, Nu = 1, \
                                     nd = 3, dd = 3, K = 2, lambd = [1e-4], \
-                                        y0 = [0.02, 0.05], \
-                                            u0 = [0.0, -50.], s = 1e-10, b = 5., r = 5.)
+                                        y0 = [0.02, 0.05, 0.05], \
+                                            u0 = [0.0, -50.], s = 1e-5, b = 5e2, r = 5.)
 
 NR_opt = SolowayNR(cost = NNP.Cost, d_model = NNP)
 Block = BlockGym(vrpn_ip = "192.168.50.24:3883")
@@ -28,7 +28,7 @@ Block = BlockGym(vrpn_ip = "192.168.50.24:3883")
 Block.reset()
 neutral_point = Block.get_state()
 NNP.y0 = neutral_point
-verbose = 0
+verbose = 1
 
 print NNP.model.summary()
 
@@ -38,7 +38,7 @@ def custom_loss(y_true, y_pred):
 Block.stretch() # stretch block for better signal readings before calibrating
 #Block.get_signal_calibration() # calibrate signal of the block
 
-Block.calibration_max = np.array([   1, 276,  72,   1,   1 ,  1, 168,   1,   1,  70,   1 ])
+Block.calibration_max = np.array([  1, 404,  56,   1,   1,   1, 168,   1,   1,  74,   1 ])
 
 u_optimal_old = np.reshape([0.0, -50.]*NNP.Nu, (-1, 2))
 
@@ -65,6 +65,10 @@ for _ in range(NNP.dd):
     y_deque.append(Block.get_state())
 
 n = 0
+
+u_action = np.array([0.0, 0.0])
+predicted_states= np.array(new_state_new)
+
 try:
     # working in m
     while True:
@@ -77,30 +81,42 @@ try:
 
         neural_network_input = np.reshape(neural_network_input, (1, -1))
 
-        predicted_states = NNP.predict(neural_network_input).flatten()
+        for _ in range(NNP.K):
+            u_deque.pop()
+            y_deque.pop()
+
+            u_deque.appendleft(u_action)
+            y_deque.appendleft(predicted_states.tolist())
+
+            predicted_states = NNP.predict(neural_network_input).flatten()
+
         predicted_ += [predicted_states]
-        NNP.yn = predicted_states[[0, 2]]
+
+        NNP.yn = predicted_states
 
         omega = 1000.       # frequency
-        amplitude = 0.05  # [m]
-        shifting = -.03    # [m]
+        amplitude = 0.015  # [m]
         initial_angle = np.pi/2.0
         circle_center = neutral_point
-        NNP.ym = np.array([circle_center[0] , \
-                            circle_center[2] + amplitude * sig.square(2.*np.pi * n / omega + initial_angle)])
+        NNP.ym = np.array([circle_center[0] + amplitude * np.cos(2.*np.pi * n / omega + initial_angle), \
+                           circle_center[1] + amplitude * np.sin(2.*np.pi * n / omega + initial_angle), \
+                            circle_center[2] + amplitude * np.sin(2.*np.pi * n / omega + initial_angle)])
 
         new_state_old = new_state_new
 
         u_optimal, del_u,  _ = NR_opt.optimize(u = u_optimal_old, \
-                                            maxit = 3, rtol = 1e-8, verbose = False)
+                                    maxit = 3, rtol = 1e-8, verbose = False)
 
         u_action = u_optimal[0, :].tolist()
 
-        SCALING1 = 10
+        SCALING1 = 1
         SCALING2 = 1
 
         u_action[0] = np.clip(u_action[0]*SCALING1, -150, 150)
-        u_action[1] = np.clip((u_action[1]+50)*SCALING2 - 50., -150, 150)
+        u_action[1] = np.clip((u_action[1]+50)*SCALING2 - 50., -200, 300)
+
+    #        u_action[0] = 150*np.cos(omega*n)
+    #        u_action[1] = 150*np.sin(omega*n)
 
         del_u_action = del_u[0, :].tolist()
         actual_st = Block.get_state()
@@ -141,8 +157,8 @@ try:
 
 except:
     Block.reset()
-    ym = np.reshape(ym, (-1, 2))
-    yn = np.reshape(yn, (-1, 2))
+    ym = np.reshape(ym, (-1, 3))
+    yn = np.reshape(yn, (-1, 3))
 
     predicted_ = np.reshape(predicted_, (-1, 3))
     actual_ = np.reshape(actual_, (-1, 3))
@@ -153,11 +169,11 @@ except:
     labels = ['x', 'y', 'z', 'u']
     plt.figure()
 
-    for i in range(2):
-        plt.subplot(2, 1, i+1)
+    for i in range(3):
+        plt.subplot(3, 1, i+1)
         plt.plot(ym[:, i], '--w', label = 'target')
         plt.plot(yn[:, i], 'cyan', label = 'predicted state')
-        plt.plot(actual_[:, i*2], label = 'actual state') # only 0 and 2
+        plt.plot(actual_[:, i], label = 'actual state') # only 0 and 2
         plt.ylim([-0.1, 0.09])
         plt.legend()
         plt.ylabel(str(labels[i]) + ' [mm]')
@@ -178,7 +194,7 @@ except:
 
     ax = Axes3D(fig)
     ax.plot3D(predicted_[:, 0],predicted_[:, 1], predicted_[:, 2], linewidth = 1, alpha = 0.9, label = 'estimated position')
-    ax.plot3D(ym[:, 0], neutral_point[:, 1], ym[:, 2], '--w', linewidth = 1, alpha = 1, label = 'target')
+    ax.plot3D(ym[:, 0], ym[:, 1], ym[:, 2], '--w', linewidth = 1, alpha = 1, label = 'target')
     ax.plot3D(actual_[:, 0], actual_[:, 1], actual_[:, 2], \
                         linewidth = 1, alpha = 1, label = 'actual position')
     ax.plot3D(neutral_point[:, 0], neutral_point[:, 1], neutral_point[:, 2], "r" ,marker='h',  label="starting point")
