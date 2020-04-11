@@ -62,7 +62,6 @@ class BlockOrientation():
         base_o= self.base.get_observation()
 
         self.end_eff_orientation = np.array(head_o) - np.array(base_o)
-
         return self.end_eff_orientation.tolist()
 
     def get_target(self):
@@ -75,8 +74,8 @@ class BlockOrientation():
 if __name__=='__main__':
     import time
 
-    C = VRPNclient("DHead", "tcp://192.168.50.33:3883")
-    B = VRPNclient("DBase", "tcp://192.168.50.33:3883")
+    C = VRPNclient("DHead", "tcp://192.168.50.24:3883")
+    B = VRPNclient("DBase", "tcp://192.168.50.24:3883")
 
     while True:
         start = time.time()
