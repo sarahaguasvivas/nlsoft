@@ -11,15 +11,18 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 import keras
 from keras.models import Sequential, load_model
-from keras.layers import Dense, GaussianNoise
+from keras.layers import Dense, GaussianNoise, LSTM
 from sklearn.model_selection import train_test_split
 import keras.backend as K
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D
+import random
+
+TRAIN = True
 
 #plt.style.use('dark_background')
 plt.style.use('dark_background')
-filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data1.csv"
+filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data5.csv"
 
 def custom_loss(y_true, y_pred):
     return 1000*K.mean(K.square(y_pred - y_true), axis = -1)
@@ -27,16 +30,16 @@ def custom_loss(y_true, y_pred):
 keras.losses.custom_loss = custom_loss
 def neural_network_training(X, y):
     #y = 1000*y
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.4)
 
     model = Sequential()
-    model.add(GaussianNoise(0.1))
-    model.add(Dense(100, activation =  'tanh', kernel_initializer='random_normal'))
-    model.add(GaussianNoise(0.01))
+    #model.add(GaussianNoise(0.1))
+    model.add(Dense(15, activation =  'linear', kernel_initializer='random_normal'))
+    #model.add(GaussianNoise(0.1))
     model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
-    model.compile(optimizer= 'adam', loss ='mse', metrics=['mse'])
-    model.fit(X_train, y_train, epochs = 1500, batch_size = 100, validation_split=0.2)
+    model.compile(optimizer= 'adam', loss =custom_loss, metrics=['mse'])
+    model.fit(X_train, y_train, epochs = 2000, batch_size = 1000, validation_split=0.2)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
@@ -57,22 +60,31 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
         plt.plot(y[1:L, i],  label = str(lab[i]) + "true", alpha = 0.7)
         plt.ylabel(str(lab[i]) + " [m]")
 #        plt.title("Estimation vs. Truth for " + str(lab[i]) + " [mm]")
+        plt.ylim([-0.07, 0.1])
         plt.legend()
 
         plt.subplot(3, 2, 2*i+2)
         plt.plot(y[1:L, i] - yn[1:L, i], linewidth = 0.5, label = str(lab[i]) + " [m]")
 #        plt.title("Error in estimation for " + str(lab[i]) + " [mm]")
         plt.ylabel(r"$\varepsilon_{" + str(lab[i]) + "}$ [m]")
+        plt.ylim([-0.07, 0.1])
         plt.legend()
 
     plt.xlabel('timesteps')
     plt.show()
 
     L = 300
+    START = random.randint(0, yn.shape[0] - L)
     fig = plt.figure()
     ax = Axes3D(fig)
-    ax.plot3D(yn[1:L, 0], yn[1:L, 1], yn[1:L, 2],  linewidth = 3, alpha = 0.9, label = "estimated position")
-    ax.plot3D(y[1:L, 0], y[1:L, 1], y[1:L, 2], alpha = 1, linewidth = 3, label = "ground truth")
+    ax.plot3D(yn[START:START+L, 0], yn[START:START+L, 1], yn[START:START+L, 2],  \
+                            linewidth = 3, alpha = 0.9, label = "estimated position")
+    ax.plot3D(y[START:START + L, 0], y[START:START+L, 1], y[START:START+L, 2], \
+                            alpha = 1, linewidth = 3, label = "ground truth")
+    ax.set_aspect('equal')
+    ax.set_xlim(-.05, .05)
+    ax.set_ylim(-.1, .05)
+    ax.set_zlim(-.05, .05)
     plt.legend()
     plt.xlabel('x [m]')
     plt.ylabel('y [m]')
@@ -115,7 +127,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
         Y = np.concatenate((Y, position[dd - i - 1 + (N - dd) : L-i, :]), axis = 1)
 
     print Y.shape
-    U = U[:, 2:]
+    U = U[:, 2:] / 150.
     S = signals[N - 1:, :]
     Y = Y[:, 3:-3] # Y
 
@@ -132,6 +144,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
 
 if __name__ == "__main__":
     X, y = prepare_data_file(filename, nd=3, dd=5)
-#    modelfile = neural_network_training(X, y)
+    if TRAIN:
+        modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)
 

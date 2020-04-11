@@ -17,8 +17,6 @@ def custom_loss(y_true, y_pred):
 
 keras.losses.custom_loss = custom_loss
 
-
-
 class ModelException(Exception):
     pass
 
@@ -35,7 +33,7 @@ class ModelException(Exception):
 class NeuralNetworkPredictor():
     def __init__(self, model_file, N1 = 1 , N2 = 5 ,  Nu = 4 , \
                             K = 7 , lambd = [0.3, 0.2, 0.3] , nd = 3,\
-                                    dd = 3, y0= [0, 0, 0], u0= [0, 0], \
+                                    dd = 3, y0= [0, 0], u0= [0, 0], \
                                         s = 1e-20, b = 1e0, r = 1e0):
         self.N1 = N1
         self.N2 = N2
@@ -93,7 +91,7 @@ class NeuralNetworkPredictor():
             self.delu_deque.appendleft([0, 0])
 
     def update_dynamics(self, u = [0, -50], del_u = [0, 0],\
-                            y = [0, 0, 0], ym = [0, 0, 0]):
+                            y = [0, 0, 0], ym = [0, 0]):
         """
             y_deque = y(n), y(n-1), y(n-2), ..., y(n-T)
             u_deque = u(n), u(n-1), u(n-2), ...., u(n-T)
@@ -120,12 +118,17 @@ class NeuralNetworkPredictor():
             return 1.0 # linear activation on output
         if self.model.layers[self.first_layer_index].get_config()['activation'] == 'tanh':
             return  1. / np.cosh(x)**2.
+        if self.model.layers[self.first_layer_index].get_config()['activation'] == 'sigmoid':
+            sigmoid = 1./(1.+np.exp(-1.*x))
+            return sigmoid*(1-sigmoid)
 
     def __Phi_prime_prime(self, x = 0):
         if self.model.layers[self.first_layer_index].get_config()['activation'] == 'linear':
             return 0.0 # linear activation on output
         if self.model.layers[self.first_layer_index].get_config()['activation'] == 'tanh':
             return-2.*np.tanh(x)/ np.cosh(x)**2.
+        if self.model.layers[self.first_layer_index].get_config()['activation'] == 'sigmoid':
+            return (2.*np.exp(-2.*x))/(np.exp(-1.*x)+ 1.)**3. - (np.exp(-1.*x))/(np.exp(-1.*x)+1.)**2.
 
     def __partial_2_fnet_partial_nph_partial_npm(self, h, m, j):
         """

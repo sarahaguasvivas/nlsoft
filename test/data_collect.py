@@ -24,29 +24,30 @@ f = open("data_" + today.strftime("%b_%d_%Y_8")+".txt", "w+")
 # my_string = ','.join(map(str, my_list))
 
 try:
-    for i in actions1:
-        if flag:
-            aactions = actions2
-        if not flag:
-            aactions = actions3
+    for _ in range(10):
+        for i in actions1:
+            if flag:
+                aactions = actions2
+            if not flag:
+                aactions = actions3
 
-        for j in aactions:
-            B.step(action=[i, j])
-            print i, j
+            for j in aactions:
+                B.step(action=[i, j])
+                print i, j
+                data = B.get_observation() + B.get_real_position()
+                data = data + [i, j]
+                print >> f, data
+            flag = not flag
+
+        for ii in range(N):
+            aaction = random_points[ii, :].tolist()
+            B.step(action = aaction)
+            time.sleep(0.3)
+            print ii, aaction
             data = B.get_observation() + B.get_real_position()
-            data = data + [i, j]
+            data = data + aaction
             print >> f, data
-        flag = not flag
-
-    for ii in range(N):
-        aaction = random_points[ii, :].tolist()
-        B.step(action = aaction)
-        time.sleep(0.3)
-        print ii, aaction
-        data = B.get_observation() + B.get_real_position()
-        data = data + aaction
-        print >> f, data
-    B.reset()
+        B.reset()
 except Exception as e:
     print str(e)
     B.reset()

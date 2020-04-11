@@ -15,16 +15,14 @@ class BlockGym():
         self.motors_port = motors_port
         self.motors = DynamixelActor(port = self.motors_port)
         self.sensor_signals = OpticalSignal()
-
         self.state = None
         self.vrpn_ip = vrpn_ip
         self.block_or = BlockOrientation(ip = self.vrpn_ip)
-
-        self.target = self.block_or.get_target()
+        #self.target = self.block_or.get_target() # TODO: Uncomment when we find the stick
         self.calibration_max = np.array([0]* \
                     self.sensor_signals.num_sensors)
 
-        print "Optitrack Conenction Established!"
+        print "Gym Environment created!"
 
     def step(self, action = [0, 0]):
         # return observation, reward, done, info
