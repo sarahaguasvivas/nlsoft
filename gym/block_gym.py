@@ -64,16 +64,7 @@ class BlockGym():
         import time
         # calibrate signals to find out
         # where each channel maxes
-        calibration_positions = [[300, 150], [-300, 150], \
-                                [-150, -150], [150, -150], \
-                                [0, -50], [150, 0], [-150, 0], \
-                                [0, 150], [0, -150], [0, 300], [0, -300], \
-                                [300, 0], [150, 150], [-150, 150], \
-                                [0, 0], [0, -10], [150, -300], \
-                                [200, 300], [-200, 300],\
-                                [-200, -300], [0, 150], \
-                                [0, -200], [-150, -200],\
-                                [150, -200]]
+        calibration_positions = [[100, 20], [-150, -150]]
 
         for count, pos in enumerate(calibration_positions):
             self.step(pos)
@@ -92,8 +83,8 @@ class BlockGym():
     def stretch(self):
         import numpy as np
         # Stretch out the block before running any experiment
-        calibration_positions = [[300, 300], [-300, 300],\
-                                [-300, -300], [300, -300]]
+        calibration_positions = [[-115, -150], [-115, 20],\
+                                [100, -150], [100, 20]]
         for count, pos in enumerate(calibration_positions):
             self.step(pos)
             time.sleep(1)

@@ -24,7 +24,7 @@ NUM_TIMESTEPS = 10
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, N2 = 3, Nu = 1, \
                                     nd = 3, dd = 3, K = 2, lambd = [1e-4], \
                                         y0 = [0.02, -0.05, 0.05], \
-                                            u0 = [0.0, -50.], s = 1e-5, b = 5e2, r = 5.)
+                                            u0 = [-20.0, -90.], s = 1e-5, b = 5e2, r = 5.)
 NR_opt, Block = SolowayNR(cost = NNP.Cost, d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
 Block.reset()
@@ -38,17 +38,17 @@ def custom_loss(y_true, y_pred):
     pass
 
 Block.stretch() # stretch block for better signal readings before calibrating
-#Block.get_signal_calibration() # calibrate signal of the block
-Block.calibration_max = np.array([  1, 404,  56,   1,   1,   1, 168,   1,   1,  74,   1 ])
+Block.get_signal_calibration() # calibrate signal of the block
+#Block.calibration_max = np.array([  1, 404,  56,   1,   1,   1, 168,   1,   1,  74,   1 ])
 
-u_optimal_old = np.reshape([0.0, -50.]*NNP.Nu, (-1, 2))
+u_optimal_old = np.reshape([-20.0, -90.]*NNP.Nu, (-1, 2))
 new_state_new = Block.get_state()
 del_u = np.zeros(u_optimal_old.shape)
 elapsed , u_optimal_list, ym, yn, predicted_, actual_ = [], [],[],[],[],[]
 u_deque, y_deque = deque(), deque()
 
 for _ in range(NNP.nd):
-    u_deque.append([0.0, -50])
+    u_deque.append([-20.0, -90])
 for _ in range(NNP.dd):
     y_deque.append(Block.get_state())
 
@@ -91,8 +91,8 @@ for e in range(NUM_EXPERIMENTS):
 
         SCALING1 = 1
         SCALING2 = 1
-        u_action[0] = np.clip(u_action[0]*SCALING1, -150, 150)
-        u_action[1] = np.clip((u_action[1]+50)*SCALING2 - 50., -200, 300)
+        u_action[0] = np.clip(u_action[0]*SCALING1, -115, 100)
+        u_action[1] = np.clip((u_action[1]+50)*SCALING2 - 50., -150, 20)
 
         del_u_action = del_u[0, :].tolist()
         actual_st = Block.get_state()
