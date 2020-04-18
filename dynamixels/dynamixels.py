@@ -1,4 +1,5 @@
 import pypot.dynamixel as pydxl
+import numpy as np
 
 class DynamixelActor:
     def __init__(self, port = '/dev/ttyUSB0', baudrate = 57600, verbose = True):
@@ -9,9 +10,10 @@ class DynamixelActor:
         self._serial_connection = pydxl.DxlIO(self.serial_port,  baudrate = self.baudrate)
         print "Scanned motor ids:", self._serial_connection.scan()
         self._dynamixel1, self._dynamixel2 =  self._serial_connection.scan([1, 2])
-
-        self._zero1= 0
-        self._zero2= -50
+        self.max0 = [-115, 100]
+        self.max1 = [-150, 20]
+        self._zero1= -20
+        self._zero2= -80
 
         self._angle1 = self._zero1
         self._angle2 = self._zero2
@@ -28,6 +30,10 @@ class DynamixelActor:
 
     def step(self, action=[0, 0]):
         self._angle1 , self._angle2 = action
+
+        self._angle1 = np.clip(self._angle1, self.max0[0], self.max0[1])
+        self._angle2 = np.clip(self._angle2, self.max1[0], self.max1[1])
+
         goal_pos = {self._dynamixel1: self._angle1, self._dynamixel2 : self._angle2}
         self._serial_connection.set_goal_position(goal_pos)
 
