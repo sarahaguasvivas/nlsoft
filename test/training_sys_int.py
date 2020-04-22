@@ -17,8 +17,8 @@ import keras.backend as K
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D
 import random
-
-TRAIN = True
+NUM_DATA_RUNS = 10
+TRAIN = False
 
 #plt.style.use('dark_background')
 plt.style.use('seaborn')
@@ -52,7 +52,7 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
     plt.figure()
 
     lab = ['x', 'y', 'z']
-    L = X.shape[0]
+    L = X.shape[0]//NUM_DATA_RUNS
 
     for i in range(3):
         plt.subplot(3, 2, 2*i+1)
@@ -62,6 +62,10 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
 #        plt.title("Estimation vs. Truth for " + str(lab[i]) + " [mm]")
         plt.ylim([-0.1, 0.1])
         plt.legend()
+        if 2*i+1 == 1:
+            plt.title("States with respect to Timesteps")
+        if 2*i+1 == 5:
+            plt.xlabel('timesteps')
 
         plt.subplot(3, 2, 2*i+2)
         plt.plot(y[1:L, i] - yn[1:L, i], color = '#34495E', linewidth = 0.5, label = r"$\Delta " + str(lab[i]) + " [m]$")
@@ -69,13 +73,9 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
         plt.ylabel(r"$\varepsilon_{" + str(lab[i]) + "}$ [m]")
         plt.ylim([-0.1, 0.1])
         plt.legend()
-        if 2*i+1 == 1:
-            plt.title("Changes in States with respect to Timesteps")
         if 2*i+2 == 2:
             plt.title("Errors in Testing Set Predictions")
-        if 2*i+2 == 5:
-            plt.xlabel('timesteps')
-    plt.xlabel('timesteps')
+        plt.xlabel('timesteps')
     plt.show()
 
     L = 300

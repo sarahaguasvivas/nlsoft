@@ -20,11 +20,11 @@ def verbose0(x, y, z, w, k):
     print "GPC: Cost: ", k
 
 NUM_EXPERIMENTS = 2
-NUM_TIMESTEPS = 5
+NUM_TIMESTEPS = 1000
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, N2 = 2, Nu = 2, \
-                                    nd = 3, dd = 3, K = 2, lambd = [1e-4, 1e-7], \
+                                    nd = 3, dd = 3, K = 3, lambd = [1e-3, 1e-4], \
                                         y0 = [0.02, -0.05, 0.05], \
-                                            u0 = [0.0, 0.0], s = 1e-4, b = 5e5, r = 5.)
+                                            u0 = [0.0, 0.0], s = 5e-3, b = 5e5, r = 5e1)
 
 NR_opt, Block = SolowayNR(cost = NNP.Cost, d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -78,14 +78,14 @@ try:
             pred_exp += [predicted_states]
             NNP.yn = predicted_states
 
-            omega, amplitude, initial_angle, circle_center = 1000,  0.05, 0.0, neutral_point
+            omega, amplitude, initial_angle, circle_center = 500,  0.05, 0.0, neutral_point
             #NNP.ym = np.array([circle_center[0] + amplitude * np.cos(2.*np.pi * n / omega + initial_angle), \
             #                   circle_center[1] + amplitude * np.sin(2.*np.pi * n / omega + initial_angle), \
             #                    circle_center[2] + amplitude * np.sin(2.*np.pi * n / omega + initial_angle)])
 
             NNP.ym = np.array([circle_center[0],  \
-                                circle_center[1], \
-                                        circle_center[2] + amplitude * np.sin(2*np.pi * n/ omega + initial_angle)])
+                                        circle_center[1] + amplitude * sig.square(2*np.pi * n/ omega + initial_angle),
+                                        circle_center[2]])
 
             new_state_old = new_state_new
 
@@ -94,7 +94,7 @@ try:
 
             u_action = u_optimal[0, :].tolist()
 
-            SCALING1 = 100
+            SCALING1 = 10
             SCALING2 = 1
 
             u_action[0] = np.clip(u_action[0]*SCALING1, -80, 80)
@@ -132,7 +132,7 @@ try:
         ym += [ym_exp]
         u_optimal_list+=[u_exp]
         elapsed+=[elapsed_exp]
-
+        u_optimal_old = np.reshape([0., 0.]*NNP.Nu, (-1, 2))
     """
         -----------------------------------------------------> PLOTTING <------------------------------------------------------
     """
@@ -155,12 +155,12 @@ try:
         plt.plot(np.mean(yn, axis = AXIS)[:, i], '#bfcbc5', label = 'predicted state')
         plt.fill_between(timesteps, np.mean(yn, axis = AXIS)[:, i] - np.std(yn, axis = AXIS)[:, i] ,\
                             np.mean(yn, axis = AXIS)[:, i] + np.std(yn, axis = AXIS)[:, i], \
-                                color = '#bfcbc5', alpha = 0.3)
+                                color = '#bfcbc5', alpha = 0.5)
         plt.plot(np.mean(actual_, axis = AXIS)[:, i], color = 'goldenrod', label = 'actual state') # only 0 and 2
 
         plt.fill_between(timesteps, np.mean(actual_, axis = AXIS)[:, i] - np.std(actual_, axis = AXIS)[:, i],\
                                         np.mean(actual_, axis = AXIS)[:, i] + np.std(actual_, axis = AXIS)[:, i],\
-                                            color = 'goldenrod', alpha = 0.3)
+                                            color = 'goldenrod', alpha = 0.5)
 
         plt.ylim([-0.1, 0.09])
         plt.legend()
@@ -211,5 +211,6 @@ try:
     plt.ylabel('y[m]')
     plt.title('Target Position vs. Controlled Positions')
     plt.show()
-except:
+except Exception as e:
+    print str(e)
     Block.reset()
