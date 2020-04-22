@@ -21,8 +21,8 @@ import random
 TRAIN = True
 
 #plt.style.use('dark_background')
-plt.style.use('dark_background')
-filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data5.csv"
+plt.style.use('seaborn')
+filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data8.csv"
 
 def custom_loss(y_true, y_pred):
     return 1000*K.mean(K.square(y_pred - y_true), axis = -1)
@@ -39,7 +39,7 @@ def neural_network_training(X, y):
     model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
     model.compile(optimizer= 'adam', loss =custom_loss, metrics=['mse'])
-    model.fit(X_train, y_train, epochs = 2000, batch_size = 1000, validation_split=0.2)
+    model.fit(X_train, y_train, epochs = 100, batch_size = 100, validation_split=0.2)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
@@ -56,20 +56,25 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
 
     for i in range(3):
         plt.subplot(3, 2, 2*i+1)
-        plt.plot(yn[1:L, i],  label = str(lab[i]) + " est")
-        plt.plot(y[1:L, i],  label = str(lab[i]) + "true", alpha = 0.7)
+        plt.plot(yn[1:L, i], color = '#E74C3C',   label = r"$" + str(lab[i]) + "_{est}$")
+        plt.plot(y[1:L, i], color = '#5D6D7E',linestyle ='dashed', label = r"$" + str(lab[i]) + "_{true}$", alpha = 0.7)
         plt.ylabel(str(lab[i]) + " [m]")
 #        plt.title("Estimation vs. Truth for " + str(lab[i]) + " [mm]")
-        plt.ylim([-0.07, 0.1])
+        plt.ylim([-0.1, 0.1])
         plt.legend()
 
         plt.subplot(3, 2, 2*i+2)
-        plt.plot(y[1:L, i] - yn[1:L, i], linewidth = 0.5, label = str(lab[i]) + " [m]")
+        plt.plot(y[1:L, i] - yn[1:L, i], color = '#34495E', linewidth = 0.5, label = r"$\Delta " + str(lab[i]) + " [m]$")
 #        plt.title("Error in estimation for " + str(lab[i]) + " [mm]")
         plt.ylabel(r"$\varepsilon_{" + str(lab[i]) + "}$ [m]")
-        plt.ylim([-0.07, 0.1])
+        plt.ylim([-0.1, 0.1])
         plt.legend()
-
+        if 2*i+1 == 1:
+            plt.title("Changes in States with respect to Timesteps")
+        if 2*i+2 == 2:
+            plt.title("Errors in Testing Set Predictions")
+        if 2*i+2 == 5:
+            plt.xlabel('timesteps')
     plt.xlabel('timesteps')
     plt.show()
 
