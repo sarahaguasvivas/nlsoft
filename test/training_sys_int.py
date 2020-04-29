@@ -11,18 +11,18 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 import keras
 from keras.models import Sequential, load_model
-from keras.layers import Dense, GaussianNoise, LSTM
+from keras.layers import Dense, GaussianNoise, LSTM, BatchNormalization
 from sklearn.model_selection import train_test_split
 import keras.backend as K
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D
 import random
-NUM_DATA_RUNS = 10
-TRAIN = False
+NUM_DATA_RUNS = 100
+TRAIN = True
 
 #plt.style.use('dark_background')
 plt.style.use('seaborn')
-filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data8.csv"
+filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data9.csv"
 
 def custom_loss(y_true, y_pred):
     return 1000*K.mean(K.square(y_pred - y_true), axis = -1)
@@ -34,7 +34,7 @@ def neural_network_training(X, y):
 
     model = Sequential()
     #model.add(GaussianNoise(0.1))
-    model.add(Dense(15, activation =  'linear', kernel_initializer='random_normal'))
+    model.add(Dense(15, activation =  'tanh', kernel_initializer='random_normal'))
     #model.add(GaussianNoise(0.1))
     model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
@@ -87,9 +87,9 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
     ax.plot3D(y[START:START + L, 0], y[START:START+L, 1], y[START:START+L, 2], \
                             alpha = 1, linewidth = 3, label = "ground truth")
     ax.set_aspect('equal')
-    ax.set_xlim(-.05, .05)
-    ax.set_ylim(-.1, .05)
-    ax.set_zlim(-.05, .05)
+    #ax.set_xlim(-.04, .05)
+    #ax.set_ylim(-.1, .05)
+    #ax.set_zlim(-.05, .05)
     plt.legend()
     plt.xlabel('x [m]')
     plt.ylabel('y [m]')
@@ -132,12 +132,9 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
         Y = np.concatenate((Y, position[dd - i - 1 + (N - dd) : L-i, :]), axis = 1)
 
     print Y.shape
-    U = U[:, 2:] / 150.
+    U = U[:, 2:]/100
     S = signals[N - 1:, :]
     Y = Y[:, 3:-3] # Y
-
-    #X = np.concatenate((U, S), axis = 1)
-    #X = np.concatenate((X, Y[:, 3:]), axis = 1)
 
     X = np.concatenate((U, Y[:, 3:]), axis = 1)
     X = np.concatenate((X, S), axis = 1)
@@ -148,7 +145,9 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
 
 
 if __name__ == "__main__":
-    X, y = prepare_data_file(filename, nd=3, dd=5)
+    # dd is dd+2
+    # nd is nd
+    X, y = prepare_data_file(filename, nd=5, dd=3)
     if TRAIN:
         modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)
