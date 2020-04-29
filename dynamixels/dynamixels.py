@@ -10,10 +10,10 @@ class DynamixelActor:
         self._serial_connection = pydxl.DxlIO(self.serial_port,  baudrate = self.baudrate)
         print "Scanned motor ids:", self._serial_connection.scan()
         self._dynamixel1, self._dynamixel2 =  self._serial_connection.scan([1, 2])
-        self.max0 = [-90, 90]
-        self.max1 = [-90, 110]
+        self.max0 = [-100, 100]
+        self.max1 = [-100, 60]
         self._zero1= 0.0
-        self._zero2= 0.0
+        self._zero2= -50.0
 
         self._angle1 = self._zero1
         self._angle2 = self._zero2

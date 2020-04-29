@@ -20,11 +20,12 @@ def verbose0(x, y, z, w, k):
     print "GPC: Cost: ", k
 
 NUM_EXPERIMENTS = 2
-NUM_TIMESTEPS = 1000
-NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, N2 = 2, Nu = 2, \
-                                    nd = 3, dd = 3, K = 3, lambd = [1e-3, 1e-4], \
-                                        y0 = [0.02, -0.05, 0.05], \
-                                            u0 = [0.0, 0.0], s = 5e-3, b = 5e5, r = 5e1)
+NUM_TIMESTEPS = 2000
+NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, \
+                N2 = 3, Nu = 1, nd = 5, dd = 1, K = 1, \
+                    lambd = [1e-4], \
+                        y0 = [0.02, -0.05, 0.05], \
+                            u0 = [0.0, -50.0], s = 1e-5, b = 5e2, r = 5.)
 
 NR_opt, Block = SolowayNR(cost = NNP.Cost, d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -39,21 +40,21 @@ def custom_loss(y_true, y_pred):
     pass
 
 Block.stretch() # stretch block for better signal readings before calibrating
-#Block.get_signal_calibration() # calibrate signal of the block
-Block.calibration_max = np.array([  1, 339,  61,   1,   1,   1, 127,   1,   1,  57,   1])
+Block.get_signal_calibration() # calibrate signal of the block
+#Block.calibration_max = np.array([1, 323,  61,   1,   1,   1, 138,   1,   1,  58,   1 ])
 
-u_optimal_old = np.reshape([0., 0.]*NNP.Nu, (-1, 2))
+u_optimal_old = np.reshape([0., -50.]*NNP.Nu, (-1, 2))
 new_state_new = Block.get_state()
 del_u = np.zeros(u_optimal_old.shape)
 elapsed , u_optimal_list, ym, yn, predicted_, actual_ = [], [],[],[],[],[]
 u_deque, y_deque = deque(), deque()
 
 for _ in range(NNP.nd):
-    u_deque.append([0.0, 0.0])
+    u_deque.append([0.0, -50.0])
 for _ in range(NNP.dd):
     y_deque.append(Block.get_state())
 
-u_action, predicted_states = np.array([0.0, 0.0]), np.array(new_state_new)
+u_action, predicted_states = np.array([0.0, -50.0]), np.array(new_state_new)
 try:
     for e in range(NUM_EXPERIMENTS):
         print "----------------------------"
@@ -64,7 +65,7 @@ try:
         for n in range(NUM_TIMESTEPS):
             seconds = time.time()
             signal = np.divide(Block.get_observation(), Block.calibration_max, dtype = np.float64).tolist()
-            neural_network_input = np.array((np.array(list(u_deque))/90.).flatten().tolist() + \
+            neural_network_input = np.array((np.array(list(u_deque))/100.).flatten().tolist() + \
                                                     np.array(list(y_deque)).flatten().tolist() + signal)
             neural_network_input = np.reshape(neural_network_input, (1, -1))
 
@@ -79,12 +80,9 @@ try:
             NNP.yn = predicted_states
 
             omega, amplitude, initial_angle, circle_center = 500,  0.05, 0.0, neutral_point
-            #NNP.ym = np.array([circle_center[0] + amplitude * np.cos(2.*np.pi * n / omega + initial_angle), \
-            #                   circle_center[1] + amplitude * np.sin(2.*np.pi * n / omega + initial_angle), \
-            #                    circle_center[2] + amplitude * np.sin(2.*np.pi * n / omega + initial_angle)])
 
             NNP.ym = np.array([circle_center[0],  \
-                                        circle_center[1] + amplitude * sig.square(2*np.pi * n/ omega + initial_angle),
+                                        circle_center[1] + amplitude/2 * sig.square(2*np.pi * n/ omega + initial_angle),
                                         circle_center[2]])
 
             new_state_old = new_state_new
@@ -94,11 +92,11 @@ try:
 
             u_action = u_optimal[0, :].tolist()
 
-            SCALING1 = 10
-            SCALING2 = 1
+            SCALING0 = 10
+            SCALING1 = 1
 
-            u_action[0] = np.clip(u_action[0]*SCALING1, -80, 80)
-            u_action[1] = np.clip(u_action[1]*SCALING2, -90, 110)
+            u_action[0] = np.clip(u_action[0]*SCALING0, -100, 100)
+            u_action[1] = np.clip(u_action[1]*SCALING1, -100, 60)
 
             del_u_action = del_u[0, :].tolist()
             actual_st = Block.get_state()
@@ -132,7 +130,8 @@ try:
         ym += [ym_exp]
         u_optimal_list+=[u_exp]
         elapsed+=[elapsed_exp]
-        u_optimal_old = np.reshape([0., 0.]*NNP.Nu, (-1, 2))
+        u_optimal_old = np.reshape([0., -50.]*NNP.Nu, (-1, 2))
+        Block.reset()
     """
         -----------------------------------------------------> PLOTTING <------------------------------------------------------
     """
@@ -212,5 +211,6 @@ try:
     plt.title('Target Position vs. Controlled Positions')
     plt.show()
 except Exception as e:
+    Block.reset()
     print str(e)
     Block.reset()
