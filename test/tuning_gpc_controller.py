@@ -81,8 +81,8 @@ try:
 
             omega, amplitude, initial_angle, circle_center = 500,  0.05, 0.0, neutral_point
 
-            NNP.ym = np.array([circle_center[0],  \
-                                        circle_center[1] + amplitude/2 * sig.square(2*np.pi * n/ omega + initial_angle),
+            NNP.ym = np.array([circle_center[0] + amplitude*sig.square(2*np.pi * n/ omega + np.pi/2.0),  \
+                                        circle_center[1] + amplitude * sig.square(2*np.pi * n/ omega + initial_angle),
                                         circle_center[2]])
 
             new_state_old = new_state_new
@@ -92,7 +92,7 @@ try:
 
             u_action = u_optimal[0, :].tolist()
 
-            SCALING0 = 10
+            SCALING0 = 1
             SCALING1 = 1
 
             u_action[0] = np.clip(u_action[0]*SCALING0, -100, 100)
