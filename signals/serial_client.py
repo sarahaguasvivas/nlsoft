@@ -24,9 +24,7 @@ class OpticalSignal:
         x = []
         array_string = []
 
-        while len(x) < 28 or x[0] == "," or len(array_string) != self.num_sensors:
-            if len(x) > 50:
-                print(len(x))
+        while len(x) < 25 or x[0] == "," or len(array_string) != self.num_sensors:
             x = self.serial_.readline()
             array_string = x.split(",")
             try:
