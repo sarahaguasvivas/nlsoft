@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D
 import time, os
 
-plt.style.use('seaborn')
+plt.style.use('dark_background')
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 def verbose0(x, y, z, w, k):
@@ -19,14 +19,12 @@ def verbose0(x, y, z, w, k):
     print "GPC: u_optimal", w
     print "GPC: Cost: ", k
 
-NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 500
-NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, \
-                N2 = 10, Nu = 1, nd = 5, dd = 1, K = 10, \
-                    lambd = [1e-4], \
-                        y0 = [0.02, -0.05, 0.05], \
-                            u0 = [0.0, -50.0], s = 1e-10, b = 1., r = 1.)
-
+NUM_EXPERIMENTS = 2
+NUM_TIMESTEPS = 1000
+NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, N2 = 3, Nu = 1, \
+                                    nd = 3, dd = 3, K = 5, lambd = [1e-3], \
+                                        y0 = [0.02, -0.05, 0.05], \
+                                            u0 = [-20.0, -90.], s = 1e-5, b = 1., r = 1.)
 NR_opt, Block = SolowayNR(cost = NNP.Cost, d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
 Block.reset()
@@ -41,21 +39,21 @@ def custom_loss(y_true, y_pred):
 
 Block.stretch() # stretch block for better signal readings before calibrating
 Block.get_signal_calibration() # calibrate signal of the block
-#Block.calibration_max = np.array([1, 323,  61,   1,   1,   1, 138,   1,   1,  58,   1 ])
+#Block.calibration_max = np.array([  1, 404,  56,   1,   1,   1, 168,   1,   1,  74,   1 ])
 
-u_optimal_old = np.reshape([0., -50.]*NNP.Nu, (-1, 2))
+u_optimal_old = np.reshape([-20.0, -90.]*NNP.Nu, (-1, 2))
 new_state_new = Block.get_state()
 del_u = np.zeros(u_optimal_old.shape)
 elapsed , u_optimal_list, ym, yn, predicted_, actual_ = [], [],[],[],[],[]
 u_deque, y_deque = deque(), deque()
 
 for _ in range(NNP.nd):
-    u_deque.append([0.0, -50.0])
+    u_deque.append([-20.0, -90])
 for _ in range(NNP.dd):
     y_deque.append(Block.get_state())
 
-u_action, predicted_states = np.array([0.0, -50.0]), np.array(new_state_new)
-#try:
+u_action, predicted_states = np.array([0.0, 0.0]), np.array(new_state_new)
+
 for e in range(NUM_EXPERIMENTS):
     print "----------------------------"
     print "         NEW EXPERIMENT # ", e
@@ -65,25 +63,28 @@ for e in range(NUM_EXPERIMENTS):
     for n in range(NUM_TIMESTEPS):
         seconds = time.time()
         signal = np.divide(Block.get_observation(), Block.calibration_max, dtype = np.float64).tolist()
-        neural_network_input = np.array((np.array(list(u_deque))/100.).flatten().tolist() + \
+        neural_network_input = np.array((np.array(list(u_deque))/150.).flatten().tolist() + \
                                                 np.array(list(y_deque)).flatten().tolist() + signal)
         neural_network_input = np.reshape(neural_network_input, (1, -1))
 
-        NNP.yn = []
-        for ii in range(NNP.K):
+        for _ in range(NNP.K):
+            u_deque.pop()
+            y_deque.pop()
+            u_deque.appendleft(u_action)
+            y_deque.appendleft(predicted_states.tolist())
             predicted_states = NNP.predict(neural_network_input).flatten()
-            NNP.yn += [predicted_states]
-            if ii > NNP.dd:
-                y_deque.pop()
-                y_deque.appendleft(predicted_states.tolist())
 
         pred_exp += [predicted_states]
+        NNP.yn = predicted_states
 
-        omega, amplitude, initial_angle, circle_center = 500,  0.025/2., 0.0, neutral_point
+        omega, amplitude, initial_angle, circle_center = 1000,  0.015, np.pi/2.0, neutral_point
+        #NNP.ym = np.array([circle_center[0] + amplitude * np.cos(2.*np.pi * n / omega + initial_angle), \
+        #                   circle_center[1] + amplitude * np.sin(2.*np.pi * n / omega + initial_angle), \
+        #                    circle_center[2] + amplitude * np.sin(2.*np.pi * n / omega + initial_angle)])
 
-        NNP.ym = np.tile([circle_center[0],  \
-                                    circle_center[1] + amplitude * np.cos(2*np.pi * n / omega),
-                                    circle_center[2] + amplitude/2. * np.sin(2*np.pi * n / omega)], (NNP.K, 1))
+        NNP.ym = np.array([circle_center[0] + amplitude * sig.square(2*np.pi * n/ omega + initial_angle) ,  \
+                            circle_center[1], \
+                                    circle_center[2] ])
 
         new_state_old = new_state_new
 
@@ -92,11 +93,11 @@ for e in range(NUM_EXPERIMENTS):
 
         u_action = u_optimal[0, :].tolist()
 
-        SCALING0 = 1
         SCALING1 = 1
+        SCALING2 = 1
 
-        u_action[0] = np.clip(u_action[0]*SCALING0, -100, 100)
-        u_action[1] = np.clip(u_action[1]*SCALING1, -100, 60)
+        u_action[0] = np.clip(u_action[0]*SCALING1, -115, 100)
+        u_action[1] = np.clip((u_action[1]+90)*SCALING2 - 90., -180, 15)
 
         del_u_action = del_u[0, :].tolist()
         actual_st = Block.get_state()
@@ -106,7 +107,7 @@ for e in range(NUM_EXPERIMENTS):
         if verbose == 1:
             print "GPC: u_optimal ", u_action
 
-        NNP.update_dynamics(u_action, del_u_action, predicted_states.tolist(), NNP.ym[0, :].tolist())
+        NNP.update_dynamics(u_action, del_u_action, NNP.yn.tolist(), NNP.ym.tolist())
         u_optimal_old = u_optimal
         Block.step(action = u_action)
         u_deque.pop()
@@ -130,19 +131,18 @@ for e in range(NUM_EXPERIMENTS):
     ym += [ym_exp]
     u_optimal_list+=[u_exp]
     elapsed+=[elapsed_exp]
-    u_optimal_old = np.reshape([0., -50.]*NNP.Nu, (-1, 2))
-    Block.reset()
+
 """
     -----------------------------------------------------> PLOTTING <------------------------------------------------------
 """
 
 Block.reset()
-ym = 1000*np.reshape(ym, (NUM_EXPERIMENTS,-1, 3))
-yn = 1000*np.reshape(yn, (NUM_EXPERIMENTS, -1, 3))
-predicted_ = 1000*np.reshape(predicted_, (NUM_EXPERIMENTS, -1, 3))
-actual_ = 1000*np.reshape(actual_, (NUM_EXPERIMENTS,-1, 3))
+ym = np.reshape(ym, (NUM_EXPERIMENTS,-1, 3))
+yn = np.reshape(yn, (NUM_EXPERIMENTS, -1, 3))
+predicted_ = np.reshape(predicted_, (NUM_EXPERIMENTS, -1, 3))
+actual_ = np.reshape(actual_, (NUM_EXPERIMENTS,-1, 3))
 u_optimal_list = np.reshape(u_optimal_list, (NUM_EXPERIMENTS, -1, 2))
-neutral_point = 1000*neutral_point
+
 print "Block calibration vector: ", Block.calibration_max
 labels = ['x', 'y', 'z', 'u']
 plt.figure()
@@ -150,67 +150,54 @@ AXIS = 0
 timesteps = range(max(yn.shape))
 for i in range(3):
     plt.subplot(3, 1, i+1)
-    plt.plot(np.mean(ym, axis = AXIS)[:, i], color = '#d3d3d3', linestyle = 'dashed', label = 'target')
-    plt.plot(np.mean(yn, axis = AXIS)[:, i], '#bfcbc5', label = 'predicted state')
+    plt.plot(np.mean(ym, axis = AXIS)[:, i], '--w', label = 'target')
+    plt.plot(np.mean(yn, axis = AXIS)[:, i], 'cyan', label = 'predicted state')
     plt.fill_between(timesteps, np.mean(yn, axis = AXIS)[:, i] - np.std(yn, axis = AXIS)[:, i] ,\
                         np.mean(yn, axis = AXIS)[:, i] + np.std(yn, axis = AXIS)[:, i], \
-                            color = '#bfcbc5', alpha = 0.5)
-    plt.plot(np.mean(actual_, axis = AXIS)[:, i], color = 'goldenrod', label = 'actual state') # only 0 and 2
+                            color = 'cyan', alpha = 0.1)
+    plt.plot(np.mean(actual_, axis = AXIS)[:, i], color = 'lightgoldenrodyellow', label = 'actual state') # only 0 and 2
 
     plt.fill_between(timesteps, np.mean(actual_, axis = AXIS)[:, i] - np.std(actual_, axis = AXIS)[:, i],\
                                     np.mean(actual_, axis = AXIS)[:, i] + np.std(actual_, axis = AXIS)[:, i],\
-                                        color = 'goldenrod', alpha = 0.5)
+                                        color = 'lightgoldenrodyellow', alpha = 0.1)
 
-    plt.ylim([-0.1*1000, 0.09*1000])
+    plt.ylim([-0.1, 0.09])
     plt.legend()
     plt.ylabel(str(labels[i]) + ' [mm]')
-    plt.plot(1000*neutral_point[i], marker = 'h')
-    if i==2:
-        plt.xlabel('timesteps')
-    if i==0:
-        plt.title("Changes in States with respect to Timesteps")
+    plt.plot(neutral_point[i], marker = 'h')
 plt.show()
 
-max_input = np.max(np.max(u_optimal_list))
-min_input = np.min(np.min(u_optimal_list))
 plt.figure()
 for i in range(2):
     plt.subplot(2, 1, i+1)
-    plt.plot(np.mean(u_optimal_list, axis =AXIS)[:, i], color = 'slateblue', label = r'$u_{' + str(i) + "}$" )
+    plt.plot(np.mean(u_optimal_list, axis =AXIS)[:, i], label = 'u' + str(i))
     plt.fill_between(timesteps, np.mean(u_optimal_list, axis = AXIS)[:, i] -  np.std(u_optimal_list, axis = AXIS)[:, i],\
                                     np.mean(u_optimal_list, axis = AXIS)[:, i] + np.std(u_optimal_list, axis = AXIS)[:, i],\
-                                        color = 'slateblue', alpha = 0.3, label = r"$2\sigma$")
+                                        color = 'lightgoldenrodyellow', alpha = 0.1)
 
 
     plt.legend()
-    plt.ylim([min_input, max_input])
     plt.ylabel(str(labels[-1]) + ' [degrees]')
-    if i == 0:
-        plt.title('Changes in Inputs with respect to Timesteps')
-plt.xlabel('timesteps')
 plt.show()
 
 neutral_point = np.array(neutral_point).reshape(-1, 3)
 
 fig = plt.figure()
-m_predicted_ = 1000*np.mean(predicted_, axis = AXIS)
+m_predicted_ = np.mean(predicted_, axis = AXIS)
 m_ym = np.mean(ym, axis = AXIS)
 m_actual_ = np.mean(actual_, axis = AXIS)
 ax = Axes3D(fig)
-ax.plot3D(m_predicted_[:, 0],m_predicted_[:, 1], m_predicted_[:, 2],color = 'c',  linewidth = 1, alpha = 0.9, label = 'estimated position')
-ax.plot3D(m_ym[:, 0], m_ym[:, 1], m_ym[:, 2], color = 'grey',linestyle = 'dashed',  linewidth = 1, alpha = 1, label = 'target')
+ax.plot3D(m_predicted_[:, 0],m_predicted_[:, 1], m_predicted_[:, 2], linewidth = 1, alpha = 0.9, label = 'estimated position')
+ax.plot3D(m_ym[:, 0], m_ym[:, 1], m_ym[:, 2], '--w', linewidth = 1, alpha = 1, label = 'target')
 ax.plot3D(m_actual_[:, 0], m_actual_[:, 1], m_actual_[:, 2], \
-                    linewidth = 1, color = 'goldenrod', alpha = 1, label = 'actual position')
-#ax.plot3D(neutral_point[:, 0], neutral_point[:, 1], neutral_point[:, 2], "r" ,marker='h',  label="starting point")
-ax.set_xlim(-0.1*1000, .1*1000)
-ax.set_ylim(-.1*1000, .1*1000)
-ax.set_zlim(-.1*1000, .1*1000)
+                    linewidth = 1, alpha = 1, label = 'actual position')
+ax.plot3D(neutral_point[:, 0], neutral_point[:, 1], neutral_point[:, 2], "r" ,marker='h',  label="starting point")
+ax.set_xlim(-0.1, .1)
+ax.set_ylim(-.1, .1)
+ax.set_zlim(-.1, .1)
 plt.legend()
-plt.xlabel('x[mm]')
-plt.ylabel('y[mm]')
+plt.xlabel('x[m]')
+plt.ylabel('y[m]')
 plt.title('Target Position vs. Controlled Positions')
 plt.show()
-#except Exception as e:
-#    Block.reset()
-#    print str(e)
-#    Block.reset()
+

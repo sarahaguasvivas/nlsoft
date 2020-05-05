@@ -9,13 +9,13 @@ B = BlockGym()
 
 B.reset()
 
-actions1 = list(np.arange(150, -150, -5.))
-actions2 = list(np.arange(130, -150, -1.)) # need to change this
-actions3 = list(np.arange(-250, 130, 1.))  # need to change this
-N = 1000
-updown = np.random.randint(-150, 150, (N, 1))
-sides = np.random.randint(-140, 130, (N, 1))
+actions1 = list(np.arange(100, -100, -5.))
+actions2 = list(np.arange(60, -100, -1.)) # need to change this
+actions3 = list(np.arange(-100, 60, 1.))  # need to change this
 
+N = 150
+updown = np.random.randint(-100, 100, (N, 1))
+sides = np.random.randint(-100, 60, (N, 1))
 random_points = np.concatenate((updown, sides), axis = 1)
 
 flag = True
@@ -24,7 +24,10 @@ f = open("data_" + today.strftime("%b_%d_%Y_8")+".txt", "w+")
 # my_string = ','.join(map(str, my_list))
 
 try:
-    for _ in range(10):
+    for exp in range(100):
+        print "_________"
+        print " Round #", exp
+        print "_________"
         for i in actions1:
             if flag:
                 aactions = actions2
@@ -49,5 +52,6 @@ try:
             print >> f, data
         B.reset()
 except Exception as e:
+    B.reset()
     print str(e)
     B.reset()

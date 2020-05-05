@@ -22,7 +22,6 @@ class SolowayNR:
         enorm_last = np.linalg.norm(u - np.array([1,1]))
 
         for i in range(maxit):
-
             du = np.linalg.solve(self.d_model.Ju(u, del_u), Fu)
             u += du
 
