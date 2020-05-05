@@ -107,8 +107,8 @@ class NeuralNetworkPredictor():
         self.ym_deque.appendleft(ym)
 
     def get_computation_vectors(self):
-        Y = np.array(list(self.y_deque))
-        YM = np.array(list(self.ym_deque))
+        Y = np.array(self.yn)
+        YM = np.array(self.ym)
         U = np.array(list(self.u_deque))
         delU = np.array(list(self.delu_deque))
         return Y, YM, U, delU
@@ -175,11 +175,14 @@ class NeuralNetworkPredictor():
                D yn
             -----------
              D u(n+h)
+
+             TODO: Revise this function
         """
         weights = self.model.layers[-1].get_weights()[0]
         sum_output = 0.0
         for i in range(self.hid):
-            sum_output += weights[i, j] * self.__partial_fnet_partial_u(h, j)
+            for ii in range(weights.shape[1]):
+                sum_output += weights[i, ii] * self.__partial_fnet_partial_u(h, j)
         self.previous_first_der = sum_output
         return sum_output
 
@@ -201,13 +204,13 @@ class NeuralNetworkPredictor():
         sum_output = 0.0
         for i in range(self.nd):
             if (self.K - self.Nu) < i:
-                sum_output+= np.mean(weights[j, i*self.num_u:i*self.num_u + self.num_u] * \
+                sum_output+= np.sum(weights[j, i*self.num_u:i*self.num_u + self.num_u] * \
                                                                 kronecker_delta(self.K - i, h))
             else:
-                sum_output+= np.mean(weights[j, i*self.num_u:i*self.num_u + self.num_u] *\
+                sum_output+= np.sum(weights[j, i*self.num_u:i*self.num_u + self.num_u] *\
                                                                 kronecker_delta(self.Nu, h))
         for i in range(0, min(self.K, self.dd)):
-            sum_output += np.mean(np.mean(weights[j, i*self.num_y + \
+            sum_output += np.sum(np.mean(weights[j, i*self.num_y + \
                             self.nd + 1: i*self.num_y + self.nd + 1+self.num_y]) * \
                                 self.previous_first_der * step(self.K - i -1))
         return sum_output
@@ -248,6 +251,7 @@ class NeuralNetworkPredictor():
 
     def compute_hessian(self, u, del_u):
         Y, YM , U, delU = self.get_computation_vectors()
+
         Hessian = np.zeros((self.Nu, self.Nu))
         for h in range(self.Nu):
             for m in range(self.Nu):
@@ -279,7 +283,8 @@ class NeuralNetworkPredictor():
             sum_output = np.array([0.0]*U.shape[1])
             for h in range(self.Nu):
                 for j in range(self.N1, self.N2):
-                    sum_output[inp_]+= np.sum((YM[j, :]- Y[j, :])*self.__partial_yn_partial_u(h, j))
+                    sum_output[inp_]+= np.sum((YM[j, :]- Y[j, :])* \
+                                    self.__partial_yn_partial_u(h, j))
 
                 for j in range(self.Nu):
                     sum_output[inp_]+= np.sum(2.*self.lambd[j]*del_u[j, inp_]*\
