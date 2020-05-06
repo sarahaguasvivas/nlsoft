@@ -20,12 +20,12 @@ def verbose0(x, y, z, w, k):
     print "GPC: Cost: ", k
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 500
+NUM_TIMESTEPS = 20
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, \
-                N2 = 10, Nu = 1, nd = 5, dd = 1, K = 10, \
-                    lambd = np.array([[1e-4], [1e-3]]), \
+                N2 = 3, Nu = 1, nd = 5, dd = 1, K = 3, \
+                    lambd = np.array([[1e-4], [1e-2]]), \
                         y0 = [0.02, -0.05, 0.05], \
-                            u0 = [0.0, -50.0], s = 1e-10, b = 1., r = 1.)
+                            u0 = [0.0, -50.0], s = 1e-5, b = 5e2, r = 5e3)
 
 NR_opt, Block = SolowayNR(cost = NNP.Cost, d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -40,13 +40,13 @@ def custom_loss(y_true, y_pred):
     pass
 
 Block.stretch() # stretch block for better signal readings before calibrating
-Block.get_signal_calibration() # calibrate signal of the block
-#Block.calibration_max = np.array([1, 323,  61,   1,   1,   1, 138,   1,   1,  58,   1 ])
+#Block.get_signal_calibration() # calibrate signal of the block
+Block.calibration_max = np.array([1, 335, 120,1,1, 1, 166,9,1,50,1])
 
 u_optimal_old = np.reshape([0., -50.]*NNP.Nu, (-1, 2))
 new_state_new = Block.get_state()
 del_u = np.zeros(u_optimal_old.shape)
-elapsed , u_optimal_list, ym, yn, predicted_, actual_ = [], [],[],[],[],[]
+elapsed , u_optimal_list, ym, yn, predicted_, actual_ = [],[],[],[],[],[]
 u_deque, y_deque = deque(), deque()
 
 for _ in range(NNP.nd):
@@ -114,8 +114,8 @@ for e in range(NUM_EXPERIMENTS):
         u_deque.appendleft(u_action)
         y_deque.appendleft(predicted_states.tolist())
 
-        ym_exp += [NNP.ym]
-        yn_exp += [NNP.yn]
+        ym_exp += [NNP.ym[0, :]]
+        yn_exp += [predicted_states]
         elapsed_exp += [time.time() - seconds]
 
         if verbose == 0:
@@ -139,6 +139,7 @@ for e in range(NUM_EXPERIMENTS):
 Block.reset()
 ym = 1000*np.reshape(ym, (NUM_EXPERIMENTS,-1, 3))
 yn = 1000*np.reshape(yn, (NUM_EXPERIMENTS, -1, 3))
+
 predicted_ = 1000*np.reshape(predicted_, (NUM_EXPERIMENTS, -1, 3))
 actual_ = 1000*np.reshape(actual_, (NUM_EXPERIMENTS,-1, 3))
 u_optimal_list = np.reshape(u_optimal_list, (NUM_EXPERIMENTS, -1, 2))
