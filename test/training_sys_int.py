@@ -147,7 +147,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
 if __name__ == "__main__":
     # dd is dd+2
     # nd is nd
-    X, y = prepare_data_file(filename, nd=5, dd=3)
+    X, y = prepare_data_file(filename, nd=3, dd=5)
     if TRAIN:
         modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)
