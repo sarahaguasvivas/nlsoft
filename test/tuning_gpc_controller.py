@@ -23,7 +23,7 @@ NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 500
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, \
                 N2 = 10, Nu = 1, nd = 5, dd = 1, K = 10, \
-                    lambd = [1e-4], \
+                    lambd = np.array([[1e-4], [1e-3]]), \
                         y0 = [0.02, -0.05, 0.05], \
                             u0 = [0.0, -50.0], s = 1e-10, b = 1., r = 1.)
 

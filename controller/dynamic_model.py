@@ -31,8 +31,8 @@ class ModelException(Exception):
         ---------------------------------------------------------------------
 """
 class NeuralNetworkPredictor():
-    def __init__(self, model_file, N1 = 1 , N2 = 3 ,  Nu = 4 , \
-                            K = 2 , lambd = [0.3, 0.2, 0.3] , nd = 3,\
+    def __init__(self, model_file, N1 = 1 , N2 = 3 ,  Nu = 3 , \
+                            K = 2 , lambd = [[0.3, 0.2, 0.3], [0.3, 0.2, 0.3]] , nd = 3,\
                                     dd = 3, y0= [0, 0], u0= [0, 0], \
                                         s = 1e-20, b = 1e0, r = 1e0):
         self.N1 = N1
@@ -47,7 +47,7 @@ class NeuralNetworkPredictor():
 
         self.lambd = lambd
 
-        if len(self.lambd) != self.Nu:
+        if self.lambd.shape[1] != self.Nu:
             raise ModelException("The length of lambda should be the same as Nu")
 
         self.K = K
@@ -223,32 +223,6 @@ class NeuralNetworkPredictor():
         """
         return kronecker_delta(h, j) - kronecker_delta(h, j-1)
 
-    def narma_cost_hessian(self, u, del_u):
-        Y, YM , U, delU = self.get_computation_vectors()
-        Hessian = np.zeros((self.Nu, self.Nu))
-        for h in range(self.Nu):
-            for m in range(self.Nu):
-                sum_output = 0.0
-                for j in range(self.N1, self.N2):
-                    sum_output += np.sum((self.__partial_yn_partial_u(h, j)*\
-                                self.__partial_yn_partial_u(m, j) - \
-                                self.__partial_2_yn_partial_nph_partial_npm(h, m, j)* \
-                                    (YM[j, :] - Y[j, :])))
-                Hessian[m, h] = sum_output
-        return Hessian
-
-    def narma_cost_jacobian(self, u, del_u):
-        Y, YM , U, delU = self.get_computation_vectors()
-        Jacobian = np.zeros((self.Nu, U.shape[1]))
-
-        for inp_ in range(U.shape[1]):
-            for h in range(self.Nu):
-                sum_output = 0.0
-                for j in range(self.N1, self.N2):
-                    sum_output += np.sum((YM[j, :]- Y[j, :])*self.__partial_yn_partial_u(h, j))
-                    Jacobian[h, j] = sum_output
-        return Jacobian
-
     def compute_hessian(self, u, del_u):
         Y, YM , U, delU = self.get_computation_vectors()
 
@@ -257,20 +231,20 @@ class NeuralNetworkPredictor():
             for m in range(self.Nu):
                 sum_output = 0.0
                 for j in range(self.N1, self.N2):
-                    sum_output += np.sum((self.__partial_yn_partial_u(h, j)*\
-                                self.__partial_yn_partial_u(m, j) - \
-                                self.__partial_2_yn_partial_nph_partial_npm(h, m, j)* \
+                    sum_output += np.mean((self.__partial_yn_partial_u(h, j)*\
+                            self.__partial_yn_partial_u(m, j) - \
+                            self.__partial_2_yn_partial_nph_partial_npm(h, m, j)* \
                                     (YM[j, :] - Y[j, :])))
-                for j in range(self.Nu):
-                    sum_output += np.sum(2.*(self.lambd[j] * (self.__partial_delta_u_partial_u(j, h) * \
-                                        self.__partial_delta_u_partial_u(j, m))))
-
-                for j in range(self.Nu):
-                    sum_output += np.sum(kronecker_delta(h, j) * kronecker_delta(m, j) * \
-                            (np.divide(2.0*self.constraints.s , np.power(u[j, :] + self.constraints.r/2. - \
-                                    self.constraints.b, 3)) + np.divide(2.*self.constraints.s , \
-                                        (self.constraints.r/2. + self.constraints.b - \
-                                                np.power(u[j, :], 3)))))
+                    for i in range(self.num_u):
+                        for j in range(self.Nu):
+                            sum_output += np.sum(2.*(self.lambd[i, j] * (self.__partial_delta_u_partial_u(j, h) * \
+                                                self.__partial_delta_u_partial_u(j, m))))
+                        for j in range(self.Nu):
+                            sum_output += np.sum(kronecker_delta(h, j) * kronecker_delta(m, j) * \
+                                    (np.divide(2.0*self.constraints.s , np.power(u[j, i] + self.constraints.r/2. - \
+                                            self.constraints.b, 3)) + np.divide(2.*self.constraints.s , \
+                                                (self.constraints.r/2. + self.constraints.b - \
+                                                        np.power(u[j, i], 3)))))
                 Hessian[m, h] = sum_output
         return Hessian
 
@@ -278,18 +252,16 @@ class NeuralNetworkPredictor():
         Y, YM, U, delU = self.get_computation_vectors()
 
         dJ = np.zeros((self.Nu, U.shape[1]))
-
         for inp_ in range(U.shape[1]):
             sum_output = np.array([0.0]*U.shape[1])
             for h in range(self.Nu):
                 for j in range(self.N1, self.N2):
-                    sum_output[inp_]+= np.sum((YM[j, :]- Y[j, :])* \
+                    sum_output[inp_]+= np.mean((YM[j, :]- Y[j, :])* \
                                     self.__partial_yn_partial_u(h, j))
 
                 for j in range(self.Nu):
-                    sum_output[inp_]+= np.sum(2.*self.lambd[j]*del_u[j, inp_]*\
+                    sum_output[inp_]+= np.sum(2.*self.lambd[inp_, j]*del_u[j, inp_]*\
                                 self.__partial_delta_u_partial_u(j, h))
-
                 for j in range(self.Nu):
                     sum_output[inp_] += np.sum(kronecker_delta(h, j) * \
                                 (-self.constraints.s/(u[j, inp_] + \
