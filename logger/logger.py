@@ -48,7 +48,6 @@ class Logger:
                 actual_ += [self.log_dictionary[key]['actual']]
                 u_optimal_list += [self.log_dictionary[key]['u']]
 
-        print self.log_dictionary['metadata']
         NUM_EXPERIMENTS=self.log_dictionary['metadata']['num_experiments']
         NUM_TIMESTEPS = self.log_dictionary['metadata']['num_timesteps']
         neutral_point = self.log_dictionary['metadata']['neutral_point']
