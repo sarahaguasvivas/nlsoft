@@ -11,8 +11,8 @@ from utilities.util import *
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
-NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 1000
+NUM_EXPERIMENTS = 2
+NUM_TIMESTEPS = 3
 
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, \
                 N2 = 3, Nu = 2, nd = 3, dd = 3, K = 5, \
@@ -35,17 +35,20 @@ u_optimal_old = np.reshape(NNP.u0*NNP.Nu, (-1, 2))
 new_state_new = copy.copy(neutral_point)
 del_u = np.zeros(u_optimal_old.shape)
 
-log.log({'neutral_point' : neutral_point})
+log.log({'metadata' : {'neutral_point' : neutral_point,\
+         'num_experiments' : NUM_EXPERIMENTS, \
+         'num_timesteps': NUM_TIMESTEPS}})
+
+print log.log_dictionary
+
 
 u_deque, y_deque = first_load_deques(neutral_point, NNP.u0, NNP.nd, NNP.dd)
 
 u_action, predicted_states = np.array(NNP.u0), np.array(new_state_new)
-#try:
-for e in range(NUM_EXPERIMENTS):
 
+for e in range(NUM_EXPERIMENTS):
     log.log({str(e) : {'predicted' : [], 'actual' : [], 'yn' : [], \
             'ym' : [], 'elapsed' : [], 'u' : []}})
-
     for n in range(NUM_TIMESTEPS):
         seconds = time.time()
 
@@ -108,7 +111,3 @@ for e in range(NUM_EXPERIMENTS):
 
 log.plot_log()
 
-#except Exception as e:
-#    Block.reset()
-#    print str(e)
-#    Block.reset()

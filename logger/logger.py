@@ -10,11 +10,11 @@ class Logger:
     def log(self, log_dict):
         for key in log_dict.keys():
             if key not in self.log_dictionary.keys():
-                self.log_dictionary[key] = {}
+                self.log_dictionary[key] = log_dict[key]
             else:
                 for logged in log_dict[key].keys():
                     if logged not in self.log_dictionary[key].keys():
-                        self.log_dictionary[key][logged] = []
+                        self.log_dictionary[key][logged] = [log_dict[key][logged]]
                     else:
                         self.log_dictionary[key][logged] += [log_dict[key][logged]]
 
@@ -42,12 +42,17 @@ class Logger:
 
         # for all experiments:
         for key in self.log_dictionary.keys():
-            ym += [self.log_dictionary[key]['ym']]
-            yn += [self.log_dictionary[key]['yn']]
-            actual_ += [self.log_dictionary[key]['actual']]
-            u_optimal_list += [self.log_dictionary[key]['u']]
+            if key != "metadata":
+                ym += [self.log_dictionary[key]['ym']]
+                yn += [self.log_dictionary[key]['yn']]
+                actual_ += [self.log_dictionary[key]['actual']]
+                u_optimal_list += [self.log_dictionary[key]['u']]
 
-        neutral_point = self.log_dictionary['neutral_point']
+        print self.log_dictionary['metadata']
+        NUM_EXPERIMENTS=self.log_dictionary['metadata']['num_experiments']
+        NUM_TIMESTEPS = self.log_dictionary['metadata']['num_timesteps']
+        neutral_point = self.log_dictionary['metadata']['neutral_point']
+
         ym = 1000*np.reshape(ym, (NUM_EXPERIMENTS,-1, 3))
         yn = 1000*np.reshape(yn, (NUM_EXPERIMENTS, -1, 3))
         predicted_ = 1000*np.reshape(predicted_, (NUM_EXPERIMENTS, -1, 3))
