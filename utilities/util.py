@@ -3,7 +3,6 @@ from collections import deque
 def custon_logg(y_true,  y_pred):
     pass
 
-
 def first_load_deques(y0, u0, nd, dd):
     u_deque = deque()
     y_deque = deque()
