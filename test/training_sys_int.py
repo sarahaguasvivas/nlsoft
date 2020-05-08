@@ -22,7 +22,7 @@ TRAIN = True
 
 #plt.style.use('dark_background')
 plt.style.use('seaborn')
-filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data9.csv"
+filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data10.csv"
 
 def custom_loss(y_true, y_pred):
     return 1000*K.mean(K.square(y_pred - y_true), axis = -1)
@@ -34,7 +34,7 @@ def neural_network_training(X, y):
 
     model = Sequential()
     #model.add(GaussianNoise(0.1))
-    model.add(Dense(10, activation =  'linear', kernel_initializer='random_normal'))
+    model.add(Dense(20, activation =  'tanh', kernel_initializer='random_normal'))
     #model.add(GaussianNoise(0.1))
     model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
