@@ -12,15 +12,15 @@ from target.target import *
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
-NUM_EXPERIMENTS = 2
+NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 1000
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, \
-                N2 = 2, Nu = 3, nd = 3, dd = 2, K = 3, \
-                    lambd = np.array([[1e-2, 5e-1, 1.], [1e-2, 1e0, 5e-1]]), \
+                N2 = 2, Nu = 3, nd = 3, dd = 2, K = 5, \
+                    lambd = np.array([[1e-4, 5e-2, 1e-2], [1e-2, 5e-2, 1e-2]]), \
                         y0 = [0.02, -0.05, 0.05], \
-                            u0 = [0.0, -50.0], s = 1e-10, b= 5e-2, r = 5.)
+                            u0 = [0.0, -50.0], s = 1e-20, b = 5., r = 5e-2)
 
 NR_opt, Block = SolowayNR(cost = NNP.Cost, d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
@@ -65,7 +65,7 @@ for e in range(NUM_EXPERIMENTS):
         NNP.ym = target.spin(n, NNP.N1, NNP.N2, 3, predicted_states.tolist())
         new_state_old = new_state_new
         u_optimal, del_u,  _ = NR_opt.optimize(u = u_optimal_old, \
-                                    maxit = 8, rtol = 1e-5, verbose = True)
+                                    maxit = 8, rtol = 1e-3, verbose = True)
 
         u_action = u_optimal[0, :].tolist()
         del_u_action = del_u[0, :].tolist()
