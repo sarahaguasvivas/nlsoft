@@ -150,10 +150,10 @@ class NeuralNetworkPredictor():
 
         """
         weights = self.model.layers[-1].get_weights()[0]
-        sum_output=0.0
+        sum_output = 0.0
         for i in range(self.hid):
-            sum_output+= np.mean(np.multiply(weights[i, :], \
-                            self.__partial_2_fnet_partial_nph_partial_npm(h, m, j)))
+            sum_output+= np.sum(np.multiply(weights[i, :], \
+                        self.__partial_2_fnet_partial_nph_partial_npm(h,m, j)))
         self.previous_second_der = sum_output
         return sum_output
 
@@ -166,7 +166,7 @@ class NeuralNetworkPredictor():
         weights = self.model.layers[self.first_layer_index].get_weights()[0]
         sum_output = 0.0
         for i in range(0, min(self.K, self.dd)):
-            sum_output += np.mean(weights[j, self.num_y*i+self.nd+1:self.num_y*i+self.nd+3] * \
+            sum_output += np.sum(weights[j, self.num_y*i+self.nd+1:self.num_y*i+self.nd+3] * \
                                         self.previous_second_der * step(self.K-i-1))
         return sum_output
 
@@ -210,7 +210,7 @@ class NeuralNetworkPredictor():
                 sum_output+= np.sum(weights[j, i*self.num_u:i*self.num_u + self.num_u] *\
                                                                 kronecker_delta(self.Nu, h))
         for i in range(0, min(self.K, self.dd)):
-            sum_output += np.sum(np.mean(weights[j, i*self.num_y + \
+            sum_output += np.sum(np.sum(weights[j, i*self.num_y + \
                             self.nd + 1: i*self.num_y + self.nd + 1+self.num_y]) * \
                                 self.previous_first_der * step(self.K - i -1))
         return sum_output
@@ -235,16 +235,16 @@ class NeuralNetworkPredictor():
                             self.__partial_yn_partial_u(m, j) - \
                             self.__partial_2_yn_partial_nph_partial_npm(h, m, j)* \
                                     (YM[j, :] - Y[j, :])))
-                    for i in range(self.num_u):
-                        for j in range(self.Nu):
-                            sum_output += np.sum(2.*(self.lambd[i, j] * (self.__partial_delta_u_partial_u(j, h) * \
-                                                self.__partial_delta_u_partial_u(j, m))))
-                        for j in range(self.Nu):
-                            sum_output += np.sum(kronecker_delta(h, j) * kronecker_delta(m, j) * \
-                                    (np.divide(2.0*self.constraints.s , np.power(u[j, i] + self.constraints.r/2. - \
-                                            self.constraints.b, 3)) + np.divide(2.*self.constraints.s , \
-                                                (self.constraints.r/2. + self.constraints.b - \
-                                                        np.power(u[j, i], 3)))))
+                for i in range(self.num_u):
+                    for j in range(self.Nu):
+                        sum_output += np.sum(2.*(self.lambd[i, j] * (self.__partial_delta_u_partial_u(j, h) * \
+                                            self.__partial_delta_u_partial_u(j, m))))
+                for j in range(self.Nu):
+                    sum_output += np.sum(kronecker_delta(h, j) * kronecker_delta(m, j) * \
+                            (np.divide(2.0*self.constraints.s , np.power(u[j, i] + self.constraints.r/2. - \
+                                    self.constraints.b, 3)) + np.divide(2.*self.constraints.s , \
+                                        (self.constraints.r/2. + self.constraints.b - \
+                                                np.power(u[j, i], 3)))))
                 Hessian[m, h] = sum_output
         return Hessian
 
