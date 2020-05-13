@@ -17,10 +17,10 @@ NUM_TIMESTEPS = 1000
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, \
-                N2 = 3, Nu = 2, nd = 3, dd = 2, K = 5, \
-                    lambd = np.array([[1e-2, 5e-3], [1e-2, 5e-3]]), \
+                N2 = 2, Nu = 2, nd = 3, dd = 2, K = 4, \
+                    lambd = np.array([[1e-1, 1e-2], [1e-2, 1.]]), \
                         y0 = [0.02, -0.05, 0.05], \
-                            u0 = [0.0, -50.0], s = 1e-7, b = 5e-2, r = -4.)
+                            u0 = [0.0, -50.0], s = 1e-10, b = 5e2, r = 0.5)
 
 NR_opt, Block = SolowayNR(cost = NNP.Cost, d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
@@ -31,7 +31,7 @@ neutral_point = Block.get_state()
 target = Ellipse(frequency = 500, amplitude = 0.025, center = neutral_point)
 
 #Block.get_signal_calibration() # calibrate signal of the block
-Block.calibration_max = np.array([ 1, 366, 120,   1,   1,   1, 138,   1,   1,  37,   1 ])
+Block.calibration_max = np.array([ 6, 377, 116,   1,   1,   1, 137,   1,   1,  41,   1 ])
 
 u_optimal_old = np.reshape(NNP.u0*NNP.Nu, (-1, 2))
 new_state_new = copy.copy(neutral_point)
@@ -52,7 +52,7 @@ for e in range(NUM_EXPERIMENTS):
         signal = np.divide(Block.get_observation(), Block.calibration_max, \
                             dtype = np.float64).tolist()
         NNP.yn = []
-        for _ in range(NNP.K):
+        for k in range(NNP.K):
             neural_network_input = np.array((np.array(list(u_deque)) \
                                                 /100.).flatten().tolist() + \
                                                 np.array(list(y_deque)
@@ -61,6 +61,7 @@ for e in range(NUM_EXPERIMENTS):
             predicted_states = NNP.predict(neural_network_input).flatten()
             NNP.yn += [predicted_states]
             y_deque = roll_deque(y_deque, predicted_states.tolist())
+            NNP.k = k
 
         NNP.ym = target.spin(n, NNP.N1, NNP.N2, 3, predicted_states.tolist())
         new_state_old = new_state_new
@@ -80,7 +81,6 @@ for e in range(NUM_EXPERIMENTS):
         u_deque = roll_deque(u_deque, u_action)
         y_deque = roll_deque(y_deque, predicted_states.tolist())
 
-        NNP.k = n
         if verbose == 0:
             log.verbose(actual = np.array(Block.get_state()).tolist(),
                     yn = predicted_states, ym = NNP.ym[0, :], \
