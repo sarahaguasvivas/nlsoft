@@ -17,10 +17,10 @@ NUM_TIMESTEPS = 1000
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, \
-                N2 = 2, Nu = 3, nd = 3, dd = 2, K = 5, \
-                    lambd = np.array([[1e-4, 5e-2, 1e-2], [1e-2, 5e-2, 1e-2]]), \
+                N2 = 3, Nu = 2, nd = 3, dd = 2, K = 5, \
+                    lambd = np.array([[1e-2, 5e-3], [1e-2, 5e-3]]), \
                         y0 = [0.02, -0.05, 0.05], \
-                            u0 = [0.0, -50.0], s = 1e-20, b = 5., r = 5e-2)
+                            u0 = [0.0, -50.0], s = 1e-7, b = 5e-2, r = -4.)
 
 NR_opt, Block = SolowayNR(cost = NNP.Cost, d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
@@ -65,7 +65,7 @@ for e in range(NUM_EXPERIMENTS):
         NNP.ym = target.spin(n, NNP.N1, NNP.N2, 3, predicted_states.tolist())
         new_state_old = new_state_new
         u_optimal, del_u,  _ = NR_opt.optimize(u = u_optimal_old, \
-                                    maxit = 8, rtol = 1e-3, verbose = True)
+                                    maxit = 8, rtol = 1e-8, verbose = True)
 
         u_action = u_optimal[0, :].tolist()
         del_u_action = del_u[0, :].tolist()
@@ -80,6 +80,7 @@ for e in range(NUM_EXPERIMENTS):
         u_deque = roll_deque(u_deque, u_action)
         y_deque = roll_deque(y_deque, predicted_states.tolist())
 
+        NNP.k = n
         if verbose == 0:
             log.verbose(actual = np.array(Block.get_state()).tolist(),
                     yn = predicted_states, ym = NNP.ym[0, :], \
