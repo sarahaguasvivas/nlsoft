@@ -31,19 +31,15 @@ class NN_Cost:
         Y, YM , U, delU = self.d_model.get_computation_vectors()
 
         for j in range(self.d_model.N1, self.d_model.N2):
-            self.cost += np.mean(np.power(YM[j, :] - Y[j, :], 2))
-
+            self.cost += np.dot(YM[j, :] - Y[j, :], YM[j, :] - Y[j, :])
         for j in range(self.d_model.Nu):
-            for i in range(self.d_model.num_u):
-                self.cost += np.sum(self.d_model.lambd[j, i]*\
-                                    np.power(delU[j, i], 2))
-
+            self.cost += np.dot(np.array(self.d_model.lambd[:, j]), \
+                                np.array(delU[j, :]) * np.array(delU[j, :]))
         for j in range(self.d_model.Nu):
             for i in range(self.d_model.num_u):
                 self.cost += np.sum(self.s / (U[j, i] + self.r / 2.0 - \
                             self.b) + self.s / (self.r/2.0 + \
                                 self.b - U[j, i]) - 4.0 / self.r)
-
         return self.cost
 
 

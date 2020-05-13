@@ -79,7 +79,7 @@ class NeuralNetworkPredictor():
         self.num_y = 3
 
         self.initialize_deques(self.u0, self.y0)
-        self.Cost = NN_Cost(self, self.lambd)
+        self.cost = NN_Cost(self, self.lambd)
 
     def initialize_deques(self, u0, y0):
         for _ in range(self.N2):
@@ -256,8 +256,9 @@ class NeuralNetworkPredictor():
             sum_output = np.array([0.0]*U.shape[1])
             for h in range(self.Nu):
                 for j in range(self.N1, self.N2):
-                    sum_output[inp_]+= np.dot(YM[j, :]- Y[j, :],  \
-                                    self.__partial_yn_partial_u(h, j))
+                    sum_output[inp_]+= np.sum(np.multiply(YM[j, :]- \
+                                    Y[j, :],  \
+                                    self.__partial_yn_partial_u(h, j)))
                 for j in range(self.Nu):
                     sum_output[inp_]+= np.sum(2.*self.lambd[inp_, j]*del_u[j, inp_]*\
                                 self.__partial_delta_u_partial_u(j, h))
