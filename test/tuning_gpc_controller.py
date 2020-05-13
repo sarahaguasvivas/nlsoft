@@ -13,14 +13,14 @@ from target.target import *
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 1000
+NUM_TIMESTEPS = 100
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, \
-                N2 = 2, Nu = 2, nd = 3, dd = 2, K = 4, \
-                    lambd = np.array([[1e-1, 1e-2], [1e-2, 1.]]), \
+                N2 = 2, Nu = 1, nd = 3, dd = 2, K = 5, \
+                    lambd = np.array([[3e-1], [1e-4]]), \
                         y0 = [0.02, -0.05, 0.05], \
-                            u0 = [0.0, -50.0], s = 1e-10, b = 5e2, r = 0.5)
+                            u0 = [0.0, -50.0], s = 1e-10, b = 5e5, r = 1.)
 
 NR_opt, Block = SolowayNR(cost = NNP.Cost, d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
@@ -28,7 +28,7 @@ log = Logger()
 Block.reset()
 
 neutral_point = Block.get_state()
-target = Ellipse(frequency = 500, amplitude = 0.025, center = neutral_point)
+target = Ellipse(frequency = 50, amplitude = 0.025, center = neutral_point)
 
 #Block.get_signal_calibration() # calibrate signal of the block
 Block.calibration_max = np.array([ 6, 377, 116,   1,   1,   1, 137,   1,   1,  41,   1 ])
@@ -61,7 +61,6 @@ for e in range(NUM_EXPERIMENTS):
             predicted_states = NNP.predict(neural_network_input).flatten()
             NNP.yn += [predicted_states]
             y_deque = roll_deque(y_deque, predicted_states.tolist())
-            NNP.k = k
 
         NNP.ym = target.spin(n, NNP.N1, NNP.N2, 3, predicted_states.tolist())
         new_state_old = new_state_new
