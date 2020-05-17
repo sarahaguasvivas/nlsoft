@@ -13,14 +13,14 @@ from target.target import *
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 1000
-verbose = 1
+NUM_TIMESTEPS = 10
+verbose = 0
 
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, \
                 N2 = 2, Nu = 1, nd = 3, dd = 2, K = 5, \
-                    lambd = np.array([[5e-10], [1e-9]]), \
+                    lambd = np.array([[1e-10], [5e-10]]), \
                         y0 = [0.02, -0.05, 0.05], \
-                            u0 = [0.0, -50.0], s = 1e-10, b = 1e-5, r = 4.)
+                            u0 = [0.0, -50.0], s = 1e-10, b = 1e-8, r = 4.)
 
 NR_opt, Block = SolowayNR(cost = NNP.cost, d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
@@ -28,7 +28,7 @@ log = Logger()
 Block.reset()
 
 neutral_point = Block.get_state()
-target = Ellipse(frequency = 50, amplitude = 0.025, center = neutral_point)
+target = Ellipse(frequency = 1000, amplitude = 0.025, center = neutral_point)
 
 Block.get_signal_calibration() # calibrate signal of the block
 #Block.calibration_max = np.array([ 6, 377, 116,   1,   1,   1, 137,   1,   1,  41,   1 ])
@@ -46,7 +46,6 @@ u_action, predicted_states = np.array(NNP.u0), np.array(new_state_new)
 for e in range(NUM_EXPERIMENTS):
     log.log({str(e) : {'predicted' : [], 'actual' : [], 'yn' : [], \
             'ym' : [], 'elapsed' : [], 'u' : []}})
-
     for n in range(NUM_TIMESTEPS):
         seconds = time.time()
         signal = np.divide(Block.get_observation(), Block.calibration_max, \
@@ -65,7 +64,7 @@ for e in range(NUM_EXPERIMENTS):
         NNP.ym = target.spin(n, NNP.N1, NNP.N2, 3, predicted_states.tolist())
         new_state_old = new_state_new
         u_optimal, del_u,  _ = NR_opt.optimize(u = u_optimal_old, \
-                                    maxit = 8, rtol = 1e-8, verbose = True)
+                                    maxit = 2, rtol = 1e-4, verbose = True)
         print 'del_u',  del_u
         u_action = u_optimal[0, :].tolist()
         del_u_action = del_u[0, :].tolist()
@@ -88,12 +87,13 @@ for e in range(NUM_EXPERIMENTS):
             log.verbose(u = u_action, cost = NNP.cost.compute_cost())
 
         log.log({str(e) : {'actual' : np.array(Block.get_state()).tolist(), \
-                        'yn' : predicted_states, \
-                        'ym' : NNP.ym[0, :],\
+                        'yn' : predicted_states.tolist(), \
+                        'ym' : NNP.ym[0, :].tolist(),\
                         'elapsed' : time.time() - seconds,\
                         'u' : [u_action], 'cost : ': NNP.cost.compute_cost()}})
 
     u_optimal_old = np.reshape(NNP.u0*NNP.Nu, (-1, 2))
     Block.reset()
 log.plot_log()
+log.save_log()
 

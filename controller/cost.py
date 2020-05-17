@@ -32,6 +32,7 @@ class NN_Cost:
 
         for j in range(self.d_model.N1, self.d_model.N2):
             self.cost += np.dot(YM[j, :] - Y[j, :], YM[j, :] - Y[j, :])
+
         for j in range(self.d_model.Nu):
             self.cost += np.dot(np.array(self.d_model.lambd[:, j]), \
                                 np.array(delU[j, :]) * np.array(delU[j, :]))
