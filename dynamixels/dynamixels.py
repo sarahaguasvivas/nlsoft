@@ -28,6 +28,10 @@ class DynamixelActor:
         return [self._zero1, self._zero2]
 
     def reboot(self):
+        """
+        TODO
+        """
+        self._serial_connection.reboot((1, 2))
         print dir(self._serial_connection)
 
     def get_present_position(self):

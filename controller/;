@@ -167,13 +167,10 @@ class NeuralNetworkPredictor():
         weights = self.model.layers[self.first_layer_index].get_weights()[0]
         sum_output = 0.0
         for i in range(0, min(j, self.dd)):
-            step_ = []
-            for ii in range(self.num_y):
-                step_ += [step(j - i + ii - 1)]
-            sum_output += np.sum(weights[i*self.num_u + self.nd*self.num_u: i*self.num_u + \
+            sum_output += np.sum(weights[j, i*self.num_u + self.nd*self.num_u: i*self.num_u + \
                                         self.nd*self.num_u + \
-                                        self.num_y, j] * \
-                                        self.previous_second_der * np.array(step_))
+                                        self.num_y] * \
+                                        self.previous_second_der * step(j-i-1))
         return sum_output
 
     def __partial_yn_partial_u(self, h, j):
@@ -209,26 +206,17 @@ class NeuralNetworkPredictor():
         weights = self.model.layers[self.first_layer_index].get_weights()[0]
         sum_output = 0.0
         for i in range(self.nd):
-            delta = []
-            if (j - self.Nu) < i*self.num_u:
-                for ii in range(self.num_u):
-                    delta += [kronecker_delta(j - i + ii, h)]
-                sum_output += np.dot(weights[i*self.num_u:i*self.num_u + self.num_u, j] , \
-                                                                delta)
+            if (j - self.Nu) < i:
+                sum_output += np.dot(weights[j, i*self.num_u:i*self.num_u + self.num_u] , \
+                                                                [kronecker_delta(j - i, h)]*self.num_u)
             else:
-                delta = []
-                for ii in range(self.num_u):
-                    delta += [kronecker_delta(self.Nu, h)]
-                sum_output += np.dot(weights[i*self.num_u:i*self.num_u + self.num_u, j] ,\
-                                                                delta)
+                sum_output += np.dot(weights[j, i*self.num_u:i*self.num_u + self.num_u] ,\
+                                                                [kronecker_delta(self.Nu, h)]*self.num_u)
         for i in range(0, min(j, self.dd)):
-            step_ = []
-            for ii in range(self.num_y):
-                step_ += [step(j-i+ii-1)]
-            sum_output += np.dot(weights[i*self.num_y + self.nd*self.num_u: i*self.num_y + \
+            sum_output += np.dot(weights[j, i*self.num_y + self.nd*self.num_u: i*self.num_y + \
                                         self.nd*self.num_u + \
-                                        self.num_y, j] , \
-                                self.previous_first_der * np.array(step_))
+                                        self.num_y] , \
+                                self.previous_first_der * step(j - i - 1))
         return sum_output
 
     def __partial_delta_u_partial_u(self, j, h):
@@ -262,6 +250,7 @@ class NeuralNetworkPredictor():
                                 self.constraints.b), 3.0) + \
                                 2.0 * self.constraints.s / np.power(self.constraints.r/2. +\
                                 self.constraints.b - U[j, i], 3.0))
+        print "Hessian: ", np.linalg.cond(Hessian)
         return Hessian
 
     def compute_jacobian(self, u, del_u):
@@ -271,8 +260,7 @@ class NeuralNetworkPredictor():
 
         for h in range(self.Nu):
             for j in range(self.N1, self.N2):
-                sum_output += -2. * np.dot((YM[j, :] - Y[j, :]) ,\
-                                            self.__partial_yn_partial_u(j, h))
+                sum_output += -2./self.num_y * np.dot(YM[j, :] - Y[j, :], self.__partial_yn_partial_u(j, h))
 
             for j in range(self.Nu):
                 sum_output += 2.* np.dot(np.dot(self.lambd[:, j] , np.array(delU[j, :])),
