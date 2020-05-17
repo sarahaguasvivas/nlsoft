@@ -12,15 +12,15 @@ from target.target import *
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
-NUM_EXPERIMENTS = 2
-NUM_TIMESTEPS = 2000
+NUM_EXPERIMENTS = 1
+NUM_TIMESTEPS = 1000
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, \
-                N2 = 3, Nu = 1, nd = 3, dd = 2, K = 5, \
-                    lambd = np.array([[1e-4], [8e-5]]), \
+                N2 = 2, Nu = 1, nd = 3, dd = 2, K = 5, \
+                    lambd = np.array([[1e-10], [1e-5]]), \
                         y0 = [0.02, -0.05, 0.05], \
-                            u0 = [0.0, -50.0], s = 1e-10, b = 5e3, r = 100)
+                            u0 = [0.0, -50.0], s = 1e-10, b = 1e-5, r = 1.)
 
 NR_opt, Block = SolowayNR(cost = NNP.cost, d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
@@ -66,14 +66,14 @@ for e in range(NUM_EXPERIMENTS):
         new_state_old = new_state_new
         u_optimal, del_u,  _ = NR_opt.optimize(u = u_optimal_old, \
                                     maxit = 8, rtol = 1e-8, verbose = True)
-
+        print 'del_u',  del_u
         u_action = u_optimal[0, :].tolist()
         del_u_action = del_u[0, :].tolist()
 
         u_action[0] = np.clip(u_action[0], -100, 100)
         u_action[1] = np.clip(u_action[1], -100, 60)
 
-        Block.step(action = u_action)
+        #Block.step(action = u_action)
         NNP.update_dynamics(u_action, del_u_action, predicted_states.tolist(), \
                                     NNP.ym[0, :].tolist())
         u_optimal_old = u_optimal
@@ -85,14 +85,13 @@ for e in range(NUM_EXPERIMENTS):
                     yn = predicted_states, ym = NNP.ym[0, :], \
                         elapsed = time.time()-seconds, u = u_action)
         if verbose == 1:
-            log.verbose(u = u_action)
+            log.verbose(u = u_action, cost = NNP.cost.compute_cost())
 
         log.log({str(e) : {'actual' : np.array(Block.get_state()).tolist(), \
                         'yn' : predicted_states, \
                         'ym' : NNP.ym[0, :],\
                         'elapsed' : time.time() - seconds,\
-                        'u' : [u_action]}})
-        print NNP.cost.compute_cost()
+                        'u' : [u_action], 'cost : ': NNP.cost.compute_cost()}})
 
     u_optimal_old = np.reshape(NNP.u0*NNP.Nu, (-1, 2))
     Block.reset()

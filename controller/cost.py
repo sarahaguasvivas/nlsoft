@@ -37,9 +37,9 @@ class NN_Cost:
                                 np.array(delU[j, :]) * np.array(delU[j, :]))
         for j in range(self.d_model.Nu):
             for i in range(self.d_model.num_u):
-                self.cost += np.sum(self.s / (U[j, i] + self.r / 2.0 - \
+                self.cost += self.s / (U[j, i] + self.r / 2.0 - \
                             self.b) + self.s / (self.r/2.0 + \
-                                self.b - U[j, i]) - 4.0 / self.r)
+                                self.b - U[j, i]) - 4.0 / self.r
         return self.cost
 
 
