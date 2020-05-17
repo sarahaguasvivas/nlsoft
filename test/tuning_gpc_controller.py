@@ -73,7 +73,7 @@ for e in range(NUM_EXPERIMENTS):
         u_action[0] = np.clip(u_action[0], -100, 100)
         u_action[1] = np.clip(u_action[1], -100, 60)
 
-        #Block.step(action = u_action)
+        Block.step(action = u_action)
         NNP.update_dynamics(u_action, del_u_action, predicted_states.tolist(), \
                                     NNP.ym[0, :].tolist())
         u_optimal_old = u_optimal
