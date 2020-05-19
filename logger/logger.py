@@ -134,16 +134,15 @@ class Logger:
         timesteps = range(max(yn.shape))
         for i in range(3):
             plt.subplot(3, 1, i+1)
-            plt.plot(np.mean(error_mm, axis = AXIS)[:, i], color = '#d3d3d3', linestyle = 'dashed', label = 'mean off path error')
+            plt.plot(np.mean(error_mm, axis = AXIS)[:, i], color = 'k', label = r'$\overline{\epsilon_{' + labels[i] + '}}$')
             plt.fill_between(timesteps, np.mean(error_mm, axis = AXIS)[:, i] - np.std(error_mm, axis = AXIS)[:, i] ,\
                                 np.mean(error_mm, axis = AXIS)[:, i] + np.std(error_mm, axis = AXIS)[:, i], \
-                                    color = '#bfcbc5', alpha = 0.5)
+                                    color = 'k', alpha = 0.5)
 
 
             plt.ylim([-0.1*1000, 0.09*1000])
             plt.legend()
             plt.ylabel(str(labels[i]) + ' [mm]')
-            plt.plot(1000*neutral_point[i], marker = 'h')
             if i==2:
                 plt.xlabel('timesteps')
             if i==0:

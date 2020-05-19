@@ -13,12 +13,14 @@ from target.target import Ellipse, SingleAxisSineWave, SingleAxisSquareWave, Squ
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 5
+NUM_TIMESTEPS = 500
 verbose = 0
-
+SCALING_0 = 1.
+SCALING_1 = 0
+SCALING_11= 1.
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, \
                 N2 = 2, Nu = 1, nd = 3, dd = 2, K = 5, \
-                    lambd = np.array([[1e-10], [1e-8]]), \
+                    lambd = np.array([[1e-10], [5e-8]]), \
                         y0 = [0.02, -0.05, 0.05], \
                             u0 = [0.0, -50.0], s = 1e-10, b = 1e-5, r = 4.)
 
@@ -30,8 +32,8 @@ Block.reset()
 neutral_point = Block.get_state()
 target = Ellipse(frequency = 100, amplitude = 0.025, center = neutral_point)
 
-Block.get_signal_calibration() # calibrate signal of the block
-#Block.calibration_max = np.array([ 6, 377, 116,   1,   1,   1, 137,   1,   1,  41,   1 ])
+#Block.get_signal_calibration() # calibrate signal of the block
+Block.calibration_max = np.array([ 6, 377, 116,   1,   1,   1, 137,   1,   1,  41,   1 ])
 
 u_optimal_old = np.reshape(NNP.u0*NNP.Nu, (-1, 2))
 new_state_new = copy.copy(neutral_point)
@@ -66,13 +68,13 @@ for e in range(NUM_EXPERIMENTS):
         NNP.ym = target.spin(n, NNP.N1, NNP.N2, 3, predicted_states.tolist())
         new_state_old = new_state_new
         u_optimal, del_u,  _ = NR_opt.optimize(u = u_optimal_old, \
-                                    maxit = 2, rtol = 1e-4, verbose = True)
+                                    maxit = 4, rtol = 1e-4, verbose = True)
         print 'del_u',  del_u
         u_action = u_optimal[0, :].tolist()
         del_u_action = del_u[0, :].tolist()
 
-        u_action[0] = np.clip(u_action[0], -100, 100)
-        u_action[1] = np.clip(u_action[1], -100, 60)
+        u_action[0] = np.clip(SCALING_0*u_action[0], -100, 100)
+        u_action[1] = np.clip(SCALING_11*(u_action[1] + SCALING_1), -100, 60)
 
         Block.step(action = u_action)
         NNP.update_dynamics(u_action, del_u_action, predicted_states.tolist(), \
