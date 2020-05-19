@@ -57,6 +57,7 @@ class Logger:
         predicted_ = 1000*np.reshape(predicted_, (NUM_EXPERIMENTS, -1, 3))
         actual_ = 1000*np.reshape(actual_, (NUM_EXPERIMENTS,-1, 3))
         u_optimal_list = np.reshape(u_optimal_list, (NUM_EXPERIMENTS, -1, 2))
+        error_mm = ym - yn
 
         labels = ['x', 'y', 'z', 'u']
         plt.figure()
@@ -123,3 +124,30 @@ class Logger:
         plt.ylabel('y[mm]')
         plt.title('Target Position vs. Controlled Positions')
         plt.show()
+
+        """
+            Error plot
+        """
+
+        plt.figure()
+        AXIS = 0
+        timesteps = range(max(yn.shape))
+        for i in range(3):
+            plt.subplot(3, 1, i+1)
+            plt.plot(np.mean(error_mm, axis = AXIS)[:, i], color = '#d3d3d3', linestyle = 'dashed', label = 'mean off path error')
+            plt.fill_between(timesteps, np.mean(error_mm, axis = AXIS)[:, i] - np.std(error_mm, axis = AXIS)[:, i] ,\
+                                np.mean(error_mm, axis = AXIS)[:, i] + np.std(error_mm, axis = AXIS)[:, i], \
+                                    color = '#bfcbc5', alpha = 0.5)
+
+
+            plt.ylim([-0.1*1000, 0.09*1000])
+            plt.legend()
+            plt.ylabel(str(labels[i]) + ' [mm]')
+            plt.plot(1000*neutral_point[i], marker = 'h')
+            if i==2:
+                plt.xlabel('timesteps')
+            if i==0:
+                plt.title("Error in Path")
+        plt.show()
+
+
