@@ -39,6 +39,7 @@ class Logger:
         predicted_ = []
         actual_ = []
         u_optimal_list = []
+        elapsed = []
 
         # for all experiments:
         for key in self.log_dictionary.keys():
@@ -47,10 +48,12 @@ class Logger:
                 yn += [self.log_dictionary[key]['yn']]
                 actual_ += [self.log_dictionary[key]['actual']]
                 u_optimal_list += [self.log_dictionary[key]['u']]
-
+                elapsed+= [self.log_dictionary[key]['elapsed']]
         NUM_EXPERIMENTS=self.log_dictionary['metadata']['num_experiments']
         NUM_TIMESTEPS = self.log_dictionary['metadata']['num_timesteps']
         neutral_point = self.log_dictionary['metadata']['neutral_point']
+
+        print "Average control loop time in seconds:  ", np.mean(elapsed)
 
         ym = 1000*np.reshape(ym, (NUM_EXPERIMENTS,-1, 3))
         yn = 1000*np.reshape(yn, (NUM_EXPERIMENTS, -1, 3))
@@ -146,7 +149,7 @@ class Logger:
             if i==2:
                 plt.xlabel('timesteps')
             if i==0:
-                plt.title("Error in Path")
+                plt.title("Off-track Error")
         plt.show()
 
 
