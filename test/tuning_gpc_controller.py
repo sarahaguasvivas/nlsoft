@@ -15,14 +15,16 @@ model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 500
 verbose = 0
-SCALING_0 = 1.
-SCALING_1 = 0
-SCALING_11= 1.
+SCALING_0 = 0. # added
+SCALING_00 = 5.0 # multiplier
+SCALING_1 = -10. # added
+SCALING_11= 1. # multiplier
+
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, \
                 N2 = 2, Nu = 1, nd = 3, dd = 2, K = 5, \
-                    lambd = np.array([[1e-10], [5e-8]]), \
+                    lambd = np.array([[5e-10], [1e-9]]), \
                         y0 = [0.02, -0.05, 0.05], \
-                            u0 = [0.0, -50.0], s = 1e-10, b = 1e-5, r = 4.)
+                            u0 = [0.0, -50.0], s = 1e-10, b = 1e-5, r = 40.)
 
 NR_opt, Block = SolowayNR(cost = NNP.cost, d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
@@ -68,19 +70,20 @@ for e in range(NUM_EXPERIMENTS):
         NNP.ym = target.spin(n, NNP.N1, NNP.N2, 3, predicted_states.tolist())
         new_state_old = new_state_new
         u_optimal, del_u,  _ = NR_opt.optimize(u = u_optimal_old, \
-                                    maxit = 4, rtol = 1e-4, verbose = True)
+                                    maxit = 1, rtol = 1e-4, verbose = True)
         print 'del_u',  del_u
         u_action = u_optimal[0, :].tolist()
         del_u_action = del_u[0, :].tolist()
 
-        u_action[0] = np.clip(SCALING_0*u_action[0], -100, 100)
-        u_action[1] = np.clip(SCALING_11*(u_action[1] + SCALING_1), -100, 60)
+        # u_action is a scaled action to meet prediction
+        u_action[0] = np.clip(SCALING_00*(u_action[0]) + SCALING_0, -100, 100)
+        u_action[1] = np.clip(SCALING_11*(u_action[1]) + SCALING_1, -100, 60)
 
         Block.step(action = u_action)
-        NNP.update_dynamics(u_action, del_u_action, predicted_states.tolist(), \
+        NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action, predicted_states.tolist(), \
                                     NNP.ym[0, :].tolist())
         u_optimal_old = u_optimal
-        u_deque = roll_deque(u_deque, u_action)
+        u_deque = roll_deque(u_deque, u_optimal[0, :].tolist())
         y_deque = roll_deque(y_deque, predicted_states.tolist())
 
         if verbose == 0:
