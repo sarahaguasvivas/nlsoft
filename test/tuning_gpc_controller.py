@@ -13,18 +13,19 @@ from target.target import Ellipse, SingleAxisSineWave, SingleAxisSquareWave, Squ
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 500
+NUM_TIMESTEPS = 5000
+
 verbose = 0
 SCALING_0 = 0. # added
-SCALING_00 = 5.0 # multiplier
-SCALING_1 = -10. # added
+SCALING_00 = 1. # multiplier
+SCALING_1 = 0 # added
 SCALING_11= 1. # multiplier
 
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, \
-                N2 = 2, Nu = 1, nd = 3, dd = 2, K = 5, \
-                    lambd = np.array([[5e-10], [1e-9]]), \
+                N2 = 2, Nu = 1, nd = 3, dd = 3, K = 2, \
+                    lambd = np.array([[5e-4], [1e-5]]), \
                         y0 = [0.02, -0.05, 0.05], \
-                            u0 = [0.0, -50.0], s = 1e-10, b = 1e-5, r = 40.)
+                            u0 = [0.0, -50.0], s = 1e-5, b = 1e-2, r = 40.)
 
 NR_opt, Block = SolowayNR(cost = NNP.cost, d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
@@ -32,7 +33,7 @@ log = Logger()
 Block.reset()
 
 neutral_point = Block.get_state()
-target = Ellipse(frequency = 100, amplitude = 0.025, center = neutral_point)
+target = Ellipse(frequency = 1000, amplitude = 0.015, center = neutral_point)
 
 #Block.get_signal_calibration() # calibrate signal of the block
 Block.calibration_max = np.array([ 6, 377, 116,   1,   1,   1, 137,   1,   1,  41,   1 ])
