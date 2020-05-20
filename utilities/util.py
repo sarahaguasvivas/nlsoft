@@ -17,4 +17,9 @@ def roll_deque(deq, value):
     deq.appendleft(value)
     return deq
 
-
+def normalize_angle(angle, min_, max_):
+    while (angle < min_):
+        angle += 360
+    while (angle > max_):
+        angle -= 360
+    return angle
