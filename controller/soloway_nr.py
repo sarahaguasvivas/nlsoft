@@ -28,6 +28,7 @@ class SolowayNR:
             del_u = u - u0
 
             Fu = -self.d_model.Fu(u, del_u)
+
             norm = np.linalg.norm(Fu)
             if verbose:
                 enorm = np.linalg.norm(u - np.array([1,1]))
