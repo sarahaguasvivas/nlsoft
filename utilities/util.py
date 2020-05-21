@@ -19,10 +19,10 @@ def roll_deque(deq, value):
     return deq
 
 def normalize_and_clip_angle(angle, min_, max_):
-    while (angle < 180):
-        angle += 180
-    while (angle > 180):
-        angle -= 180
+    while (angle < min_):
+        angle += 360
+    while (angle > max_):
+        angle -= 360
 
     angle = np.clip(angle, min_, max_)
     return angle
