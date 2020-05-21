@@ -246,12 +246,12 @@ class NeuralNetworkPredictor():
         for h in range(self.Nu):
             for m in range(self.Nu):
                 for j in range(self.N1, self.N2):
-                    Hessian[h, m] += np.sum(2.*np.dot(np.array(self.__partial_yn_partial_u(j, m)).T, \
+                    Hessian[h, m] += np.mean(2.*np.dot(np.array(self.__partial_yn_partial_u(j, m)).T, \
                                 self.__partial_yn_partial_u(j, h)) - \
                                 np.array(self.__partial_2_yn_partial_nph_partial_npm(h, m, j)) * \
                                             np.array(YM[j, :] - Y[j, :]).flatten())
                 for j in range(self.Nu):
-                    Hessian[h, m] += np.sum(2.*np.dot(self.lambd, \
+                    Hessian[h, m] += np.mean(2.*np.dot(self.lambd, \
                                     np.array([self.__partial_delta_u_partial_u(j, m)]*self.Nu) *\
                                                 np.array([self.__partial_delta_u_partial_u(j, h)]*\
                                                     self.Nu).T).flatten())

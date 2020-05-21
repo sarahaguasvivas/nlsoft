@@ -39,7 +39,7 @@ def neural_network_training(X, y):
     model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
     model.compile(optimizer= 'adam', loss =custom_loss, metrics=['mse'])
-    model.fit(X_train, y_train, epochs = 100, batch_size = 100, validation_split=0.2)
+    model.fit(X_train, y_train, epochs = 200, batch_size = 100, validation_split=0.2)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
@@ -147,7 +147,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
 if __name__ == "__main__":
     # dd is dd+2
     # nd is nd
-    X, y = prepare_data_file(filename, nd=3, dd=3+2)
+    X, y = prepare_data_file(filename, nd=2, dd=2+2)
     if TRAIN:
         modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)
