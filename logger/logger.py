@@ -61,6 +61,7 @@ class Logger:
         actual_ = 1000*np.reshape(actual_, (NUM_EXPERIMENTS,-1, 3))
         u_optimal_list = np.reshape(u_optimal_list, (NUM_EXPERIMENTS, -1, 2))
         error_mm = ym - yn
+        error_pred = yn - actual_
 
         labels = ['x', 'y', 'z', 'u']
         plt.figure()
@@ -141,6 +142,10 @@ class Logger:
             plt.fill_between(timesteps, np.mean(error_mm, axis = AXIS)[:, i] - np.std(error_mm, axis = AXIS)[:, i] ,\
                                 np.mean(error_mm, axis = AXIS)[:, i] + np.std(error_mm, axis = AXIS)[:, i], \
                                     color = 'k', alpha = 0.5)
+            plt.plot(np.mean(error_pred, axis = AXIS)[:, i], color = 'gray', label = r'$\overline{\epsilon_{' + labels[i] + '}}$')
+                        plt.fill_between(timesteps, np.mean(error_pred, axis = AXIS)[:, i] - np.std(error_pred, axis = AXIS)[:, i] ,\
+                                            np.mean(error_pred, axis = AXIS)[:, i] + np.std(error_pred, axis = AXIS)[:, i], \
+                                                color = 'gray', alpha = 0.5)
 
 
             plt.ylim([-0.1*1000, 0.09*1000])
