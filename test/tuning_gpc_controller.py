@@ -17,14 +17,10 @@ NUM_TIMESTEPS = 1000
 
 verbose = 0
 
-SCALING_0 = 0. # added
-SCALING_00 = 2.6 # multiplier
-SCALING_1 = 0. # added
-SCALING_11= 1.5 # multiplier
-
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, \
                 N2 = 1, Nu = 1, nd = 2, dd = 2, K = 3, \
-                    lambd = np.array([[3e-8], [7e-9]]), \
+                    Q = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
+                    R = np.array([[3e1, 0.], [0., 2e2]]), \
                         y0 = [0.02, -0.05, 0.05], \
                             u0 = [0.0, -50.0], s = 1e-20, b = 5e-7, r = 4e-5)
 
@@ -77,11 +73,8 @@ for e in range(NUM_EXPERIMENTS):
         u_action = u_optimal[0, :].tolist()
         del_u_action = del_u[0, :].tolist()
 
-        # u_action is a scaled action to meet prediction
-        u_action[0] = normalize_and_clip_angle(SCALING_00*(u_action[0]) + SCALING_0,\
-                                                 -100, 100)
-        u_action[1] = normalize_and_clip_angle(SCALING_11*(u_action[1]) + SCALING_1,\
-                                                  -100, 60)
+        u_action[0] = normalize_and_clip_angle(u_action[0],-100, 100)
+        u_action[1] = normalize_and_clip_angle(u_action[1],-100, 60)
 
         Block.step(action = u_action)
         NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action, predicted_states.tolist(), \
