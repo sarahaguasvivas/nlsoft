@@ -40,6 +40,7 @@ class Logger:
         actual_ = []
         u_optimal_list = []
         elapsed = []
+        signal = []
 
         # for all experiments:
         for key in self.log_dictionary.keys():
@@ -49,6 +50,7 @@ class Logger:
                 actual_ += [self.log_dictionary[key]['actual']]
                 u_optimal_list += [self.log_dictionary[key]['u']]
                 elapsed+= [self.log_dictionary[key]['elapsed']]
+                signal += [self.log_dictionary[key]['signal']]
         NUM_EXPERIMENTS=self.log_dictionary['metadata']['num_experiments']
         NUM_TIMESTEPS = self.log_dictionary['metadata']['num_timesteps']
         neutral_point = self.log_dictionary['metadata']['neutral_point']
@@ -62,6 +64,7 @@ class Logger:
         u_optimal_list = np.reshape(u_optimal_list, (NUM_EXPERIMENTS, -1, 2))
         error_mm = ym - yn
         error_pred = yn - actual_
+        signal = np.reshape(signal, (NUM_EXPERIMENTS, -1, 11))
 
         labels = ['x', 'y', 'z', 'u']
         plt.figure()
@@ -142,8 +145,8 @@ class Logger:
             plt.fill_between(timesteps, np.mean(error_mm, axis = AXIS)[:, i] - np.std(error_mm, axis = AXIS)[:, i] ,\
                                 np.mean(error_mm, axis = AXIS)[:, i] + np.std(error_mm, axis = AXIS)[:, i], \
                                     color = 'k', alpha = 0.5)
-            plt.plot(np.mean(error_pred, axis = AXIS)[:, i], color = 'gray', label = r'$\overline{\epsilon_{' + labels[i] + '}}$')
-                        plt.fill_between(timesteps, np.mean(error_pred, axis = AXIS)[:, i] - np.std(error_pred, axis = AXIS)[:, i] ,\
+            plt.plot(np.mean(error_pred, axis = AXIS)[:, i], color = 'gray', label = r'$\hat{' + labels[i] +'} - ' + labels[i]+ '_{true}$')
+            plt.fill_between(timesteps, np.mean(error_pred, axis = AXIS)[:, i] - np.std(error_pred, axis = AXIS)[:, i] ,\
                                             np.mean(error_pred, axis = AXIS)[:, i] + np.std(error_pred, axis = AXIS)[:, i], \
                                                 color = 'gray', alpha = 0.5)
 
@@ -157,4 +160,7 @@ class Logger:
                 plt.title("Off-track Error")
         plt.show()
 
-
+        plt.figure()
+        plt.plot(np.mean(signal, axis = 0)[:-1, :])
+        plt.title("Tracking of the Mean Optical Lace Signals During Experiment")
+        plt.show()
