@@ -3,7 +3,7 @@ import constraints as constraints
 import numpy as np
 
 class NN_Cost:
-    def __init__(self, dynamic_model, lambd):
+    def __init__(self, dynamic_model):
         """
         N1      : minimum costing horizon
         N2      : maximum costing horizon
@@ -31,11 +31,11 @@ class NN_Cost:
         Y, YM , U, delU = self.d_model.get_computation_vectors()
 
         for j in range(self.d_model.N1, self.d_model.N2):
-            self.cost += np.dot(YM[j, :] - Y[j, :], YM[j, :] - Y[j, :])
+            self.cost += np.dot(np.dot(YM[j, :] - Y[j, :], self.d_model.Q),  YM[j, :] - Y[j, :])
 
         for j in range(self.d_model.Nu):
-            self.cost += np.dot(np.array(self.d_model.lambd[:, j]), \
-                                np.array(delU[j, :]) * np.array(delU[j, :]))
+            self.cost += np.dot(np.dot(np.array(delU[j, :]), np.array(self.d_model.R)), \
+                                np.array(delU[j, :]))
         for j in range(self.d_model.Nu):
             for i in range(self.d_model.num_u):
                 self.cost += self.s / (U[j, i] + self.r / 2.0 - \
