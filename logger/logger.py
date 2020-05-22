@@ -151,7 +151,7 @@ class Logger:
                                                 color = 'gray', alpha = 0.5)
 
 
-            plt.ylim([-0.1*1000, 0.09*1000])
+            plt.ylim([-50, 50])
             plt.legend()
             plt.ylabel(str(labels[i]) + ' [mm]')
             if i==2:

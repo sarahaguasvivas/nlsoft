@@ -18,14 +18,14 @@ NUM_TIMESTEPS = 1000
 verbose = 0
 
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, \
-                N2 = 1, Nu = 1, nd = 2, dd = 2, K = 3, \
-                    Q = np.array([[5e-1, 0, 0],
-                                    [0, 3e-1, 0.],
-                                    [0, 0., 5.5]]),
-                    R = np.array([[3e-7, 1e-10],
-                                    [1e-10, 7e-8]]), \
+                N2 = 2, Nu = 1, nd = 2, dd = 2, K = 5, \
+                    Q = np.array([[1., 0, 0],
+                                  [0, 1., 0],
+                                  [0, 0., 1.]]),
+                    Lambda = np.array([[1e-5],
+                                       [7e-4]]), \
                         y0 = [0.02, -0.05, 0.05], \
-                            u0 = [0.0, -50.0], s = 1e-10, b = 1e-10, r = 4e-1)
+                        u0 = [0.0, -50.0], s = 1e-20, b = 1e5, r = 0.4)
 
 NR_opt, Block = SolowayNR(cost = NNP.cost, d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
@@ -91,23 +91,24 @@ try:
                 log.verbose(actual = np.array(Block.get_state()).tolist(),
                         yn = predicted_states, ym = NNP.ym[0, :], \
                             elapsed = time.time()-seconds, u = u_action)
-            if verbose == 1:
-                log.verbose(u = u_action, cost = NNP.cost.compute_cost())
+            #if verbose == 1:
+            #    log.verbose(u = u_action, cost = NNP.cost.compute_cost())
 
             log.log({str(e) : {'actual' : np.array(Block.get_state()).tolist(), \
                             'yn' : predicted_states.tolist(), \
                             'ym' : NNP.ym[0, :].tolist(),\
                             'elapsed' : time.time() - seconds,\
-                            'u' : [u_action], 'cost : ': NNP.cost.compute_cost(), \
+                            'u' : [u_action], \
                             'signal' : signal}})
-
+            #'cost : ': NNP.cost.compute_cost(),
         u_optimal_old = np.reshape(NNP.u0*NNP.Nu, (-1, 2))
         Block.reset()
     log.plot_log()
     log.save_log()
 except Exception as e:
-    import traceback
+    import traceback, sys
     print str(e)
+    print "Closing all connections!"
     Block.reset()
     Block.motors.close_connection()
     traceback.print_exc(file = sys.stdout)
