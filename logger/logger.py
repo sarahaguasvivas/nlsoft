@@ -83,7 +83,7 @@ class Logger:
                                             np.mean(actual_, axis = AXIS)[:, i] + np.std(actual_, axis = AXIS)[:, i],\
                                                 color = 'goldenrod', alpha = 0.5)
 
-            plt.ylim([-0.1*1000, 0.09*1000])
+            plt.ylim([-65, 4])
             plt.legend()
             plt.ylabel(str(labels[i]) + ' [mm]')
             plt.plot(1000*neutral_point[i], marker = 'h')
