@@ -21,10 +21,10 @@ verbose = 0
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, \
                 N2 = 1, Nu = 1, nd = 2, dd = 2, K = 5, \
                     Q = np.array([[0.5, 1e-3, -5e-3],
-                                  [1e-3, 0.5, 0.],
-                                  [-5e-3, 0., 10]]),
-                    Lambda = np.array([[9e-1],
-                                       [1e-3]]), \
+                                  [1e-3, 5., 5e-3],
+                                  [-5e-3, 5e-3, 25.]]),
+                    Lambda = np.array([[9e-2],
+                                       [1e-5]]), \
                         y0 = [-0.05693081021308899, -0.03798467665910721, 0.01], \
                         u0 = [0.0, -50.0], s = 1e-13, b = 5e-2, r = 4./100.)
 
