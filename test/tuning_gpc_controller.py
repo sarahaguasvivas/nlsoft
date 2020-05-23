@@ -13,31 +13,34 @@ from target.target import Ellipse, SingleAxisSineWave, SingleAxisSquareWave, Squ
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 100
+NUM_TIMESTEPS = 1000
 
 verbose = 0
-
+#neutral point
+# -0.05693081021308899, -0.03798467665910721, -0.01778547465801239
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, \
                 N2 = 1, Nu = 1, nd = 2, dd = 2, K = 5, \
-                    Q = np.array([[1., 0, 0],
-                                  [0, 0.98, 1e-10],
-                                  [0, 1e-10, 5e-1]]),
-                    Lambda = np.array([[1e-4],
-                                       [7e-4]]), \
-                        y0 = [0.02, -0.05, 0.00], \
-                        u0 = [0.0, -50.0], s = 1e-16, b = 5e2, r = 4./100.)
+                    Q = np.array([[0.5, 1e-3, -5e-3],
+                                  [1e-3, 0.5, 0.],
+                                  [-5e-3, 0., 10]]),
+                    Lambda = np.array([[1e-3],
+                                       [7e-5]]), \
+                        y0 = [-0.05693081021308899, -0.03798467665910721, 0.01], \
+                        u0 = [0.0, -50.0], s = 1e-13, b = 5e-2, r = 4./100.)
 
 NR_opt, Block = SolowayNR(cost = NNP.cost, d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
 log = Logger()
 Block.reset()
-
+Block.step([0.0, -50.])
 neutral_point = Block.get_state()
 
-target = Ellipse(wavelength = 50, amplitude = 15./1000., center = neutral_point)
+#NNP.y0 = neutral_point
 
-Block.get_signal_calibration() # calibrate signal of the block
-#Block.calibration_max = np.array([ 6, 377, 116,   1,   1,   1, 137,   1,   1,  41,   1 ])
+target = Ellipse(wavelength = 100, amplitude = 15./1000., center = neutral_point)
+
+#Block.get_signal_calibration() # calibrate signal of the block
+Block.calibration_max = np.array([ 6, 377, 116,   1,   1,   1, 137,   1,   1,  41,   1 ])
 
 u_optimal_old = np.reshape(NNP.u0*NNP.Nu, (-1, 2))
 new_state_new = copy.copy(neutral_point)
@@ -47,8 +50,9 @@ log.log({'metadata' : {'neutral_point' : neutral_point,\
          'num_experiments' : NUM_EXPERIMENTS, \
          'num_timesteps': NUM_TIMESTEPS}})
 
-u_deque, y_deque = first_load_deques(neutral_point, NNP.u0, NNP.nd, NNP.dd)
+u_deque, y_deque = first_load_deques(NNP.y0, NNP.u0, NNP.nd, NNP.dd)
 u_action, predicted_states = np.array(NNP.u0), np.array(new_state_new)
+
 try:
     for e in range(NUM_EXPERIMENTS):
         log.log({str(e) : {'predicted' : [], 'actual' : [], 'yn' : [], \
@@ -78,8 +82,8 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = normalize_and_clip_angle(u_action[0],-100, 100)
-            u_action[1] = normalize_and_clip_angle(u_action[1],-100, 60)
+            u_action[0] = normalize_and_clip_angle(1.3*u_action[0],-100, 100)
+            u_action[1] = normalize_and_clip_angle(2.1*u_action[1],-100, 60)
 
             Block.step(action = u_action)
             NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action, predicted_states.tolist(), \
