@@ -8,7 +8,7 @@ import time, os
 import copy
 from logger.logger import Logger
 from utilities.util import *
-from target.target import Ellipse, SingleAxisSineWave, SingleAxisSquareWave, Square3D
+from target.target import Pringle, SingleAxisSineWave, SingleAxisSquareWave, Square3D
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
@@ -37,7 +37,7 @@ neutral_point = Block.get_state()
 
 #NNP.y0 = neutral_point
 
-target = Ellipse(wavelength = 100, amplitude = 15./1000., center = neutral_point)
+target = Pringle(wavelength = 100, amplitude = 15./1000., center = neutral_point)
 
 #Block.get_signal_calibration() # calibrate signal of the block
 Block.calibration_max = np.array([ 6, 377, 116,   1,   1,   1, 137,   1,   1,  41,   1 ])
@@ -82,8 +82,8 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = normalize_and_clip_angle(1.3*u_action[0],-100, 100)
-            u_action[1] = normalize_and_clip_angle(2.1*u_action[1],-100, 60)
+            u_action[0] = normalize_and_clip_angle(1.*u_action[0],-100, 100)
+            u_action[1] = normalize_and_clip_angle(1.*u_action[1],-100, 60)
 
             Block.step(action = u_action)
             NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action, predicted_states.tolist(), \

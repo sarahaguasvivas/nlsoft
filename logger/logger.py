@@ -124,9 +124,9 @@ class Logger:
         ax.plot3D(m_ym[:, 0], m_ym[:, 1], m_ym[:, 2], color = color_palette[-1],linestyle = 'dashed',  linewidth = 1, alpha = 1, label = 'target')
         ax.plot3D(m_actual_[:, 0], m_actual_[:, 1], m_actual_[:, 2], \
                             linewidth = 1, color = color_palette[1], alpha = 1, label = 'actual position')
-        ax.set_xlim(-0.1*1000, .1*1000)
-        ax.set_ylim(-.1*1000, .1*1000)
-        ax.set_zlim(-.1*1000, .1*1000)
+        ax.set_xlim(-50., 5.)
+        ax.set_ylim(-50., 5.)
+        ax.set_zlim(-50., 5.)
         plt.legend()
         plt.xlabel('x[mm]')
         plt.ylabel('y[mm]')
