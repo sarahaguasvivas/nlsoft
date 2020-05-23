@@ -23,8 +23,8 @@ NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, \
                     Q = np.array([[0.5, 1e-3, -5e-3],
                                   [1e-3, 0.5, 0.],
                                   [-5e-3, 0., 10]]),
-                    Lambda = np.array([[9e-1],
-                                       [1e-3]]), \
+                    Lambda = np.array([[9e-3],
+                                       [1e-5]]), \
                         y0 = [-0.05693081021308899, -0.03798467665910721, 0.01], \
                         u0 = [0.0, -50.0], s = 1e-13, b = 5e-2, r = 4./100.)
 
@@ -37,7 +37,7 @@ neutral_point = Block.get_state()
 
 #NNP.y0 = neutral_point
 
-target = Pringle(wavelength = 100, amplitude = 15./1000., center = neutral_point)
+target = SingleAxisSquareWave(frequency = 100, amplitude = 15./1000., center = neutral_point, axis = 2)
 
 #Block.get_signal_calibration() # calibrate signal of the block
 Block.calibration_max = np.array([ 6, 377, 116,   1,   1,   1, 137,   1,   1,  41,   1 ])
