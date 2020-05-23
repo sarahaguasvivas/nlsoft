@@ -19,14 +19,14 @@ verbose = 0
 #neutral point
 # -0.05693081021308899, -0.03798467665910721, -0.01778547465801239
 NNP = NeuralNetworkPredictor(model_file = model_filename, N1 = 0, \
-                N2 = 1, Nu = 1, nd = 2, dd = 2, K = 5, \
+                N2 = 2, Nu = 1, nd = 2, dd = 2, K = 5, \
                     Q = np.array([[0.5, 1e-3, -5e-3],
-                                  [1e-3, 0.5, 0.],
+                                  [1e-3, 10, 0.],
                                   [-5e-3, 0., 10]]),
                     Lambda = np.array([[9e-3],
                                        [1e-5]]), \
                         y0 = [-0.05693081021308899, -0.03798467665910721, 0.01], \
-                        u0 = [0.0, -50.0], s = 1e-13, b = 5e-2, r = 4./100.)
+                        u0 = [0.0, -50.0], s = 1e-20, b = 5e-5, r = 4./10.)
 
 NR_opt, Block = SolowayNR(cost = NNP.cost, d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
@@ -37,7 +37,7 @@ neutral_point = Block.get_state()
 
 #NNP.y0 = neutral_point
 
-target = SingleAxisSquareWave(frequency = 100, amplitude = 15./1000., center = neutral_point, axis = 2)
+target = SingleAxisSquareWave(frequency = 500, amplitude = 15./1000., center = neutral_point, axis = 2)
 
 #Block.get_signal_calibration() # calibrate signal of the block
 Block.calibration_max = np.array([ 6, 377, 116,   1,   1,   1, 137,   1,   1,  41,   1 ])
