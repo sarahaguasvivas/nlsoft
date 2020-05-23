@@ -54,6 +54,7 @@ class BlockGym():
     def get_observation(self):
         # use signal reader from Arduino
         signals = self.sensor_signals.collect_signal_sample()
+        self.calibration_max = np.maximum(signals, self.calibration_max)
         return  signals
 
     def get_target(self):

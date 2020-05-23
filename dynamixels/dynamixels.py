@@ -14,7 +14,7 @@ class DynamixelActor:
         self.max0 = [-100, 100]
         self.max1 = [-100, 60]
 
-        self._zero1= 0.0
+        self._zero1= -10.0
         self._zero2= -50.0
 
         self._angle1 = self._zero1

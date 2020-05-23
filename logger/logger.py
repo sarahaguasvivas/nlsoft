@@ -65,23 +65,23 @@ class Logger:
         error_mm = ym - yn
         error_pred = yn - actual_
         signal = np.reshape(signal, (NUM_EXPERIMENTS, -1, 11))
-
+        color_palette = ['#1446A0', '#DB3069', '#F5D547', '#F5D547', '#3C3C3B']
         labels = ['x', 'y', 'z', 'u']
         plt.figure()
         AXIS = 0
         timesteps = range(max(yn.shape))
         for i in range(3):
             plt.subplot(3, 1, i+1)
-            plt.plot(np.mean(ym, axis = AXIS)[:, i], color = '#d3d3d3', linestyle = 'dashed', label = 'target')
-            plt.plot(np.mean(yn, axis = AXIS)[:, i], '#bfcbc5', label = 'predicted state')
+            plt.plot(np.mean(ym, axis = AXIS)[:, i], color = color_palette[-1], linestyle = 'dashed', label = 'target')
+            plt.plot(np.mean(yn, axis = AXIS)[:, i], color_palette[0], label = 'predicted state')
             plt.fill_between(timesteps, np.mean(yn, axis = AXIS)[:, i] - np.std(yn, axis = AXIS)[:, i] ,\
                                 np.mean(yn, axis = AXIS)[:, i] + np.std(yn, axis = AXIS)[:, i], \
-                                    color = '#bfcbc5', alpha = 0.5)
-            plt.plot(np.mean(actual_, axis = AXIS)[:, i], color = 'goldenrod', label = 'actual state') # only 0 and 2
+                                    color = color_palette[0], alpha = 0.5)
+            plt.plot(np.mean(actual_, axis = AXIS)[:, i], color = color_palette[1], label = 'actual state') # only 0 and 2
 
             plt.fill_between(timesteps, np.mean(actual_, axis = AXIS)[:, i] - np.std(actual_, axis = AXIS)[:, i],\
                                             np.mean(actual_, axis = AXIS)[:, i] + np.std(actual_, axis = AXIS)[:, i],\
-                                                color = 'goldenrod', alpha = 0.5)
+                                                color = color_palette[1], alpha = 0.5)
 
             plt.ylim([-65, 4])
             plt.legend()
@@ -95,13 +95,14 @@ class Logger:
 
         max_input = np.max(np.max(u_optimal_list))
         min_input = np.min(np.min(u_optimal_list))
+        color_palette1= ['#272838', '#F3DE8A', '#F3DE8A', '#F3DE8A']
         plt.figure()
         for i in range(2):
             plt.subplot(2, 1, i+1)
-            plt.plot(np.mean(u_optimal_list, axis =AXIS)[:, i], color = 'slateblue', label = r'$u_{' + str(i) + "}$" )
+            plt.plot(np.mean(u_optimal_list, axis =AXIS)[:, i], color = color_palette1[0], label = r'$u_{' + str(i) + "}$" )
             plt.fill_between(timesteps, np.mean(u_optimal_list, axis = AXIS)[:, i] -  np.std(u_optimal_list, axis = AXIS)[:, i],\
                                             np.mean(u_optimal_list, axis = AXIS)[:, i] + np.std(u_optimal_list, axis = AXIS)[:, i],\
-                                                color = 'slateblue', alpha = 0.3, label = r"$2\sigma$")
+                                                color = color_palette1[0], alpha = 0.3, label = r"$2\sigma$")
 
 
             plt.legend()
@@ -119,10 +120,10 @@ class Logger:
         m_ym = np.mean(ym, axis = AXIS)
         m_actual_ = np.mean(actual_, axis = AXIS)
         ax = Axes3D(fig)
-        ax.plot3D(m_predicted_[:, 0],m_predicted_[:, 1], m_predicted_[:, 2],color = 'c',  linewidth = 1, alpha = 0.9, label = 'estimated position')
-        ax.plot3D(m_ym[:, 0], m_ym[:, 1], m_ym[:, 2], color = 'grey',linestyle = 'dashed',  linewidth = 1, alpha = 1, label = 'target')
+        ax.plot3D(m_predicted_[:, 0],m_predicted_[:, 1], m_predicted_[:, 2],color = color_palette[0],  linewidth = 1, alpha = 0.9, label = 'estimated position')
+        ax.plot3D(m_ym[:, 0], m_ym[:, 1], m_ym[:, 2], color = color_palette[-1],linestyle = 'dashed',  linewidth = 1, alpha = 1, label = 'target')
         ax.plot3D(m_actual_[:, 0], m_actual_[:, 1], m_actual_[:, 2], \
-                            linewidth = 1, color = 'goldenrod', alpha = 1, label = 'actual position')
+                            linewidth = 1, color = color_palette[1], alpha = 1, label = 'actual position')
         ax.set_xlim(-0.1*1000, .1*1000)
         ax.set_ylim(-.1*1000, .1*1000)
         ax.set_zlim(-.1*1000, .1*1000)
