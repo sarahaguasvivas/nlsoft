@@ -13,22 +13,21 @@ from target.target import Circle, Pringle, SingleAxisSineWave, SingleAxisSquareW
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 1000
+NUM_TIMESTEPS = 100
 SCALE0 = 1.
 SCALE1 = 1.
 verbose = 0
 #neutral point
 # -0.05693081021308899, -0.03798467665910721, -0.01778547465801239
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 3, Nu = 1, nd = 2, dd = 2, K = 5, \
-                    Q = np.array([[1., 0., 0],
-                                 [0, 7., 0],
-                                 [0, 0, 15]]),
+                    N1 = 0, N2 = 2, Nu = 2, nd = 2, dd = 2, K = 5, \
+                    Q = np.array([[0.3, 1e-2],
+                                 [1e-2, 0.5]]),
                     Lambda = np.array(
-                                    [[15.],
-                                    [20.]]), \
+                                    [[7e-1, 1e-3],
+                                    [1e-3, 5e-1]]), \
                         y0 = [-0.05693081021308899, -0.03798467665910721, -.017], \
-                        u0 = [0.0, -50.0], s = 1e-20, b = 1e-1, r = 0.04)
+                        u0 = [0.0, -50.0], s = 1e-20, b = 1e-5, r = 0.01)
 
 NR_opt, Block = SolowayNR(cost = NNP.cost, d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
@@ -75,7 +74,7 @@ try:
                 predicted_states = NNP.predict(neural_network_input).flatten()
                 NNP.yn += [predicted_states]
                 y_deque = roll_deque(y_deque, predicted_states.tolist())
-
+            NNP.last_model_input = neural_network_input
             NNP.ym = target.spin(n, 0, NNP.K, 3, predicted_states.tolist())
             new_state_old = new_state_new
             u_optimal, del_u,  _ = NR_opt.optimize(u = u_optimal_old, \
@@ -89,8 +88,8 @@ try:
             u_action[1] = normalize_and_clip_angle(SCALE1*u_action[1],-100, 60)
 
             Block.step(action = u_action)
-            NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action, predicted_states.tolist(), \
-                                        NNP.ym[0, :].tolist())
+            NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action, \
+                                predicted_states.tolist(), NNP.ym[0, :].tolist())
             u_optimal_old = u_optimal
             u_deque = roll_deque(u_deque, u_action)
             y_deque = roll_deque(y_deque, predicted_states.tolist())

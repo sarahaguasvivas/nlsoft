@@ -104,6 +104,7 @@ class NeuralNetworkPredictor():
         self.delu_deque.appendleft(del_u)
         self.y_deque.appendleft(y)
         self.ym_deque.appendleft(ym)
+        self.last_model_input = None
 
     def get_computation_vectors(self):
         Y = 1000*np.array(self.yn) # converting to mm
@@ -114,7 +115,7 @@ class NeuralNetworkPredictor():
 
     def __Phi_prime(self, x = 0):
         if self.model.layers[-1].get_config()['activation'] == 'linear':
-            return 1.0 # linear activation on output
+            return 1.0*x # linear activation on output
         if self.model.layers[-1].get_config()['activation'] == 'tanh':
             return  1. / np.cosh(x)**2.
         if self.model.layers[-1].get_config()['activation'] == 'sigmoid':
@@ -123,7 +124,7 @@ class NeuralNetworkPredictor():
 
     def __Phi_prime_prime(self, x = 0):
         if self.model.layers[-1].get_config()['activation'] == 'linear':
-            return 0.0 # linear activation on output
+            return 0.0*x # linear activation on output
         if self.model.layers[-1].get_config()['activation'] == 'tanh':
             return-2.*np.tanh(x)/ np.cosh(x)**2.
         if self.model.layers[-1].get_config()['activation'] == 'sigmoid':
@@ -135,11 +136,15 @@ class NeuralNetworkPredictor():
              ------------
             Du(n+h)Du(n+m)
         """
-        return self.__Phi_prime() * \
+        inp = self.model.input
+        outputs = [layer.output for layer in self.model.layers]
+        functors = [tf.keras.backend.function([inp], [out]) for out in outputs]
+        netj = [func([self.last_model_input]) for func in functors][-1][0]
+        return np.reshape(self.__Phi_prime(netj) * \
                     self.__partial_2_net_partial_u_nph_partial_npm(h, m, j) + \
-                        self.__Phi_prime_prime() * \
+                        self.__Phi_prime_prime(netj) * \
                             self.__partial_net_partial_u(h, j) * \
-                                self.__partial_net_partial_u(m, j)
+                                self.__partial_net_partial_u(m, j), (-1, self.Nu))
 
     def __partial_2_yn_partial_nph_partial_npm(self, h, m, j):
         """
@@ -241,19 +246,23 @@ class NeuralNetworkPredictor():
     def compute_hessian(self, u, del_u):
         Y, YM , U, delU = self.get_computation_vectors()
         Hessian = np.zeros((self.Nu, self.Nu))
-
+        temp = []
         for h in range(self.Nu):
             for m in range(self.Nu):
-                ynu, ynu1, temp = [], [], []
+                ynu, ynu1 = [], []
                 for j in range(self.N1, self.N2):
                     ynu += [self.__partial_yn_partial_u(j, m)]
                     ynu1 += [self.__partial_yn_partial_u(j, h)]
                     temp += [self.__partial_2_yn_partial_nph_partial_npm(h, m, j)]
                 ynu, ynu1, temp = np.array(ynu), np.array(ynu1), np.array(temp)
 
-                Hessian[h, m] += np.sum(2.*np.dot(np.dot(np.dot(ynu, ynu1.T), temp), \
+                print self.Q.shape, np.array(ynu).shape, np.array(ynu1).T.shape, \
+                        (YM[self.N1:self.N2, :] - Y[self.N1:self.N2, :]).T.shape, \
+                        self.Q.shape, np.array(temp).shape
+
+                Hessian[h, m] += np.sum(2.*np.dot(np.dot(np.dot(ynu, ynu1.T), temp.T).T, \
                         np.dot(self.Q, (YM[self.N1:self.N2, :] -\
-                            Y[self.N1:self.N2, :]).T)), axis = 0)
+                            Y[self.N1:self.N2, :]).T)).T, axis = 0)
 
                 for j in range(self.Nu):
                     Hessian[h, m] += np.sum(2.*np.dot(self.Lambda, \
