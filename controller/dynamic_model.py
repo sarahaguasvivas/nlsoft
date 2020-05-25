@@ -250,6 +250,7 @@ class NeuralNetworkPredictor():
                     ynu1 += [self.__partial_yn_partial_u(j, h)]
                     temp += [self.__partial_2_yn_partial_nph_partial_npm(h, m, j)]
                 ynu, ynu1, temp = np.array(ynu), np.array(ynu1), np.array(temp)
+
                 Hessian[h, m] += np.sum(2.*np.dot(np.dot(np.dot(ynu, ynu1.T), temp), \
                         np.dot(self.Q, (YM[self.N1:self.N2, :] -\
                             Y[self.N1:self.N2, :]).T)), axis = 0)
@@ -258,7 +259,7 @@ class NeuralNetworkPredictor():
                     Hessian[h, m] += np.sum(2.*np.dot(self.Lambda, \
                                     np.array([self.__partial_delta_u_partial_u(j, m)]*self.Nu) *\
                                                 np.array([self.__partial_delta_u_partial_u(j, h)]*\
-                                                    self.Nu).T).flatten())
+                                                    self.Nu).T).flatten(), axis= 0)
                 for j in range(self.Nu):
                     for i in range(self.num_u):
                         Hessian[h, m] += kronecker_delta(h, j)*kronecker_delta(m, j) * \
@@ -277,10 +278,13 @@ class NeuralNetworkPredictor():
 
         for h in range(self.Nu):
             ynu = []
-            for j in range(self.N1, self.N2):
+            for j in range(self.N1, self.N2-1):
                 ynu += [self.__partial_yn_partial_u(j, h)]
-            sum_output += -2. * np.sum(np.dot(np.dot((YM[self.N1:self.N2, :] - \
-                            Y[self.N1:self.N2, :]).T, self.Q), np.array(ynu).T), axis = 0)
+
+            sub_sum =  (YM[self.N1:self.N2, :] - \
+                            Y[self.N1:self.N2, :]).T.dot(self.Q).T.dot(np.array(ynu).T)
+            sum_output += -2. * np.sum(sub_sum, axis = 0)
+
             ynu = []
             for j in range(self.Nu):
                 ynu+=[self.__partial_delta_u_partial_u(j, h)]

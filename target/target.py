@@ -59,8 +59,8 @@ class Pringle:
     def spin(self, timestep, n1, n2, dims, current_point):
         target = np.empty([n2 - n1, dims])
 
-        phase = self.find_projection_along_path(current_point)
-        #phase = 0
+        #phase = self.find_projection_along_path(current_point)
+        phase = 0
         i = 0
 
         for _ in range(n1, n2):
@@ -69,7 +69,7 @@ class Pringle:
             y = self.amplitude*np.cos(2*np.pi*(timestep + i)/ \
                                                         self.wavelength + phase) + 0./1000.
 
-            x = -self.amplitude*np.sin(-300.*z*y) - 1./1000.
+            x = -self.amplitude*np.sin(300.*z*y) - 1./1000.
 
             target[i, :] = [self.center[0] + x, self.center[1] + y, self.center[2] + z]
             i+=1
