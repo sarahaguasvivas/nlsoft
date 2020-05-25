@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D
 import random
 NUM_DATA_RUNS = 100
-TRAIN = False
+TRAIN = True
 
 #plt.style.use('dark_background')
 plt.style.use('seaborn')
@@ -36,7 +36,7 @@ def neural_network_training(X, y):
     #model.add(GaussianNoise(0.1))
     model.add(Dense(20, activation =  'tanh', kernel_initializer='random_normal'))
     #model.add(GaussianNoise(0.1))
-    model.add(Dense(3,  activation = 'tanh', kernel_initializer='random_normal'))
+    model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
     model.compile(optimizer= 'adam', loss =custom_loss, metrics=['mse'])
     model.fit(X_train, y_train, epochs = 200, batch_size = 100, validation_split=0.2)

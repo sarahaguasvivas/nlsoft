@@ -14,18 +14,19 @@ model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 1000
-
+SCALE0 = 1.
+SCALE1 = 1.
 verbose = 0
 #neutral point
 # -0.05693081021308899, -0.03798467665910721, -0.01778547465801239
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 2, Nu = 1, nd = 2, dd = 2, K = 3, \
-                    Q = np.array([[2., 1e-2, 1e-3],
-                                  [1e-2, 1e-3, 3.]]),
-                    Lambda = np.array([[5e-2],
-                                       [8e-2]]), \
-                        y0 = [-0.05693081021308899, -0.03798467665910721, 0.015], \
-                        u0 = [-10.0, -50.0], s = 1e-10, b = 1e-10, r = 4.)
+                    N1 = 0, N2 = 3, Nu = 1, nd = 2, dd = 2, K = 5, \
+                    Q = np.array([[1., 0., 0.],
+                                 [0, 1., 0],
+                                 [0, 0, 5.]]),
+                    Lambda = np.array([[2e-1], [5e-2]]), \
+                        y0 = [-0.05693081021308899, -0.03798467665910721, -.017], \
+                        u0 = [0.0, -50.0], s = 1e-10, b = 1e-5, r = 0.4)
 
 NR_opt, Block = SolowayNR(cost = NNP.cost, d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
@@ -36,7 +37,7 @@ neutral_point = Block.get_state()
 
 #NNP.y0 = neutral_point
 
-target = Pringle(wavelength = 100, amplitude = 15./1000., center = neutral_point)
+target = Pringle(wavelength = 100, amplitude = 30./1000., center = neutral_point)
 
 #Block.get_signal_calibration() # calibrate signal of the block
 Block.calibration_max = np.array([ 6, 377, 116,   1,   1,   1, 137,   1,   1,  41,   1 ])
@@ -82,14 +83,14 @@ try:
             del_u_action = del_u[0, :].tolist()
 
             # clipping for safety; with good tuning this is almost never needed:
-            u_action[0] = normalize_and_clip_angle(1.*u_action[0],-100, 80)
-            u_action[1] = normalize_and_clip_angle(1.*u_action[1],-100, 60)
+            u_action[0] = normalize_and_clip_angle(SCALE0*u_action[0],-100, 80)
+            u_action[1] = normalize_and_clip_angle(SCALE1*u_action[1],-100, 60)
 
             Block.step(action = u_action)
             NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action, predicted_states.tolist(), \
                                         NNP.ym[0, :].tolist())
             u_optimal_old = u_optimal
-            u_deque = roll_deque(u_deque, u_optimal[0, :].tolist())
+            u_deque = roll_deque(u_deque, u_action)
             y_deque = roll_deque(y_deque, predicted_states.tolist())
 
             if verbose == 0:
