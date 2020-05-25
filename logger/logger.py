@@ -1,4 +1,5 @@
 import numpy as np
+from scipy import stats
 
 class Logger:
     def __init__(self):
@@ -59,11 +60,18 @@ class Logger:
 
         ym = 1000*np.reshape(ym, (NUM_EXPERIMENTS,-1, 3))
         yn = 1000*np.reshape(yn, (NUM_EXPERIMENTS, -1, 3))
-        predicted_ = 1000*np.reshape(predicted_, (NUM_EXPERIMENTS, -1, 3))
         actual_ = 1000*np.reshape(actual_, (NUM_EXPERIMENTS,-1, 3))
+        predicted_ = 1000*np.reshape(predicted_, (NUM_EXPERIMENTS, -1, 3))
+
+        print "Average prediction error: ", np.mean(actual_-yn)
+        print "Average control error: ", np.mean(ym - yn)
+
+        print "Standard error prediction: ", np.std(actual_ - yn, axis=None, ddof=0)
+        print "Standard error control: ", np.std(ym - yn, axis=None, ddof=0)
+
         u_optimal_list = np.reshape(u_optimal_list, (NUM_EXPERIMENTS, -1, 2))
-        error_mm = ym - yn
-        error_pred = yn - actual_
+        error_mm = (yn - ym) / ym
+        error_pred = (yn - actual_)/ actual_
         signal = np.reshape(signal, (NUM_EXPERIMENTS, -1, 11))
         color_palette = ['#1446A0', '#DB3069', '#F5D547', '#F5D547', '#3C3C3B']
         labels = ['x', 'y', 'z', 'u']
@@ -83,7 +91,7 @@ class Logger:
                                             np.mean(actual_, axis = AXIS)[:, i] + np.std(actual_, axis = AXIS)[:, i],\
                                                 color = color_palette[1], alpha = 0.5, label = r"$2\sigma$")
 
-            plt.ylim([-65, 4])
+            #plt.ylim([-65, 4])
             plt.legend()
             plt.ylabel(str(labels[i]) + ' [mm]')
             plt.plot(1000*neutral_point[i], marker = 'h')
@@ -116,11 +124,13 @@ class Logger:
         neutral_point = 1000*np.array(neutral_point).reshape(-1, 3)
 
         fig = plt.figure()
-        m_predicted_ = np.mean(predicted_, axis = AXIS)
+
+        m_predicted_ = np.mean(yn, axis = AXIS)
         m_ym = np.mean(ym, axis = AXIS)
         m_actual_ = np.mean(actual_, axis = AXIS)
+
         ax = Axes3D(fig)
-        ax.plot3D(m_predicted_[:, 0],m_predicted_[:, 1], m_predicted_[:, 2],color = color_palette[0],  linewidth = 1, alpha = 0.9, label = 'estimated position')
+        ax.plot3D(m_predicted_[:, 0], m_predicted_[:, 1], m_predicted_[:, 2],color = color_palette[0],  linewidth = 1, alpha = 0.9, label = 'estimated position')
         ax.plot3D(m_ym[:, 0], m_ym[:, 1], m_ym[:, 2], color = color_palette[-1],linestyle = 'dashed',  linewidth = 1, alpha = 1, label = 'target')
         ax.plot3D(m_actual_[:, 0], m_actual_[:, 1], m_actual_[:, 2], \
                             linewidth = 1, color = color_palette[1], alpha = 1, label = 'actual position')
@@ -142,17 +152,17 @@ class Logger:
         timesteps = range(max(yn.shape))
         for i in range(3):
             plt.subplot(3, 1, i+1)
-            plt.plot(np.mean(error_mm, axis = AXIS)[:, i], color = 'k', label = r'$\overline{\epsilon_{' + labels[i] + '}}$')
+            plt.plot(np.mean(error_mm, axis = AXIS)[:, i], color = 'k', label = '%control error' + labels[i] + '}}$')
             plt.fill_between(timesteps, np.mean(error_mm, axis = AXIS)[:, i] - np.std(error_mm, axis = AXIS)[:, i] ,\
                                 np.mean(error_mm, axis = AXIS)[:, i] + np.std(error_mm, axis = AXIS)[:, i], \
                                     color = 'k', alpha = 0.5)
-            plt.plot(np.mean(error_pred, axis = AXIS)[:, i], color = 'gray', label = r'$\hat{' + labels[i] +'} - ' + labels[i]+ '_{true}$')
+            plt.plot(np.mean(error_pred, axis = AXIS)[:, i], color = 'gray', label = '%prediction error')
             plt.fill_between(timesteps, np.mean(error_pred, axis = AXIS)[:, i] - np.std(error_pred, axis = AXIS)[:, i] ,\
                                             np.mean(error_pred, axis = AXIS)[:, i] + np.std(error_pred, axis = AXIS)[:, i], \
                                                 color = 'gray', alpha = 0.5)
 
 
-            plt.ylim([-50, 50])
+            #plt.ylim([-50, 50])
             plt.legend()
             plt.ylabel(str(labels[i]) + ' [mm]')
             if i==2:

@@ -69,18 +69,22 @@ class Pringle:
             y = self.amplitude*np.cos(2*np.pi*(timestep + i)/ \
                                                         self.wavelength + phase) + 0./1000.
 
-            x = -self.amplitude*np.sin(-300.*z*y) + 3./1000.
+            x = -self.amplitude*np.sin(-300.*z*y) + 1./1000.
 
-            target[i, :] = [self.center[0] + x, self.center[1] + y + 3./1000., self.center[2] + z]
+            target[i, :] = [self.center[0] + x, self.center[1] + y, self.center[2] + z]
             i+=1
         return target
 
 class SingleAxisSineWave:
-    def __init__(self, frequency = 500, amplitude = 0.025, \
+    def __init__(self, wavelength = 500, amplitude = 0.025, \
                                 center = [0.0, 0.0, 0.0], axis = 1):
-        self.frequency = frequency
+        self.wavelength = wavelength
         self.amplitude = amplitude
         self.center = center
+        self.axis = axis
+        self.boundaries = [[-56,-43], \
+                         [-61.7,-10.7], \
+                         [-27.6, 12.3]]
 
     def find_projection_along_path(self, current_point):
         ang1 = np.arctan2(self.center[0], self.center[2])
@@ -89,16 +93,12 @@ class SingleAxisSineWave:
 
     def spin(self, timestep, n1, n2, dims, current_point):
         target = np.empty([n2 - n1, dims])
-
         phase = self.find_projection_along_path(current_point)
         i = 0
         for _ in range(n1, n2):
-            target[i, :] = [self.center[0] + (self.amplitude * np.sin(2.*np.pi*(timestep + i) \
-                                                        / self.frequency + phase))*float(axis == 0),
-                            self.center[1] + (self.amplitude * np.sin(2.*np.pi*(timestep + i) \
-                                                        / self.frequency + phase))*float(axis == 1),
-                            self.center[2] + (self.amplitude*np.sin(2*np.pi*(timestep + i) \
-                                                        / self.frequency + phase))*float(axis == 2)]
+            target[i, :] = [self.center[0], self.center[1], self.center[2]]
+            target[i, self.axis] += self.amplitude*np.sin(2*np.pi*(timestep + i) \
+                                        / self.wavelength + phase)
             i+=1
         return target
 
@@ -120,11 +120,11 @@ class SingleAxisSquareWave:
         phase = self.find_projection_along_path(current_point)
         i = 0
         for _ in range(n1, n2):
-            target[i, :] = [self.center[0] + (self.amplitude * signal.square(2.*np.pi*(timestep + i) \
+            target[i, :] = [(self.amplitude * signal.square(2.*np.pi*(timestep + i) \
                                                         / self.frequency + phase))*float(self.axis == 0),
-                            self.center[1] + (self.amplitude * signal.square(2.*np.pi*(timestep + i) \
+                            (self.amplitude * signal.square(2.*np.pi*(timestep + i) \
                                                         / self.frequency + phase))*float(self.axis == 1),
-                            self.center[2] + (self.amplitude*signal.square(2*np.pi*(timestep + i) \
+                            (self.amplitude*signal.square(2*np.pi*(timestep + i) \
                                                         / self.frequency + phase))*float(self.axis == 2)]
             i+=1
         return target

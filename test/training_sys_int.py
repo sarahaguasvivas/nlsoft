@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D
 import random
 NUM_DATA_RUNS = 100
-TRAIN = True
+TRAIN = False
 
 #plt.style.use('dark_background')
 plt.style.use('seaborn')
@@ -34,9 +34,9 @@ def neural_network_training(X, y):
 
     model = Sequential()
     #model.add(GaussianNoise(0.1))
-    model.add(Dense(20, activation =  'sigmoid', kernel_initializer='random_normal'))
+    model.add(Dense(20, activation =  'tanh', kernel_initializer='random_normal'))
     #model.add(GaussianNoise(0.1))
-    model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
+    model.add(Dense(3,  activation = 'tanh', kernel_initializer='random_normal'))
 
     model.compile(optimizer= 'adam', loss =custom_loss, metrics=['mse'])
     model.fit(X_train, y_train, epochs = 200, batch_size = 100, validation_split=0.2)
@@ -47,8 +47,8 @@ def neural_network_training(X, y):
 def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
 
     model = load_model(modelfile)
-    #y *= 1000 # convert meters to mm
-    yn = model.predict(X) #*1000
+    y *= 1000 # convert meters to mm
+    yn = 1000*model.predict(X) #*1000
     plt.figure()
 
     lab = ['x', 'y', 'z']
@@ -58,9 +58,9 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
         plt.subplot(3, 2, 2*i+1)
         plt.plot(yn[1:L, i], color = '#E74C3C',   label = r"$" + str(lab[i]) + "_{est}$")
         plt.plot(y[1:L, i], color = '#5D6D7E',linestyle ='dashed', label = r"$" + str(lab[i]) + "_{true}$", alpha = 0.7)
-        plt.ylabel(str(lab[i]) + " [m]")
+        plt.ylabel(str(lab[i]) + " [mm]")
 #        plt.title("Estimation vs. Truth for " + str(lab[i]) + " [mm]")
-        plt.ylim([-0.1, 0.1])
+        #plt.ylim([-0.1, 0.1])
         plt.legend()
         if 2*i+1 == 1:
             plt.title("States with respect to Timesteps")
@@ -68,10 +68,10 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
             plt.xlabel('timesteps')
 
         plt.subplot(3, 2, 2*i+2)
-        plt.plot(y[1:L, i] - yn[1:L, i], color = '#34495E', linewidth = 0.5, label = r"$\Delta " + str(lab[i]) + " [m]$")
+        plt.plot(y[1:L, i] - yn[1:L, i], color = '#34495E', linewidth = 0.5, label = r"$\Delta " + str(lab[i]) + " [mm]$")
 #        plt.title("Error in estimation for " + str(lab[i]) + " [mm]")
-        plt.ylabel(r"$\varepsilon_{" + str(lab[i]) + "}$ [m]")
-        plt.ylim([-0.1, 0.1])
+        plt.ylabel(r"$\varepsilon_{" + str(lab[i]) + "}$ [mm]")
+        #plt.ylim([-0.1, 0.1])
         plt.legend()
         if 2*i+2 == 2:
             plt.title("Errors in Testing Set Predictions")
@@ -91,8 +91,8 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
     #ax.set_ylim(-.1, .05)
     #ax.set_zlim(-.05, .05)
     plt.legend()
-    plt.xlabel('x [m]')
-    plt.ylabel('y [m]')
+    plt.xlabel('x [mm]')
+    plt.ylabel('y [mm]')
     plt.title('Estimated position vs. Ground Truth')
     plt.show()
 
