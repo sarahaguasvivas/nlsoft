@@ -244,11 +244,16 @@ class NeuralNetworkPredictor():
 
         for h in range(self.Nu):
             for m in range(self.Nu):
+                ynu, ynu1, temp = [], [], []
                 for j in range(self.N1, self.N2):
-                    Hessian[h, m] += np.sum(2.*np.dot(np.array(self.__partial_yn_partial_u(j, m)).T, \
-                                self.__partial_yn_partial_u(j, h)) - \
-                                np.array(self.__partial_2_yn_partial_nph_partial_npm(h, m, j)) * \
-                                            self.Q * np.array(YM[j, :] - Y[j, :]).flatten())
+                    ynu += [self.__partial_yn_partial_u(j, m)]
+                    ynu1 += [self.__partial_yn_partial_u(j, h)]
+                    temp += [self.__partial_2_yn_partial_nph_partial_npm(h, m, j)]
+                ynu, ynu1, temp = np.array(ynu), np.array(ynu1), np.array(temp)
+                Hessian[h, m] += np.sum(2.*np.dot(np.dot(np.dot(ynu, ynu1.T), temp), \
+                        np.dot(self.Q, (YM[self.N1:self.N2, :] -\
+                            Y[self.N1:self.N2, :]).T)), axis = 0)
+
                 for j in range(self.Nu):
                     Hessian[h, m] += np.sum(2.*np.dot(self.Lambda, \
                                     np.array([self.__partial_delta_u_partial_u(j, m)]*self.Nu) *\
@@ -271,13 +276,21 @@ class NeuralNetworkPredictor():
         sum_output = np.array([0.0]*self.num_u)
 
         for h in range(self.Nu):
+            ynu = []
             for j in range(self.N1, self.N2):
-                sum_output += [-2. * np.dot(np.dot(YM[j, :] - Y[j, :], self.Q),
-                                    self.__partial_yn_partial_u(j, h))]*self.num_u
-
+                ynu += [self.__partial_yn_partial_u(j, h)]
+            sum_output += -2. * np.sum(np.dot(np.dot((YM[self.N1:self.N2, :] - \
+                            Y[self.N1:self.N2, :]).T, self.Q), np.array(ynu).T), axis = 0)
+            ynu = []
             for j in range(self.Nu):
-                sum_output += 2.* np.dot(np.dot(np.array(delU[j, :]).T, self.Lambda),
-                                        self.__partial_delta_u_partial_u(j, h))
+                ynu+=[self.__partial_delta_u_partial_u(j, h)]
+            if self.Nu == 1:
+                ynu = np.asscalar(np.array(ynu))
+            else:
+                ynu = np.array(ynu)
+
+            sum_output += np.sum(2.* np.dot(np.dot(np.array(delU).T, self.Lambda.T),
+                                        ynu), axis = 0)
             for j in range(self.Nu):
                 sub_sum = np.array([0.0, 0.0])
                 for i in range(self.num_u):
