@@ -19,20 +19,20 @@ verbose = 0
 #neutral point
 # -0.05693081021308899, -0.03798467665910721, -0.01778547465801239
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 2, Nu = 1, nd = 2, dd = 2, K = 5, \
-                    Q = np.array([[3.5, 1e-2, 5e-1],
-                                  [1e-2, 17., 5e-3],
-                                  [5e-1, 5e-3, 15.]]),
-                    Lambda = np.array([[0.5],
-                                       [1.]]), \
-                        y0 = [-0.05693081021308899, -0.03798467665910721, 0.015], \
-                        u0 = [0.0, -50.0], s = 1e-20, b = 5e-3, r = 4.*100.)
+                    N1 = 0, N2 = 1, Nu = 1, nd = 2, dd = 2, K = 5, \
+                    Q = np.array([[15, 1e-3, -5e-3],
+                                  [1e-3, 7., 5e-3],
+                                  [-5e-3, 5e-3, 15.]]),
+                    Lambda = np.array([[1e-1],
+                                       [6e-5]]), \
+                        y0 = [-0.05693081021308899, -0.03798467665910721, -0.01], \
+                        u0 = [-10.0, -50.0], s = 1e-13, b = 5e-3, r = 4e-2)
 
 NR_opt, Block = SolowayNR(cost = NNP.cost, d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
 log = Logger()
 Block.reset()
-Block.step([0.0, -50.])
+Block.step([-10.0, -50.])
 neutral_point = Block.get_state()
 
 #NNP.y0 = neutral_point
@@ -74,7 +74,7 @@ try:
                 NNP.yn += [predicted_states]
                 y_deque = roll_deque(y_deque, predicted_states.tolist())
 
-            NNP.ym = target.spin(n, 0, NNP.K, 3, predicted_states.tolist())
+            NNP.ym = np.array([Block.get_target()]*NNP.K)
             new_state_old = new_state_new
             u_optimal, del_u,  _ = NR_opt.optimize(u = u_optimal_old, \
                                         maxit = 1, rtol = 1e-4, verbose = True)
@@ -83,7 +83,7 @@ try:
             del_u_action = del_u[0, :].tolist()
 
             # clipping for safety; with good tuning this is almost never needed:
-            u_action[0] = normalize_and_clip_angle(1.*u_action[0],-100, 80)
+            u_action[0] = normalize_and_clip_angle(1.*u_action[0],-80, 100)
             u_action[1] = normalize_and_clip_angle(1.*u_action[1],-100, 60)
 
             Block.step(action = u_action)

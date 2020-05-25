@@ -113,20 +113,20 @@ class NeuralNetworkPredictor():
         return Y, YM, U, delU
 
     def __Phi_prime(self, x = 0):
-        if self.model.layers[self.first_layer_index].get_config()['activation'] == 'linear':
+        if self.model.layers[-1].get_config()['activation'] == 'linear':
             return 1.0 # linear activation on output
-        if self.model.layers[self.first_layer_index].get_config()['activation'] == 'tanh':
+        if self.model.layers[-1].get_config()['activation'] == 'tanh':
             return  1. / np.cosh(x)**2.
-        if self.model.layers[self.first_layer_index].get_config()['activation'] == 'sigmoid':
+        if self.model.layers[-1].get_config()['activation'] == 'sigmoid':
             sigmoid = 1./(1.+np.exp(-1.*x))
             return sigmoid*(1-sigmoid)
 
     def __Phi_prime_prime(self, x = 0):
-        if self.model.layers[self.first_layer_index].get_config()['activation'] == 'linear':
+        if self.model.layers[-1].get_config()['activation'] == 'linear':
             return 0.0 # linear activation on output
-        if self.model.layers[self.first_layer_index].get_config()['activation'] == 'tanh':
+        if self.model.layers[-1].get_config()['activation'] == 'tanh':
             return-2.*np.tanh(x)/ np.cosh(x)**2.
-        if self.model.layers[self.first_layer_index].get_config()['activation'] == 'sigmoid':
+        if self.model.layers[-1].get_config()['activation'] == 'sigmoid':
             return (2.*np.exp(-2.*x))/(np.exp(-1.*x)+ 1.)**3. - (np.exp(-1.*x))/(np.exp(-1.*x)+1.)**2.
 
     def __partial_2_fnet_partial_nph_partial_npm(self, h, m, j):
@@ -266,6 +266,7 @@ class NeuralNetworkPredictor():
 
     def compute_jacobian(self, u, del_u):
         Y, YM, U, delU = self.get_computation_vectors()
+
         dJ = np.zeros((self.Nu, U.shape[1]))
         sum_output = np.array([0.0]*self.num_u)
 

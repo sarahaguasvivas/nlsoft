@@ -19,14 +19,14 @@ verbose = 0
 #neutral point
 # -0.05693081021308899, -0.03798467665910721, -0.01778547465801239
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 2, Nu = 1, nd = 2, dd = 2, K = 5, \
-                    Q = np.array([[3.5, 1e-2, 5e-1],
-                                  [1e-2, 17., 5e-3],
-                                  [5e-1, 5e-3, 15.]]),
-                    Lambda = np.array([[0.5],
-                                       [1.]]), \
-                        y0 = [-0.05693081021308899, -0.03798467665910721, 0.015], \
-                        u0 = [0.0, -50.0], s = 1e-20, b = 5e-3, r = 4.*100.)
+                    N1 = 0, N2 = 2, Nu = 1, nd = 2, dd = 2, K = 3, \
+                    Q = np.array([[1., 0., 0.],
+                                  [0., 10., 0.],
+                                  [0., 0., 1.]]),
+                    Lambda = np.array([[9e-5],
+                                       [9e-8]]), \
+                        y0 = [-0.05693081021308899, -0.03798467665910721, 0.01], \
+                        u0 = [0.0, -50.0], s = 1e-20, b = 1e-3, r = 4./100.)
 
 NR_opt, Block = SolowayNR(cost = NNP.cost, d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
@@ -37,7 +37,7 @@ neutral_point = Block.get_state()
 
 #NNP.y0 = neutral_point
 
-target = Pringle(wavelength = 100, amplitude = 15./1000., center = neutral_point)
+target = SingleAxisSineWave(wavelength = 100, amplitude = 40./1000., center = neutral_point, axis = 2)
 
 #Block.get_signal_calibration() # calibrate signal of the block
 Block.calibration_max = np.array([ 6, 377, 116,   1,   1,   1, 137,   1,   1,  41,   1 ])
@@ -83,7 +83,7 @@ try:
             del_u_action = del_u[0, :].tolist()
 
             # clipping for safety; with good tuning this is almost never needed:
-            u_action[0] = normalize_and_clip_angle(1.*u_action[0],-100, 80)
+            u_action[0] = normalize_and_clip_angle(1.*u_action[0],-100, 100)
             u_action[1] = normalize_and_clip_angle(1.*u_action[1],-100, 60)
 
             Block.step(action = u_action)
