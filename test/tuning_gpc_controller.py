@@ -19,13 +19,13 @@ verbose = 0
 #neutral point
 # -0.05693081021308899, -0.03798467665910721, -0.01778547465801239
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 2, Nu = 1, nd = 2, dd = 2, K = 5, \
-                    Q = np.array([[13.5, 1e-2, 5e-1],
-                                  [1e-2, 17., 5e-3]]),
-                    Lambda = np.array([[0.5],
-                                       [1.]]), \
+                    N1 = 0, N2 = 2, Nu = 1, nd = 2, dd = 2, K = 3, \
+                    Q = np.array([[2., 1e-2, 1e-3],
+                                  [1e-2, 1e-3, 3.]]),
+                    Lambda = np.array([[5e-2],
+                                       [8e-2]]), \
                         y0 = [-0.05693081021308899, -0.03798467665910721, 0.015], \
-                        u0 = [-10.0, -50.0], s = 1e-20, b = 5e-3, r = 4.)
+                        u0 = [-10.0, -50.0], s = 1e-10, b = 1e-10, r = 4.)
 
 NR_opt, Block = SolowayNR(cost = NNP.cost, d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
