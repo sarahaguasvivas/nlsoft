@@ -107,8 +107,10 @@ class NeuralNetworkPredictor():
         self.last_model_input = None
 
     def get_computation_vectors(self):
-        Y = 1000*np.array(self.yn) # converting to mm
-        YM = 1000*np.array(self.ym) # converting to mm
+
+        Y = np.array(self.yn) # converting to mm
+        YM = np.array(self.ym) # converting to mm
+
         U = np.array(list(self.u_deque))
         delU = np.array(list(self.delu_deque))
         return Y, YM, U, delU
@@ -246,18 +248,20 @@ class NeuralNetworkPredictor():
             for m in range(self.Nu):
                 ynu, ynu1, temp = [], [], []
                 for j in range(self.N1, self.N2):
-                    ynu += [self.__partial_yn_partial_u(j, m)]
+                    ynu  += [self.__partial_yn_partial_u(j, m)]
                     ynu1 += [self.__partial_yn_partial_u(j, h)]
                     temp += [self.__partial_2_yn_partial_nph_partial_npm(h, m, j)]
                 ynu, ynu1, temp = np.array(ynu), np.array(ynu1), np.array(temp)
 
                 Hessian[h, m] += np.sum(2.*self.Q.dot(np.array(ynu).dot(np.array(ynu1).T)) - self.Q.dot((YM[self.N1:self.N2, :] - Y[self.N1:self.N2, :])).dot(np.array(temp).T))
-
+                second_y, second_y1, temp = [], [], []
                 for j in range(self.Nu):
-                    Hessian[h, m] += np.sum(2.*np.dot(self.Lambda, \
-                                    np.array([self.__partial_delta_u_partial_u(j, m)]*self.Nu) *\
-                                                np.array([self.__partial_delta_u_partial_u(j, h)]*\
-                                                    self.Nu).T).flatten(), axis= 0)
+                    second_y+=[self.__partial_delta_u_partial_u(j, m)]
+                    second_y1+= [self.__partial_delta_u_partial_u(j, h)]
+                Hessian[h, m] += np.sum(2.*np.dot(self.Lambda, second_y).dot(np.array(second_y1).T), axis = 0)
+#               Hessian[h, m] += np.sum(2.*np.dot(self.Lambda, \
+#                                    self.__partial_delta_u_partial_u(j, m)*self.__partial_delta_u_partial_u(j, h)).T) + delU, axis= 0)
+#
                 for j in range(self.Nu):
                     for i in range(self.num_u):
                         Hessian[h, m] += kronecker_delta(h, j)*kronecker_delta(m, j) * \
