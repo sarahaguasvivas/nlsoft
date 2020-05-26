@@ -34,12 +34,12 @@ def neural_network_training(X, y):
 
     model = Sequential()
     #model.add(GaussianNoise(0.1))
-    model.add(Dense(20, activation =  'tanh', kernel_initializer='random_normal'))
+    model.add(Dense(20, activation =  'sigmoid', kernel_initializer='random_normal'))
     #model.add(GaussianNoise(0.1))
     model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
     model.compile(optimizer= 'adam', loss =custom_loss, metrics=['mse'])
-    model.fit(X_train, y_train, epochs = 200, batch_size = 100, validation_split=0.2)
+    model.fit(X_train, y_train, epochs = 1000, batch_size = 1000, validation_split=0.2)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
