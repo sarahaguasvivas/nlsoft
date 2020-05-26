@@ -138,11 +138,11 @@ class NeuralNetworkPredictor():
              ------------
             Du(n+h)Du(n+m)
         """
-        return self.__Phi_prime() * \
-                    self.__partial_2_net_partial_u_nph_partial_npm(h, m, j) + \
-                        self.__Phi_prime_prime() * \
-                            self.__partial_net_partial_u(h, j) * \
-                                self.__partial_net_partial_u(m, j)
+        return self.__Phi_prime().dot( \
+                    self.__partial_2_net_partial_u_nph_partial_npm(h, m, j)) + \
+                        self.__Phi_prime_prime().dot( \
+                            self.__partial_net_partial_u(h, j)).dot( \
+                                self.__partial_net_partial_u(m, j))
 
     def __partial_2_yn_partial_nph_partial_npm(self, h, m, j):
         """
@@ -158,7 +158,7 @@ class NeuralNetworkPredictor():
                 sum_output+= np.multiply(weights[i, j], \
                             self.__partial_2_fnet_partial_nph_partial_npm(h, m, j))
         self.previous_second_der = sum_output
-        return sum_output
+        return np.array(sum_output)
 
     def __partial_2_net_partial_u_nph_partial_npm(self, h, m, j):
         """
@@ -176,7 +176,7 @@ class NeuralNetworkPredictor():
                                         self.nd*self.num_u + \
                                         self.num_y, j] * \
                                         self.previous_second_der * np.array(step_))
-        return sum_output
+        return np.array(sum_output)
 
     def __partial_yn_partial_u(self, h, j):
         """
@@ -192,7 +192,7 @@ class NeuralNetworkPredictor():
         for i in range(self.hid):
             sum_output += np.dot(weights[i, :] , self.__partial_fnet_partial_u(h, j))
         self.previous_first_der = sum_output.tolist()
-        return sum_output
+        return np.array(sum_output)
 
     def __partial_fnet_partial_u(self, h, j):
         """
@@ -200,7 +200,7 @@ class NeuralNetworkPredictor():
             ---------
              D u(u+h)
         """
-        return self.__Phi_prime()*self.__partial_net_partial_u(h, j)
+        return np.dot(self.__Phi_prime(), self.__partial_net_partial_u(h, j))
 
     def __partial_net_partial_u(self, h, j):
         """
@@ -231,7 +231,7 @@ class NeuralNetworkPredictor():
                                         self.nd*self.num_u + \
                                         self.num_y, j] , \
                                 self.previous_first_der * np.array(step_))
-        return sum_output
+        return np.array(sum_output)
 
     def __partial_delta_u_partial_u(self, j, h):
         """
@@ -280,12 +280,13 @@ class NeuralNetworkPredictor():
 
         for h in range(self.Nu):
             ynu = []
-            for j in range(self.N1, self.N2-1):
+            for j in range(self.N1, self.N2):
                 ynu += [self.__partial_yn_partial_u(j, h)]
 
             sub_sum =  (YM[self.N1:self.N2, :] - \
                             Y[self.N1:self.N2, :]).T.dot(self.Q).T.dot(np.array(ynu).T)
-            sum_output += -2. * np.sum(sub_sum, axis = 0)
+
+            sum_output += -2. * np.sum(sub_sum[:, :self.num_u], axis = 0)
 
             ynu = []
             for j in range(self.Nu):

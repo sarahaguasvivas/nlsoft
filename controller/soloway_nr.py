@@ -12,7 +12,6 @@ class SolowayNR:
 
     def __fsolve_newton(self, u0, rtol=1e-10, maxit=50, verbose=False):
         u = np.array(u0).copy()
-
         del_u = np.zeros(u.shape)
 
         Fu = -self.d_model.Fu(u, del_u)
@@ -31,7 +30,7 @@ class SolowayNR:
 
             norm = np.linalg.norm(Fu)
             if verbose:
-                enorm = np.linalg.norm(u - np.array([1,1]))
+                enorm = np.linalg.norm(u - np.ones(u.shape))
                 print('Newton {:d} anorm {:6.2e} rnorm {:6.2e} eratio {:6.2f}'.
                                 format(i+1, norm, norm/norm0, enorm/enorm_last**2))
                 enorm_last = enorm
