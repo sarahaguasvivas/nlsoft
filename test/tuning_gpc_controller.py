@@ -12,8 +12,8 @@ from target.target import Circle, Pringle, SingleAxisSineWave, SingleAxisSquareW
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
-NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 100
+NUM_EXPERIMENTS = 100
+NUM_TIMESTEPS = 1000
 
 SCALE0 = 300.
 SCALE1 = 450.
@@ -24,11 +24,11 @@ verbose = 0
 NNP = NeuralNetworkPredictor(model_file = model_filename,
                     N1 = 0, N2 = 2, Nu = 2, nd = 2, dd = 2, K = 5, \
                     Q = np.array([[1.5, 0.],
-                                    [0, .5]]),
+                                    [0, 1.]]),
                     Lambda = np.array([[3e-2, -5e-7],
                                       [-5e-7, 1e-3]]), \
                         y0 = [-0.05693081021308899, -0.03798467665910721, -.0178], \
-                        u0 = [0.0, -50.0], s = 1e-10, b = 1e-5, r = 4./100.)
+                        u0 = [0.0, -50.0], s = 1e-10, b = 1e-10, r = 4./100.)
 
 NR_opt, Block = SolowayNR(cost = NNP.cost, d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
@@ -39,7 +39,7 @@ neutral_point = Block.get_state()
 
 #NNP.y0 = neutral_point
 
-target = Pringle(wavelength = 100, amplitude = 15./1000., center = neutral_point)
+target = Pringle(wavelength = 100, amplitude = 10./1000., center = neutral_point)
 
 #Block.get_signal_calibration() # calibrate signal of the block
 Block.calibration_max = np.array([ 6, 377, 116,   1,   1,   1, 137,   1,   1,  41,   1 ])
@@ -61,7 +61,22 @@ try:
                 'ym' : [], 'elapsed' : [], 'u' : []}})
 
         Block.reset()
+        u_deque.clear()
+        y_deque.clear()
+
+        u_deque, y_deque = first_load_deques(NNP.y0, NNP.u0, NNP.nd, NNP.dd)
+        u_action, predicted_states = np.array(NNP.u0), np.array(new_state_new)
+
         for n in range(NUM_TIMESTEPS):
+            if n < 100:
+                target.wavelength = 1000
+            elif n < 300:
+                target.wavelength = 500
+            elif n < 500:
+                target.wavelength = 100
+            elif n < 900:
+                target.wavelength = 80
+
             seconds = time.time()
             signal = np.divide(Block.get_observation(), Block.calibration_max, \
                                 dtype = np.float64).tolist()
