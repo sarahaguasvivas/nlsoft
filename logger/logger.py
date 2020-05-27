@@ -153,7 +153,7 @@ class Logger:
         timesteps = range(max(yn.shape))
         for i in range(3):
             plt.subplot(3, 1, i+1)
-            plt.plot(np.mean(error_mm, axis = AXIS)[:, i], color = 'k', label = '%control error' + labels[i] + '}}$')
+            plt.plot(np.mean(error_mm, axis = AXIS)[:, i], color = 'k', label = '% control error in ' + labels[i])
             plt.fill_between(timesteps, np.mean(error_mm, axis = AXIS)[:, i] - np.std(error_mm, axis = AXIS)[:, i] ,\
                                 np.mean(error_mm, axis = AXIS)[:, i] + np.std(error_mm, axis = AXIS)[:, i], \
                                     color = 'k', alpha = 0.5)

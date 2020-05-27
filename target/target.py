@@ -69,7 +69,7 @@ class Pringle:
             y = 1.5*self.amplitude*np.cos(2*np.pi*(timestep + i)/ \
                                                         self.wavelength + phase) - 1./1000.
 
-            x = self.amplitude*np.sin(1000.*z*y) + 3./1000.
+            x = self.amplitude*np.sin(1000.*z*y)
 
             target[i, :] = [self.center[0] + x, self.center[1] + y, self.center[2] + z]
             i+=1
