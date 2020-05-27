@@ -70,8 +70,8 @@ class Logger:
         print "Standard error control: ", np.std(ym - yn, axis=None, ddof=0)
 
         u_optimal_list = np.reshape(u_optimal_list, (NUM_EXPERIMENTS, -1, 2))
-        error_mm = (yn - ym) / ym
-        error_pred = (yn - actual_)/ actual_
+        error_mm = (yn - ym) / np.maximum(ym, 1)
+        error_pred = (yn - actual_)/ np.maximum(actual_, 1)
         signal = np.reshape(signal, (NUM_EXPERIMENTS, -1, 11))
         color_palette = ['#1446A0', '#DB3069', '#F5D547', '#F5D547', '#3C3C3B']
         labels = ['x', 'y', 'z', 'u']
@@ -100,10 +100,10 @@ class Logger:
             if i==0:
                 plt.title("Changes in States with respect to Timesteps")
         plt.show()
-
         max_input = np.max(np.max(u_optimal_list))
         min_input = np.min(np.min(u_optimal_list))
         color_palette1= ['#272838', '#F3DE8A', '#F3DE8A', '#F3DE8A']
+
         plt.figure()
         for i in range(2):
             plt.subplot(2, 1, i+1)
@@ -148,6 +148,7 @@ class Logger:
         """
 
         plt.figure()
+
         AXIS = 0
         timesteps = range(max(yn.shape))
         for i in range(3):
@@ -175,3 +176,4 @@ class Logger:
         plt.plot(np.mean(signal, axis = 0)[:-1, :])
         plt.title("Tracking of the Mean Optical Lace Signals During Experiment")
         plt.show()
+
