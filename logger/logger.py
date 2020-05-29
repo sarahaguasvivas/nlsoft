@@ -181,7 +181,6 @@ class Logger:
         plt.figure()
         AXIS = 0
         timesteps = range(max(elapsed_.shape))
-        print(np.mean(elapsed_, axis = AXIS))
         plt.plot(np.mean(elapsed_, axis = AXIS), color = '#D2691E', label = 'time [s]')
         plt.fill_between(timesteps, np.mean(elapsed_, axis = AXIS)[:, 0] - np.std(elapsed_,
             axis = AXIS)[:, 0] ,np.mean(elapsed_, axis = AXIS)[:, 0] + np.std(elapsed_, axis = AXIS)[:, 0],
@@ -190,6 +189,7 @@ class Logger:
         plt.ylabel('Time [s]')
         plt.xlabel('timesteps')
         plt.title("Control Loop Computation Time")
+        plt.ylim([0, 0.2])
         plt.show()
 
         plt.figure()
