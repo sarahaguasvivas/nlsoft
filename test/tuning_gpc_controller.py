@@ -22,12 +22,12 @@ verbose = 0
 
 #neutral point
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 2, Nu = 1, nd = 2, dd = 2, K = 5,
-                    Q = 1e1*np.array([[0.7, 0.],
+                    N1 = 0, N2 = 2, Nu = 1, nd = 2, dd = 2, K = 2,
+                    Q = 5e3*np.array([[0.7, 0.],
                                        [0, 0.5e1]]),
-                    Lambda = np.array([[5e-7]]),
-                        y0 = [-0.057, -0.038, -.017],
-                        u0 = [0.0, 0.0], s = 1e-10, b = 1e-10, r = 10.)
+                    Lambda = np.array([[5.5e-7]]),
+                        y0 = [0.0, 0.00, 0.0],
+                        u0 = [0.0, 0.0], s = 1e-10, b = 1e-5, r = .4)
 
 NR_opt, Block = SolowayNR(cost = NNP.cost, d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
@@ -36,7 +36,7 @@ Block.reset()
 Block.step([0.0, 0.])
 neutral_point = Block.get_state()
 
-NNP.y0 = neutral_point
+#NNP.y0 = neutral_point
 
 target = Pringle(wavelength = 100, amplitude = 15./1000., center = neutral_point)
 
