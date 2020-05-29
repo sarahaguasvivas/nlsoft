@@ -27,7 +27,7 @@ NNP = NeuralNetworkPredictor(model_file = model_filename,
                                        [0, 0.5e1]]),
                     Lambda = np.array([[5e-7]]),
                         y0 = [-0.057, -0.038, -.017],
-                        u0 = [0.0, 0.0], s = 1e-10, b = 1e-10, r = 4.)
+                        u0 = [0.0, 0.0], s = 1e-10, b = 1e-10, r = 10.)
 
 NR_opt, Block = SolowayNR(cost = NNP.cost, d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
@@ -40,9 +40,9 @@ NNP.y0 = neutral_point
 
 target = Pringle(wavelength = 100, amplitude = 15./1000., center = neutral_point)
 
-Block.get_signal_calibration() # calibrate signal of the block
-#Block.calibration_max = np.array([ 6, 377, 116,   1,   1,   1, 137,   1,   1,  41,   1 ])
-
+#Block.get_signal_calibration() # calibrate signal of the block
+Block.calibration_max = np.array([ 1, 288, 110,   1,   1,   1, 104,   1,   1,  38,   1 ])
+#  1 288 110   1   1   1 104   1   1  38   1
 u_optimal_old = np.reshape(NNP.u0*NNP.Nu, (-1, 2))
 new_state_new = copy.copy(neutral_point)
 del_u = np.zeros(u_optimal_old.shape)
