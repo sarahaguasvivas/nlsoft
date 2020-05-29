@@ -108,8 +108,8 @@ class NeuralNetworkPredictor():
 
     def get_computation_vectors(self):
 
-        Y = np.array(self.yn) # converting to mm
-        YM = np.array(self.ym) # converting to mm
+        Y = np.array(self.yn) # converting to cm
+        YM = np.array(self.ym) # converting to cm
 
         U = np.array(list(self.u_deque))
         delU = np.array(list(self.delu_deque))
@@ -259,7 +259,7 @@ class NeuralNetworkPredictor():
                     second_y+=[self.__partial_delta_u_partial_u(j, m)]
                     second_y1+= [self.__partial_delta_u_partial_u(j, h)]
                 Hessian[h, m] += np.sum(2.*np.dot(self.Lambda, second_y).dot(np.array(second_y1).T), axis = 0)
-
+#
                 for j in range(self.Nu):
                     for i in range(self.num_u):
                         Hessian[h, m] += kronecker_delta(h, j)*kronecker_delta(m, j) * \
