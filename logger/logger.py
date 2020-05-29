@@ -62,6 +62,7 @@ class Logger:
         yn = 1000*np.reshape(yn, (NUM_EXPERIMENTS, -1, 3))
         actual_ = 1000*np.reshape(actual_, (NUM_EXPERIMENTS,-1, 3))
         predicted_ = 1000*np.reshape(predicted_, (NUM_EXPERIMENTS, -1, 3))
+        elapsed = np.reshape(elapsed, (NUM_EXPERIMENTS, -1, 1))
 
         error_p= np.abs((actual_- yn) / yn)
         error_e= np.abs((ym - yn) / yn)
@@ -173,6 +174,22 @@ class Logger:
                 plt.xlabel('timesteps')
             if i==0:
                 plt.title("Off-track Error")
+        plt.show()
+        """
+            Elapsed Time Plot
+        """
+        plt.figure()
+
+        AXIS = 0
+        timesteps = range(max(yn.shape))
+        plt.plot(np.mean(elapsed, axis = AXIS), color = '#D2691E', label = 'time [s]')
+        plt.fill_between(timesteps, np.mean(elapsed, axis = AXIS) - np.std(elapsed,
+                axis = AXIS) ,np.mean(elapsed, axis = AXIS) + np.std(elapsed, axis = AXIS),
+                                color = '#D2691E', alpha = 0.5)
+        plt.legend()
+        plt.ylabel('Time [s]')
+        plt.xlabel('timesteps')
+        plt.title("Control Loop Computation Time")
         plt.show()
 
         plt.figure()
