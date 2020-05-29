@@ -66,10 +66,10 @@ class Pringle:
         for _ in range(n1, n2):
             z = self.amplitude * np.sin(2.*np.pi*(timestep + i) \
                                                         / self.wavelength + phase) + 9./1000.
-            y = 1.5*self.amplitude*np.cos(2*np.pi*(timestep + i)/ \
-                                                        self.wavelength + phase) - 1./1000.
+            y = self.amplitude * np.cos(2*np.pi*(timestep + i)/ \
+                                                        self.wavelength + phase) + 0./1000.
 
-            x = self.amplitude*np.sin(1000.*z*y)
+            x = self.amplitude * np.sin(1000.*z*y) + 0./1000.
 
             target[i, :] = [self.center[0] + x, self.center[1] + y, self.center[2] + z]
             i+=1

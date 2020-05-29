@@ -21,27 +21,28 @@ SCALE1 = 100.
 verbose = 0
 
 #neutral point
+# -0.05693081021308899, -0.03798467665910721, -0.01778547465801239
 NNP = NeuralNetworkPredictor(model_file = model_filename,
                     N1 = 0, N2 = 2, Nu = 1, nd = 2, dd = 2, K = 5,
-                    Q = 1e1*np.array([[0.7, 0.],
-                                       [0, 0.5e1]]),
-                    Lambda = np.array([[5e-7]]),
+                    Q = np.array([[1.5e-1, 0.],
+                                  [0, 1.e-1]]),
+                    Lambda = np.array([[3e-10]]),
                         y0 = [-0.057, -0.038, -.017],
-                        u0 = [0.0, 0.0], s = 1e-10, b = 1e-10, r = 4.)
+                        u0 = [0.0, -50.0], s = 1e-20, b = 1e-2, r = 4.)
 
 NR_opt, Block = SolowayNR(cost = NNP.cost, d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
 log = Logger()
 Block.reset()
-Block.step([0.0, 0.])
+Block.step([0.0, -50.])
 neutral_point = Block.get_state()
 
 NNP.y0 = neutral_point
 
 target = Pringle(wavelength = 100, amplitude = 15./1000., center = neutral_point)
 
-Block.get_signal_calibration() # calibrate signal of the block
-#Block.calibration_max = np.array([ 6, 377, 116,   1,   1,   1, 137,   1,   1,  41,   1 ])
+#Block.get_signal_calibration() # calibrate signal of the block
+Block.calibration_max = np.array([ 6, 377, 116,   1,   1,   1, 137,   1,   1,  41,   1 ])
 
 u_optimal_old = np.reshape(NNP.u0*NNP.Nu, (-1, 2))
 new_state_new = copy.copy(neutral_point)
@@ -92,8 +93,8 @@ try:
             del_u_action = del_u[0, :].tolist()
 
             # clipping for safety; with good tuning this is almost never needed:
-            u_action[0] = np.clip(SCALE0*u_action[0],-100, 80)
-            u_action[1] = np.clip(SCALE1*u_action[1],-100, 60)
+            u_action[0] = normalize_and_clip_angle(SCALE0*u_action[0],-100, 80)
+            u_action[1] = normalize_and_clip_angle(SCALE1*u_action[1],-100, 60)
 
             Block.step(action = u_action)
             NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action, \

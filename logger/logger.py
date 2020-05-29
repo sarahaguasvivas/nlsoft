@@ -56,18 +56,21 @@ class Logger:
         NUM_TIMESTEPS = self.log_dictionary['metadata']['num_timesteps']
         neutral_point = self.log_dictionary['metadata']['neutral_point']
 
-        print "Average control loop time in seconds:  ", np.mean(elapsed)
+        print "Average control loop time in seconds:  ", np.mean(np.abs(elapsed))
 
         ym = 1000*np.reshape(ym, (NUM_EXPERIMENTS,-1, 3))
         yn = 1000*np.reshape(yn, (NUM_EXPERIMENTS, -1, 3))
         actual_ = 1000*np.reshape(actual_, (NUM_EXPERIMENTS,-1, 3))
         predicted_ = 1000*np.reshape(predicted_, (NUM_EXPERIMENTS, -1, 3))
 
-        print "Average prediction error: ", np.mean(actual_-yn)
-        print "Average control error: ", np.mean(ym - yn)
+        error_p= np.abs((actual_- yn) / yn)
+        error_e= np.abs((ym - yn) / yn)
+        print(error_p.shape)
+        print "Average prediction error: ", np.mean(error_p, axis = 1)
+        print "Average control error: ", np.mean(error_e, axis = 1)
 
-        print "Standard error prediction: ", np.std(actual_ - yn, axis=None, ddof=0)
-        print "Standard error control: ", np.std(ym - yn, axis=None, ddof=0)
+        print "Standard error prediction: ", np.std(error_p, axis=1, ddof=0)
+        print "Standard error control: ", np.std(error_e, axis=1, ddof=0)
 
         u_optimal_list = np.reshape(u_optimal_list, (NUM_EXPERIMENTS, -1, 2))
         error_mm = (yn - ym) / np.maximum(ym, 1)
