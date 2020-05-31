@@ -15,8 +15,8 @@ model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 1000
 
-SCALE0 = 150.
-SCALE1 = 150.
+SCALE0 = 100.
+SCALE1 = 100.
 
 verbose = 0
 
@@ -25,9 +25,9 @@ NNP = NeuralNetworkPredictor(model_file = model_filename,
                     N1 = 0, N2 = 2, Nu = 1, nd = 2, dd = 2, K = 5,
                     Q = 5e-1*np.array([[0.7, 0.],
                                        [0, 0.5e1]]),
-                    Lambda = np.array([[5.5e-10]]),
-                        y0 = [0.0, 0.00, 0.0],
-                        u0 = [0.0, 0.0], s = 1e-10, b = 1e-5, r =4.)
+                    Lambda = np.array([[5.5e-3]]),
+                        y0 = [0.0, 0.0, 0.0],
+                        u0 = [0.0, 0.0], s = 1e-10, b = 1., r = .4)
 
 NR_opt, Block = SolowayNR(cost = NNP.cost, d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
