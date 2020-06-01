@@ -20,14 +20,18 @@ SCALE1 = 1.
 
 verbose = 0
 
-diagonals = 1e-4*np.array([1., 2., 3., 2., 5., 1.])
-QQ = np.diag(diagonals)
+QQ = 1e-1*np.array([[0.5, 0., 1., 0, 0., 0.],
+               [0., 5., 1e-1, 0, 0., 0.],
+               [1., 1e-1, 7., 0, 0., 0.],
+               [0., 0., 0., 4., 0., 1.],
+               [0., 0., 0., 0, 5., 1.],
+               [0., 0., 0., 1, 1., 7.]])
 
 
 #neutral point
 NNP = NeuralNetworkPredictor(model_file = model_filename,
                     N1 = 0, N2 = 2, Nu = 1, nd = 2, dd = 2, K = 5,
-                    Q = QQ, Lambda = np.array([[5e-3]]),
+                    Q = QQ, Lambda = np.array([[1.]]),
                         y0 = [0.0, 0.0, 0.0],
                         u0 = [0.0, 0.0])
 
