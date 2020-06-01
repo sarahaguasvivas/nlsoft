@@ -35,7 +35,7 @@ class NeuralNetworkPredictor():
                             K = 2 , Q = [[1, 0, 0], [0, 1, 0], [0, 0, 1]],\
                             Lambda = [[0.3, 0.0], [0., 0.2]] , nd = 3,\
                                     dd = 3, y0= [0, 0], u0= [0, 0], \
-                                        s = 1e-20, b = 1e-10, r = 4e-1):
+                                        s = 1e-20, u_limits = []):
         self.N1 = N1
         self.N2 = N2
         self.Nu = Nu
@@ -45,12 +45,12 @@ class NeuralNetworkPredictor():
 
         self.y0 = y0
         self.u0 = u0
-
+        self.u_limits = u_limits
         self.Q = np.array(Q)
         self.Lambda = np.array(Lambda)
 
         self.K = K
-        self.constraints = Constraints(s = s, b = b, r = r)
+        self.constraints = Constraints(s = s, b = 1, r = 1)
         self.model = load_model(model_file)
 
         self.first_layer_index = 0 # first layer may be Gaussian noise
@@ -244,6 +244,10 @@ class NeuralNetworkPredictor():
     def compute_hessian(self, u, del_u):
         Y, YM , U, delU = self.get_computation_vectors()
         Hessian = np.zeros((self.Nu, self.Nu))
+
+        delY = (YM[self.N1:self.N2, :] - \
+                            Y[self.N1:self.N2, :]).flatten().reshape(-1, 1)
+
         for h in range(self.Nu):
             for m in range(self.Nu):
                 ynu, ynu1, temp = [], [], []
@@ -251,22 +255,23 @@ class NeuralNetworkPredictor():
                     ynu  += [self.__partial_yn_partial_u(j, m)]
                     ynu1 += [self.__partial_yn_partial_u(j, h)]
                     temp += [self.__partial_2_yn_partial_nph_partial_npm(h, m, j)]
-                ynu, ynu1, temp = np.array(ynu), np.array(ynu1), np.array(temp)
 
-                Hessian[h, m] += np.sum(2.*self.Q.dot(np.array(ynu).dot(np.array(ynu1).T)) - self.Q.dot((YM[self.N1:self.N2, :] - Y[self.N1:self.N2, :])).dot(np.array(temp).T))
+                ynu, ynu1, temp = np.tile(np.array(ynu),
+                            self.num_u).flatten().reshape(-1, 1), \
+                            np.tile(np.array(ynu1), self.num_u).flatten().reshape(-1, 1),\
+                            np.array(temp).flatten().reshape(-1, 1)
+
+                Hessian[h, m] += np.sum(2.*self.Q.dot(np.asscalar(np.dot(ynu.T, ynu1))) \
+                            - self.Q.dot(delY).dot(temp.T))
+
                 second_y, second_y1, temp = [], [], []
                 for j in range(self.Nu):
                     second_y+=[self.__partial_delta_u_partial_u(j, m)]
                     second_y1+= [self.__partial_delta_u_partial_u(j, h)]
-                Hessian[h, m] += np.sum(2.*np.dot(self.Lambda, second_y).dot(np.array(second_y1).T), axis = 0)
-#
-                for j in range(self.Nu):
-                    for i in range(self.num_u):
-                        Hessian[h, m] += kronecker_delta(h, j)*kronecker_delta(m, j) * \
-                                (2.0*self.constraints.s / np.power((U[j, i] + self.constraints.r / 2. - \
-                                self.constraints.b), 3.0) + \
-                                2.0 * self.constraints.s / np.power(self.constraints.r/2. +\
-                                self.constraints.b - U[j, i], 3.0))
+
+                Hessian[h, m] += np.sum(2.*np.dot(self.Lambda,
+                            second_y).dot(np.array(second_y1).T), axis = 0)
+
         print "Hessian: ", Hessian
         return Hessian
 
@@ -281,8 +286,12 @@ class NeuralNetworkPredictor():
             for j in range(self.N1, self.N2):
                 ynu += [self.__partial_yn_partial_u(j, h)]
 
-            sub_sum =  (YM[self.N1:self.N2, :] - \
-                            Y[self.N1:self.N2, :]).T.dot(self.Q).T.dot(np.array(ynu).T)
+            ynu = np.array(ynu).flatten().reshape(-1, 1)
+
+            delY = (YM[self.N1:self.N2, :] - \
+                            Y[self.N1:self.N2, :]).flatten().reshape(-1, 1)
+
+            sub_sum =  delY.T.dot(self.Q).T.dot(ynu.T)
 
             sum_output += -2. * np.sum(sub_sum[:, :self.num_u], axis = 0)
 
@@ -292,18 +301,10 @@ class NeuralNetworkPredictor():
             if self.Nu == 1:
                 ynu = np.asscalar(np.array(ynu))
             else:
-                ynu = np.array(ynu)
+                ynu = np.tile(np.array(ynu), self.num_y)
 
             sum_output += np.sum(2.* np.dot(np.dot(np.array(delU).T, self.Lambda.T),
                                         ynu), axis = 0)
-            for j in range(self.Nu):
-                sub_sum = np.array([0.0, 0.0])
-                for i in range(self.num_u):
-                    sub_sum[i] += kronecker_delta(h, j) * ( -self.constraints.s / np.power(U[j, i] +  \
-                        self.constraints.r / 2.0 - self.constraints.b , 2) + \
-                                self.constraints.s/ np.power(self.constraints.r/2.0 + \
-                                self.constraints.b - U[j, i] , 2.0) )
-                sum_output += sub_sum
             dJ[h, :] = sum_output
         return dJ
 
