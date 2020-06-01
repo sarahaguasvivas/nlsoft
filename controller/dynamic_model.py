@@ -250,7 +250,7 @@ class NeuralNetworkPredictor():
                 for j in range(self.N1, self.N2):
                     ynu  += [self.__partial_yn_partial_u(j, m)]
                     ynu1 += [self.__partial_yn_partial_u(j, h)]
-                    temp += [self.__partial_2_yn_partial_nph_partial_npm(h, m, j)]
+                    temp += [[1, 1, 1]]
                 ynu, ynu1, temp = np.array(ynu), np.array(ynu1), np.array(temp)
 
                 Hessian[h, m] += np.sum(2.*self.Q.dot(np.array(ynu).dot(np.array(ynu1).T)) - self.Q.dot((YM[self.N1:self.N2, :] - Y[self.N1:self.N2, :])).dot(np.array(temp).T))
