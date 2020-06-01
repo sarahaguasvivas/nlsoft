@@ -23,7 +23,7 @@ verbose = 0
 #neutral point
 NNP = NeuralNetworkPredictor(model_file = model_filename,
                     N1 = 0, N2 = 2, Nu = 1, nd = 2, dd = 2, K = 5,
-                    Q = 5e-2*np.array([[0.7, 0.],
+                    Q = 5e-1*np.array([[0.7, 0.],
                                        [0, 0.5e1]]),
                     Lambda = np.array([[5.5e-10]]),
                         y0 = [0.0, 0.00, 0.0],
