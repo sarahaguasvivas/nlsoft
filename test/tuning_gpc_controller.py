@@ -8,7 +8,7 @@ import time, os
 import copy
 from logger.logger import Logger
 from utilities.util import *
-from target.target import Circle, Pringle, SingleAxisSineWave, SingleAxisSquareWave, Square3D
+from target.target import Circle, Pringle,Pringle2, SingleAxisSineWave, SingleAxisSquareWave, Square3D
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
@@ -16,14 +16,14 @@ NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 1000
 
 SCALE0 = 100.
-SCALE1 = 50.
+SCALE1 = 100.
 
 verbose = 0
 
 #neutral point
 NNP = NeuralNetworkPredictor(model_file = model_filename,
                     N1 = 0, N2 = 2, Nu = 1, nd = 2, dd = 2, K = 5,
-                    Q = 5e-1*np.array([[0.7, 0.],
+                    Q = 5e-2*np.array([[0.7, 0.],
                                        [0, 0.5e1]]),
                     Lambda = np.array([[5.5e-10]]),
                         y0 = [0.0, 0.0, 0.0],
@@ -38,7 +38,7 @@ neutral_point = Block.get_state()
 
 #NNP.y0 = neutral_point
 
-target = Pringle(wavelength = 100, amplitude = 15./1000., center = neutral_point)
+target = Pringle2(wavelength = 100, amplitude = 15./1000., center = neutral_point)
 
 #Block.get_signal_calibration() # calibrate signal of the block
 Block.calibration_max = np.array([ 1, 288, 110,   1,   1,   1, 104,   1,   1,  38,   1 ])
@@ -67,7 +67,6 @@ try:
         u_action, predicted_states = np.array(NNP.u0), np.array(new_state_new)
 
         for n in range(NUM_TIMESTEPS):
-
             seconds = time.time()
             signal = np.divide(Block.get_observation(), Block.calibration_max, \
                                 dtype = np.float64).tolist()
@@ -95,6 +94,8 @@ try:
             u_action[0] = np.clip(SCALE0*u_action[0],-100, 80)
             u_action[1] = np.clip(SCALE1*u_action[1],-100, 60)
 
+            #u_action[0] = np.clip(50*np.sin(2.*np.pi*n/ 100.), -100, 80)
+            #u_action[1] = np.clip(50*np.cos(2.*np.pi*n/100.), -100, 60)
             Block.step(action = u_action)
             NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action, \
                                 predicted_states.tolist(), NNP.ym[0, :].tolist())
