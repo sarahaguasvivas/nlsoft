@@ -31,8 +31,17 @@ class Logger:
 
     def plot_log(self):
         import matplotlib.pyplot as plt
+        import matplotlib.font_manager
         from mpl_toolkits.mplot3d import axes3d, Axes3D
+        font = 'Times New Roman'
+        title_size = 22
+        label_size = 15
+        legend_size = 8
 
+        title_fontdict = {'fontsize' : title_size,
+                'family': 'serif'}
+        label_fontdict = {'fontsize' : label_size,
+                'family': 'serif'}
         plt.style.use('seaborn')
 
         ym = []
@@ -97,12 +106,12 @@ class Logger:
 
             #plt.ylim([-65, 4])
             plt.legend()
-            plt.ylabel(str(labels[i]) + ' [mm]')
+            plt.ylabel(str(labels[i]) + ' [mm]', fontdict = label_fontdict)
             plt.plot(1000*neutral_point[i], marker = 'h')
             if i==2:
-                plt.xlabel('timesteps')
+                plt.xlabel('timesteps', fontdict = label_fontdict)
             if i==0:
-                plt.title("Changes in States with respect to Timesteps")
+                plt.title("Changes in States with respect to Timesteps", fontdict = title_fontdict)
         plt.show()
         max_input = np.max(np.max(u_optimal_list))
         min_input = np.min(np.min(u_optimal_list))
@@ -119,10 +128,10 @@ class Logger:
 
             plt.legend()
             #plt.ylim([min_input, max_input])
-            plt.ylabel(str(labels[-1]) + ' [degrees]')
+            plt.ylabel(str(labels[-1]) + ' [degrees]', fontdict = label_fontdict)
             if i == 0:
-                plt.title('Changes in Inputs with respect to Timesteps')
-        plt.xlabel('timesteps')
+                plt.title('Changes in Inputs with respect to Timesteps', fontdict = title_fontdict)
+        plt.xlabel('timesteps', fontdict = label_fontdict)
         plt.show()
 
         neutral_point = 1000*np.array(neutral_point).reshape(-1, 3)
@@ -142,9 +151,9 @@ class Logger:
         #ax.set_ylim(-20., 5.)
         #ax.set_zlim(-20., 5.)
         plt.legend()
-        plt.xlabel('x[mm]')
-        plt.ylabel('y[mm]')
-        plt.title('Target Position vs. Controlled Positions')
+        plt.xlabel('x[mm]', fontdict = label_fontdict)
+        plt.ylabel('y[mm]', fontdict = label_fontdict)
+        plt.title('Target Position vs. Controlled Positions', fontdict = title_fontdict)
         plt.show()
 
         """
@@ -161,19 +170,19 @@ class Logger:
             plt.fill_between(timesteps, np.mean(error_mm, axis = AXIS)[:, i] - np.std(error_mm, axis = AXIS)[:, i] ,\
                                 np.mean(error_mm, axis = AXIS)[:, i] + np.std(error_mm, axis = AXIS)[:, i], \
                                     color = 'k', alpha = 0.5)
-            plt.plot(np.mean(error_pred, axis = AXIS)[:, i], color = 'gray', label = '%prediction error')
+            plt.plot(np.mean(error_pred, axis = AXIS)[:, i], color = '#e07a5f', label = '%prediction error')
             plt.fill_between(timesteps, np.mean(error_pred, axis = AXIS)[:, i] - np.std(error_pred, axis = AXIS)[:, i] ,\
                                             np.mean(error_pred, axis = AXIS)[:, i] + np.std(error_pred, axis = AXIS)[:, i], \
-                                                color = 'gray', alpha = 0.5)
+                                                color = '#e07a5f', alpha = 0.5)
 
 
             #plt.ylim([-50, 50])
             plt.legend()
-            plt.ylabel(str(labels[i]) + ' %')
+            plt.ylabel(str(labels[i]) + ' %', fontdict = label_fontdict)
             if i==2:
-                plt.xlabel('timesteps')
+                plt.xlabel('timesteps', fontdict = label_fontdict)
             if i==0:
-                plt.title("Off-track Error")
+                plt.title("Off-track Error", fontdict = title_fontdict)
         plt.show()
         """
             Elapsed Time Plot
@@ -186,14 +195,14 @@ class Logger:
             axis = AXIS)[:, 0] ,np.mean(elapsed_, axis = AXIS)[:, 0] + np.std(elapsed_, axis = AXIS)[:, 0],
                                 color = '#D2691E', alpha = 0.5)
         plt.legend()
-        plt.ylabel('Time [s]')
-        plt.xlabel('timesteps')
-        plt.title("Control Loop Computation Time")
+        plt.ylabel('Time [s]', fontdict = label_fontdict)
+        plt.xlabel('timesteps', fontdict = label_fontdict)
+        plt.title("Control Loop Computation Time", fontdict = title_fontdict)
         plt.ylim([0, 0.2])
         plt.show()
 
         plt.figure()
         plt.plot(np.mean(signal, axis = 0)[:-1, :])
-        plt.title("Tracking of the Mean Optical Lace Signals During Experiment")
+        plt.title("Tracking of the Mean Optical Lace Signals During Experiment", fontdict = title_fontdict)
         plt.show()
 
