@@ -67,11 +67,11 @@ class Logger:
         error_p= np.abs((actual_- yn) / yn)
         error_e= np.abs((ym - yn) / yn)
         print(error_p.shape)
-        print "Average prediction error: ", np.mean(error_p, axis = 1)
-        print "Average control error: ", np.mean(error_e, axis = 1)
+        print "Average prediction error: ", np.mean(error_p, axis = (0, 1))
+        print "Average control error: ", np.mean(error_e, axis = (0, 1))
 
-        print "Standard error prediction: ", np.std(error_p, axis=1, ddof=0)
-        print "Standard error control: ", np.std(error_e, axis=1, ddof=0)
+        print "Standard error prediction: ", np.std(error_p, axis=(0, 1), ddof=0)
+        print "Standard error control: ", np.std(error_e, axis=(0, 1), ddof=0)
 
         u_optimal_list = np.reshape(u_optimal_list, (NUM_EXPERIMENTS, -1, 2))
         error_mm = (yn - ym) / np.maximum(ym, 1)
@@ -138,9 +138,9 @@ class Logger:
         ax.plot3D(m_ym[:, 0], m_ym[:, 1], m_ym[:, 2], color = color_palette[-1],linestyle = 'dashed',  linewidth = 1, alpha = 1, label = 'target')
         ax.plot3D(m_actual_[:, 0], m_actual_[:, 1], m_actual_[:, 2], \
                             linewidth = 1, color = color_palette[1], alpha = 1, label = 'actual position')
-        ax.set_xlim(-60., -50.)
-        ax.set_ylim(-50., 5.)
-        ax.set_zlim(-50., 5.)
+        #ax.set_xlim(-20., 5.)
+        #ax.set_ylim(-20., 5.)
+        #ax.set_zlim(-20., 5.)
         plt.legend()
         plt.xlabel('x[mm]')
         plt.ylabel('y[mm]')
@@ -169,7 +169,7 @@ class Logger:
 
             #plt.ylim([-50, 50])
             plt.legend()
-            plt.ylabel(str(labels[i]) + ' [mm]')
+            plt.ylabel(str(labels[i]) + ' %')
             if i==2:
                 plt.xlabel('timesteps')
             if i==0:
