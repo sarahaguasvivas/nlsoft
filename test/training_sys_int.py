@@ -22,7 +22,7 @@ TRAIN = True
 
 #plt.style.use('dark_background')
 plt.style.use('seaborn')
-filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data10.csv"
+filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data11.csv"
 
 def custom_loss(y_true, y_pred):
     return 1000*K.mean(K.square(y_pred - y_true), axis = -1)
@@ -115,8 +115,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
         signals[:, i]/= max_signals[i]
 
     position = data_array[:, 11:14] # not using Euler angles
-    print position
-    inputs = data_array[:, 17:]
+    inputs = data_array[:, 14:]
 
     N = max(nd, dd) # data sample where we will start first
 
@@ -131,9 +130,9 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
     for i in range(dd):
         Y = np.concatenate((Y, position[dd - i - 1 + (N - dd) : L-i, :]), axis = 1)
 
-    print Y.shape
     U = U[:, 2:]/100
     S = signals[N - 1:, :]
+
     Y = Y[:, 3:-3] # Y
 
     X = np.concatenate((U, Y[:, 3:]), axis = 1)
