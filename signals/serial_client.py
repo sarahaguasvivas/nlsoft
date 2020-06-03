@@ -16,6 +16,7 @@ class OpticalSignal:
         self.serial_ = serial.Serial(self.port, self.baudrate, \
                         stopbits = serial.STOPBITS_TWO, timeout = self.timeout)
         print "Serial port initialized!"
+
     def collect_signal_sample(self):
         if not self.serial_.is_open:
             self.initialize_serial()

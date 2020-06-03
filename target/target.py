@@ -63,10 +63,10 @@ class Pringle2:
         i = 0
 
         for _ in range(n1, n2):
-            z = self.amplitude * np.sin(2.*np.pi*(timestep + i) \
+            y = self.amplitude * np.sin(2.*np.pi*(timestep + i) \
                                                         / (self.wavelength) + phase) + 0./1000.
-            y = self.amplitude/2. * signal.square(2*np.pi*(timestep + i)/ \
-                                                        (self.wavelength*2) + phase) + 0./1000.
+            z = 0.0#self.amplitude/2. * signal.square(2*np.pi*(timestep + i)/ \
+                #                                        (self.wavelength*2) + phase) + 0./1000.
 
             x = 0.0 #self.amplitude * np.sin(1000.*z*y) + 0./1000.
 
@@ -95,8 +95,8 @@ class Pringle:
         for _ in range(n1, n2):
             z = self.amplitude * np.sin(2.*np.pi*(timestep + i) \
                                                         / self.wavelength + phase) + 0./1000.
-            y = self.amplitude * np.sin(2*np.pi*(timestep + i)/ \
-                                                        self.wavelength + phase) + 0./1000.
+            y = 0.0 #self.amplitude * np.sin(2*np.pi*(timestep + i)/ \
+                #                                        self.wavelength + phase) + 0./1000.
 
             x = 0.0 #self.amplitude * np.sin(1000.*z*y) + 0./1000.
 
