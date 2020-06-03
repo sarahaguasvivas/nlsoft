@@ -56,10 +56,10 @@ class BlockOrientation():
         print "Optitrack Comm Initialized!"
 
     def get_observation(self):
-        head_o = self.head.get_observation()
-        base_o = self.base.get_observation()
-        v = (np.array(head_o) - np.array(base_o))[:3]
-        Rot = R.from_rotvec(np.array([1.,0,0])) # coming from off centroids
+        head_o = self.head.get_observation()[:3] + np.array([-2./1000., -2./1000., 0.])
+        base_o = self.base.get_observation()[:3] + np.array([-2./1000., -3./1000., 0.])
+        v = (np.array(head_o) - np.array(base_o))
+        Rot = R.from_rotvec(np.array([0.895,0,0])) # coming from off centroids
         ob=  Rot.apply(v).tolist()
         return ob
 

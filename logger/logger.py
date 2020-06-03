@@ -64,9 +64,9 @@ class Logger:
         predicted_ = 1000*np.reshape(predicted_, (NUM_EXPERIMENTS, -1, 3))
         elapsed_ = np.reshape(elapsed, (NUM_EXPERIMENTS, -1, 1))
 
-        error_p= np.abs((actual_- yn) / yn)
-        error_e= np.abs((ym - yn) / yn)
-        print(error_p.shape)
+        error_p= np.abs((yn - actual_) / actual_)
+        error_e= np.abs((actual_ - ym) / ym)
+
         print "Average prediction error: ", np.mean(error_p, axis = (0, 1))
         print "Average control error: ", np.mean(error_e, axis = (0, 1))
 

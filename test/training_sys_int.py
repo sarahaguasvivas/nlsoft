@@ -34,12 +34,12 @@ def neural_network_training(X, y):
 
     model = Sequential()
     #model.add(GaussianNoise(0.1))
-    model.add(Dense(20, activation =  'tanh', kernel_initializer='random_normal'))
+    model.add(Dense(20, activation =  'sigmoid', kernel_initializer='random_normal'))
     #model.add(GaussianNoise(0.1))
     model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
     model.compile(optimizer= 'adam', loss =custom_loss, metrics=['mse'])
-    model.fit(X_train, y_train, epochs = 1000, batch_size = 1000, validation_split=0.2)
+    model.fit(X_train, y_train, epochs = 1000, batch_size = 100, validation_split=0.2)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
@@ -100,7 +100,7 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.5)
     y_pred= model.predict(X_test)
 
-    diff = np.mean(np.linalg.norm(y_pred - y_test, axis = 1))
+    diff = np.mean(np.linalg.norm(y_pred - y_test))
     print "Testing set avg l2 norm:", diff
 
 
