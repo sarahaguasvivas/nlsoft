@@ -13,7 +13,7 @@ from target.target import Circle, Pringle,Pringle2, SingleAxisSineWave, SingleAx
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 300
+NUM_TIMESTEPS = 500
 
 SCALE0 = 100.
 SCALE1 = 100.
@@ -21,13 +21,13 @@ SCALE1 = 100.
 verbose = 0
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 2, Nu = 2, nd = 2, dd = 2, K = 3,
-                    Q = 1e2*np.array([[0.7, 1e-5],
-                                      [1e-5, 0.1]]),
-                    Lambda = np.array([[5e-4, -5e-8],
-                                       [-5e-8, 1e-3]]),
+                    N1 = 0, N2 = 2, Nu = 2, nd = 2, dd = 2, K = 2,
+                    Q =     np.array([[70., 1e-5],
+                                     [1e-5, 1.]]),
+                    Lambda = np.array([[0.5, -5e-3],
+                                       [-5e-3, 0.07]]),
                         y0 = [0.0, 0.0, 0.0],
-                        u0 = [0.0, 0.0], s = 1e-20, b = 1e-3, r = .4)
+                        u0 = [0.0, 0.0], s = 1e-10, b = 1e3, r = 4e5)
 
 NR_opt, Block = SolowayNR(cost = NNP.cost, d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
