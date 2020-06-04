@@ -107,7 +107,6 @@ class NeuralNetworkPredictor():
         self.last_model_input = None
 
     def get_computation_vectors(self):
-
         Y = np.array(self.yn) # converting to cm
         YM = np.array(self.ym) # converting to cm
 
@@ -242,7 +241,9 @@ class NeuralNetworkPredictor():
         return kronecker_delta(h, j) - kronecker_delta(h, j-1)
 
     def compute_hessian(self, u, del_u):
-        Y, YM , U, delU = self.get_computation_vectors()
+        Y, YM , _, _ = self.get_computation_vectors()
+        U = u.copy()
+        del_u = u.copy()
         Hessian = np.zeros((self.Nu, self.Nu))
         for h in range(self.Nu):
             for m in range(self.Nu):
@@ -267,11 +268,13 @@ class NeuralNetworkPredictor():
                                 self.constraints.b), 3.0) + \
                                 2.0 * self.constraints.s / np.power(self.constraints.r/2. +\
                                 self.constraints.b - U[j, i], 3.0))
-        print "Hessian: ", Hessian
+        #print "Hessian: ", Hessian
         return Hessian
 
     def compute_jacobian(self, u, del_u):
-        Y, YM, U, delU = self.get_computation_vectors()
+        Y, YM, _, _= self.get_computation_vectors()
+        U = u.copy()
+        delU = del_u.copy()
 
         dJ = np.zeros((self.Nu, U.shape[1]))
         sum_output = np.array([0.0]*self.num_u)

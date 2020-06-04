@@ -64,7 +64,7 @@ class Pringle2:
         for _ in range(n1, n2):
             y = -9./1000. #self.amplitude * np.sin(2.*np.pi*(timestep + i) \
                 #                                        / (self.wavelength) + phase) + 0./1000.
-            z = self.amplitude *np.cos(2*np.pi*(timestep + i)/ \
+            z = self.amplitude * np.sin(2*np.pi*(timestep + i)/ \
                                                         (self.wavelength) + phase) - 0./1000.
 
             x = -2.0/1000. #self.amplitude * np.sin(1000.*z*y) + 0./1000.
