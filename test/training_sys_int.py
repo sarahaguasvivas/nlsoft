@@ -17,12 +17,13 @@ import keras.backend as K
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D
 import random
-NUM_DATA_RUNS = 100
+NUM_DATA_RUNS = 300
 TRAIN = True
 
 #plt.style.use('dark_background')
 plt.style.use('seaborn')
 filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data11.csv"
+filename1 = str(os.environ["HOME"]) + "/gpc_controller/data/model_data12.csv"
 
 def custom_loss(y_true, y_pred):
     return 1000*K.mean(K.square(y_pred - y_true), axis = -1)
@@ -33,13 +34,12 @@ def neural_network_training(X, y):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.4)
 
     model = Sequential()
-    #model.add(GaussianNoise(0.1))
-    model.add(Dense(20, activation =  'sigmoid', kernel_initializer='random_normal'))
+    model.add(Dense(100, activation =  'tanh', kernel_initializer='random_normal'))
     #model.add(GaussianNoise(0.1))
     model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
     model.compile(optimizer= 'adam', loss =custom_loss, metrics=['mse'])
-    model.fit(X_train, y_train, epochs = 2000, batch_size = 100, validation_split=0.2)
+    model.fit(X_train, y_train, epochs = 100, batch_size = 100, validation_split=0.2)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
@@ -47,8 +47,8 @@ def neural_network_training(X, y):
 def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
 
     model = load_model(modelfile)
-    y *= 1000 # convert meters to mm
-    yn = 1000*model.predict(X) #*1000
+    #y *= 1000 # convert meters to mm
+    yn = model.predict(X) #*1000
     plt.figure()
 
     lab = ['x', 'y', 'z']
@@ -97,15 +97,17 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
     plt.show()
 
     # Testing set loss
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.5)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.1)
     y_pred= model.predict(X_test)
 
-    diff = np.mean(np.linalg.norm(y_pred - y_test))
+    print y_pred, y_test
+    diff = np.mean((y_pred - y_test)**2, axis = 0)
     print "Testing set avg l2 norm:", diff
 
 
 def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
-    data_array = np.genfromtxt(filename, delimiter=',')
+    data_array = np.genfromtxt(filename[0], delimiter=',')
+    data_array = np.concatenate((data_array, np.genfromtxt(filename[1], delimiter = ',')), axis = 0)
     signals = data_array[:, :11]
     max_signals = np.max(signals, axis = 0)
     for i in range(len(max_signals)):
@@ -146,7 +148,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
 if __name__ == "__main__":
     # dd is dd+2
     # nd is nd
-    X, y = prepare_data_file(filename, nd=2, dd=2+2)
+    X, y = prepare_data_file([filename, filename1], nd=2, dd=2+2)
     if TRAIN:
         modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)

@@ -9,9 +9,9 @@ B = BlockGym()
 
 B.reset()
 
-actions1 = list(np.arange(100, -100, -5.))
-actions2 = list(np.arange(60, -100, -1.)) # need to change this
-actions3 = list(np.arange(-100, 60, 1.))  # need to change this
+actions1 = list(np.arange(60, -100, -5.))
+actions2 = list(np.arange(80, -100, -1.)) # need to change this
+actions3 = list(np.arange(-100, 80, 1.))  # need to change this
 
 N = 150
 updown = np.random.randint(-100, 100, (N, 1))
@@ -35,10 +35,10 @@ try:
                 aactions = actions3
 
             for j in aactions:
-                B.step(action=[i, j])
+                B.step(action=[j, i])
                 print i, j
                 data = B.get_observation() + B.get_real_position()
-                data = data + [i, j]
+                data = data + [j, i]
                 print >> f, data
             flag = not flag
 
