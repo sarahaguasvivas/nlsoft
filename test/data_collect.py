@@ -35,10 +35,10 @@ try:
                 aactions = actions3
 
             for j in aactions:
-                B.step(action=[j, i])
+                B.step(action=[i, j])
                 print i, j
                 data = B.get_observation() + B.get_real_position()
-                data = data + [j, i]
+                data = data + [i, j]
                 print >> f, data
             flag = not flag
 

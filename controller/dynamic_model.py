@@ -64,8 +64,8 @@ class NeuralNetworkPredictor():
         self.dd = dd # associated with y( . )
         self.Hessian = None
 
-        self.previous_first_der = 0.0 # important for recursions
-        self.previous_second_der = 0.0 # important for recursions
+        self.previous_first_der = 1.0 # important for recursions
+        self.previous_second_der = 1.0 # important for recursions
 
         self.y_deque = deque()
         self.delu_deque = deque()
@@ -100,6 +100,8 @@ class NeuralNetworkPredictor():
         self.delu_deque.pop()
         self.ym_deque.pop()
 
+        self.prediction = None
+
         self.u_deque.appendleft(u)
         self.delu_deque.appendleft(del_u)
         self.y_deque.appendleft(y)
@@ -115,21 +117,26 @@ class NeuralNetworkPredictor():
         return Y, YM, U, delU
 
     def __Phi_prime(self, x = 0):
+
         if self.model.layers[-1].get_config()['activation'] == 'linear':
             return np.array([1.0]*self.num_y) # linear activation on output
         if self.model.layers[-1].get_config()['activation'] == 'tanh':
-            return  1. / np.cosh(x)**2.
+            netj = np.arctanh(self.prediction)
+            return  np.array(1. / np.cosh(netj)**2.)
         if self.model.layers[-1].get_config()['activation'] == 'sigmoid':
-            sigmoid = 1./(1.+np.exp(-1.*x))
-            return sigmoid*(1-sigmoid)
+            netj = np.ln(self.prediction / (1-self.prediction))
+            sigmoid = 1./(1.+np.exp(-1.*netj))
+            return np.array(sigmoid*(1-sigmoid))
 
     def __Phi_prime_prime(self, x = 0):
         if self.model.layers[-1].get_config()['activation'] == 'linear':
             return np.array([0.0]*self.num_y) # linear activation on output
         if self.model.layers[-1].get_config()['activation'] == 'tanh':
-            return-2.*np.tanh(x)/ np.cosh(x)**2.
+            netj = np.arctanh(self.prediction)
+            return np.array(-2.*np.tanh(netj)/ np.cosh(netj)**2.)
         if self.model.layers[-1].get_config()['activation'] == 'sigmoid':
-            return (2.*np.exp(-2.*x))/(np.exp(-1.*x)+ 1.)**3. - (np.exp(-1.*x))/(np.exp(-1.*x)+1.)**2.
+            x = np.ln(self.prediction / (1-self.prediction))
+            return np.array((2.*np.exp(-2.*x))/(np.exp(-1.*x)+ 1.)**3. - (np.exp(-1.*x))/(np.exp(-1.*x)+1.)**2.)
 
     def __partial_2_fnet_partial_nph_partial_npm(self, h, m, j):
         """
@@ -148,14 +155,13 @@ class NeuralNetworkPredictor():
                  D^2yn
             ---------------
             Du(n+h) Du(n+m)
-            TODO: This should be a num_y x num_y matrix
         """
         weights = self.model.layers[-1].get_weights()[0]
         sum_output = 0.0
         for i in range(self.hid):
             for j in range(weights.shape[1]):
-                sum_output+= np.multiply(weights[i, j], \
-                            self.__partial_2_fnet_partial_nph_partial_npm(h, m, j))
+                sum_output+= weights[i, j] * \
+                            self.__partial_2_fnet_partial_nph_partial_npm(h, m, j)
         self.previous_second_der = sum_output
         return np.array(sum_output)
 
@@ -189,7 +195,8 @@ class NeuralNetworkPredictor():
         weights = self.model.layers[-1].get_weights()[0]
         sum_output = np.array([0.0]*weights.shape[1])
         for i in range(self.hid):
-            sum_output += np.dot(weights[i, :] , self.__partial_fnet_partial_u(h, j))
+            sum_output += np.dot(np.array(weights[i, :]) ,
+                            self.__partial_fnet_partial_u(h, j).T)
         self.previous_first_der = sum_output.tolist()
         return np.array(sum_output)
 
@@ -251,24 +258,32 @@ class NeuralNetworkPredictor():
                 for j in range(self.N1, self.N2):
                     ynu  += [self.__partial_yn_partial_u(j, m)]
                     ynu1 += [self.__partial_yn_partial_u(j, h)]
-                    temp += [[1, 1, 1]]
-                ynu, ynu1, temp = np.array(ynu), np.array(ynu1), np.array(temp)
+                    temp += [self.__partial_2_yn_partial_nph_partial_npm(h, m, j)]
 
-                Hessian[h, m] += np.sum(2.*self.Q.dot(np.array(ynu).dot(np.array(ynu1).T)) - self.Q.dot((YM[self.N1:self.N2, :] - Y[self.N1:self.N2, :])).dot(np.array(temp).T))
+                ynu, ynu1, temp = np.array(ynu), np.array(ynu1), \
+                        np.array(temp).reshape(-1, self.num_y)
+
+                Hessian[h, m] += np.sum(2.*ynu.T.dot(self.Q).dot(np.array(ynu1)) - \
+                        self.Q.dot(YM[self.N1:self.N2, :] - \
+                        Y[self.N1:self.N2, :]).T.dot(np.array(temp)))
+
                 second_y, second_y1, temp = [], [], []
+
                 for j in range(self.Nu):
                     second_y+=[self.__partial_delta_u_partial_u(j, m)]
                     second_y1+= [self.__partial_delta_u_partial_u(j, h)]
-                Hessian[h, m] += np.sum(2.*np.dot(self.Lambda, second_y).dot(np.array(second_y1).T), axis = 0)
+                Hessian[h, m] += np.sum(2.*np.dot(self.Lambda, \
+                                second_y).dot(np.array(second_y1).T), axis = 0)
 
                 for j in range(self.Nu):
                     for i in range(self.num_u):
                         Hessian[h, m] += kronecker_delta(h, j)*kronecker_delta(m, j) * \
-                                (2.0*self.constraints.s / np.power((U[j, i] + self.constraints.r / 2. - \
+                                (2.0*self.constraints.s / np.power((U[j, i] + \
+                                self.constraints.r / 2. - \
                                 self.constraints.b), 3.0) + \
                                 2.0 * self.constraints.s / np.power(self.constraints.r/2. +\
                                 self.constraints.b - U[j, i], 3.0))
-        #print "Hessian: ", Hessian
+        print "Hessian: ", Hessian
         return Hessian
 
     def compute_jacobian(self, u, del_u):
@@ -325,8 +340,8 @@ class NeuralNetworkPredictor():
         pass
 
     def predict(self, x):
-        return self.model.predict(x, batch_size=1)
-
+        self.prediction = self.model.predict(x, batch_size=1)
+        return  self.prediction
 
 
 
