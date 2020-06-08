@@ -10,6 +10,7 @@ class SolowayNR:
 
     def __fsolve_newton(self, u0, del_u, rtol=1e-10, maxit=50, verbose=False):
         u = np.array(u0).copy()
+
         del_u = np.zeros(u.shape)
 
         Fu = -self.d_model.Fu(u, del_u)

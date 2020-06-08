@@ -100,8 +100,8 @@ class NeuralNetworkPredictor():
         self.ym_deque.appendleft(ym)
 
     def get_computation_vectors(self):
-        Y = np.array(self.yn)
-        YM = np.array(self.ym)
+        Y = 1000.*np.array(self.yn)
+        YM = 1000.*np.array(self.ym)
         U = np.array(list(self.u_deque))
         delU = np.array(list(self.delu_deque))
         return Y, YM, U, delU
@@ -111,7 +111,7 @@ class NeuralNetworkPredictor():
             return np.array([1.0]*self.num_y) # linear activation on output
         if self.model.layers[-1].get_config()['activation'] == 'tanh':
             netj = np.arctanh(self.prediction)
-            return  np.array(1. / np.cosh(netj)**2.)
+            return  np.array(1.-np.tanh(netj)**2)
         if self.model.layers[-1].get_config()['activation'] == 'sigmoid':
             netj = np.ln(self.prediction / (1-self.prediction))
             sigmoid = 1./(1.+np.exp(-1.*netj))
@@ -122,7 +122,7 @@ class NeuralNetworkPredictor():
             return np.array([0.0]*self.num_y) # linear activation on output
         if self.model.layers[-1].get_config()['activation'] == 'tanh':
             netj = np.arctanh(self.prediction)
-            return np.array(-2.*np.tanh(netj)/ np.cosh(netj)**2.)
+            return np.array(-2.*np.tanh(netj)*(1.-np.tanh(netj)**2))
         if self.model.layers[-1].get_config()['activation'] == 'sigmoid':
             x = np.ln(self.prediction / (1.-self.prediction))
             return np.array((2.*np.exp(-2.*x))/(np.exp(-1.*x)+ 1.)**3. - (np.exp(-1.*x))/(np.exp(-1.*x)+1.)**2.)
@@ -162,7 +162,7 @@ class NeuralNetworkPredictor():
         """
         weights = self.model.layers[self.first_layer_index].get_weights()[0]
         sum_output = 0.0
-        for i in range(0, min(j, self.dd)):
+        for i in range(min(j, self.dd)):
             step_ = []
             for ii in range(self.num_y):
                 step_ += [step(j - i + ii - 1)]
@@ -173,6 +173,7 @@ class NeuralNetworkPredictor():
         return np.array(sum_output)
 
     def __partial_yn_partial_u(self, h, j):
+
         """
                D yn
             -----------
@@ -207,7 +208,7 @@ class NeuralNetworkPredictor():
         sum_output = 0.0
         for i in range(self.nd):
             delta = []
-            if (j - self.Nu) < i*self.num_u:
+            if (j - self.Nu) < i:
                 for ii in range(self.num_u):
                     delta += [kronecker_delta(j - i + ii, h)]
                 sum_output += np.dot(weights[i*self.num_u:i*self.num_u + self.num_u, j] , \
@@ -218,7 +219,7 @@ class NeuralNetworkPredictor():
                     delta += [kronecker_delta(self.Nu, h)]
                 sum_output += np.dot(weights[i*self.num_u:i*self.num_u + self.num_u, j] ,\
                                                                 delta)
-        for i in range(0, min(j, self.dd)):
+        for i in range(min(j, self.dd)):
             step_ = []
             for ii in range(self.num_y):
                 step_ += [step(j-i+ii-1)]
@@ -239,7 +240,7 @@ class NeuralNetworkPredictor():
     def compute_hessian(self, u, del_u):
         Y, YM , _, _ = self.get_computation_vectors()
         U = u.copy()
-        del_u = u.copy()
+        del_u = del_u.copy()
         Hessian = np.zeros((self.Nu, self.Nu))
         for h in range(self.Nu):
             for m in range(self.Nu):
@@ -272,7 +273,6 @@ class NeuralNetworkPredictor():
                                 self.constraints.b), 3.0) + \
                                 2.0 * self.constraints.s / np.power(self.constraints.r/2. +\
                                 self.constraints.b - U[j, i], 3.0))
-        print "Hessian: ", Hessian
         return Hessian
 
     def compute_jacobian(self, u, del_u):
