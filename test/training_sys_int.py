@@ -34,7 +34,7 @@ def neural_network_training(X, y):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2)
 
     model = Sequential()
-    model.add(Dense(15, activation =  'linear', kernel_initializer='random_normal'))
+    model.add(Dense(15, activation =  'tanh', kernel_initializer='random_normal'))
     model.add(Dense(3,  activation = 'tanh', kernel_initializer='random_normal'))
 
     model.compile(optimizer= 'adam', loss =custom_loss, metrics=['mse'])
@@ -139,9 +139,8 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
 
     X = np.concatenate((U, Y[:, 3:]), axis = 1)
     X = np.concatenate((X, S), axis = 1)
-
     y = Y[:, :3] # we are using all of this to estimate current
-
+    print X[0, :], y[0, :]
     return X, y
 
 
