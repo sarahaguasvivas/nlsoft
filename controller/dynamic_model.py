@@ -31,20 +31,16 @@ class ModelException(Exception):
         ---------------------------------------------------------------------
 """
 class NeuralNetworkPredictor():
-    def __init__(self, model_file, N1 = 1 , N2 = 3 ,  Nu = 3 , \
-                            K = 2 , Q = [[1, 0, 0], [0, 1, 0], [0, 0, 1]],\
+    def __init__(self, model_file, N1 = 0 , N2 = 3 ,  Nu = 2 , \
+                            K = 3 , Q = [[1, 0, 0], [0, 1, 0], [0, 0, 1]],\
                             Lambda = [[0.3, 0.0], [0., 0.2]] , nd = 3,\
                                     dd = 3, y0= [0, 0], u0= [0, 0], \
                                         s = 1e-20, b = 1e-10, r = 4e-1):
-        self.N1 = N1
-        self.N2 = N2
-        self.Nu = Nu
+
+        self.N1, self.N2, self.Nu, self.y0, self.u0 = N1, N2, Nu, y0, u0
 
         self.ym = None
         self.yn = None
-
-        self.y0 = y0
-        self.u0 = u0
 
         self.Q = np.array(Q)
         self.Lambda = np.array(Lambda)
@@ -67,10 +63,9 @@ class NeuralNetworkPredictor():
         self.previous_first_der = 1.0 # important for recursions
         self.previous_second_der = 1.0 # important for recursions
 
-        self.y_deque = deque()
-        self.delu_deque = deque()
-        self.u_deque = deque()
-        self.ym_deque = deque()
+        self.y_deque, self.delu_deque, self.u_deque, self.ym_deque = deque(), \
+                                                            deque(), deque(), deque()
+        self.prediction = None
 
         self.hid = self.model.layers[-1].input_shape[1] - 11 # minus 11 sensor signals
 
@@ -81,10 +76,9 @@ class NeuralNetworkPredictor():
         self.cost = NN_Cost(self)
 
     def initialize_deques(self, u0, y0):
-        for _ in range(self.N2):
+        for _ in range(self.N2 - self.N1):
             self.y_deque.appendleft(self.y0)
             self.ym_deque.appendleft(y0)
-
         for _ in range(self.Nu):
             self.u_deque.appendleft(u0)
             self.delu_deque.appendleft([0, 0])
@@ -100,24 +94,19 @@ class NeuralNetworkPredictor():
         self.delu_deque.pop()
         self.ym_deque.pop()
 
-        self.prediction = None
-
         self.u_deque.appendleft(u)
         self.delu_deque.appendleft(del_u)
         self.y_deque.appendleft(y)
         self.ym_deque.appendleft(ym)
-        self.last_model_input = None
 
     def get_computation_vectors(self):
-        Y = np.array(self.yn) # converting to cm
-        YM = np.array(self.ym) # converting to cm
-
+        Y = np.array(self.yn)
+        YM = np.array(self.ym)
         U = np.array(list(self.u_deque))
         delU = np.array(list(self.delu_deque))
         return Y, YM, U, delU
 
     def __Phi_prime(self, x = 0):
-
         if self.model.layers[-1].get_config()['activation'] == 'linear':
             return np.array([1.0]*self.num_y) # linear activation on output
         if self.model.layers[-1].get_config()['activation'] == 'tanh':
@@ -126,7 +115,7 @@ class NeuralNetworkPredictor():
         if self.model.layers[-1].get_config()['activation'] == 'sigmoid':
             netj = np.ln(self.prediction / (1-self.prediction))
             sigmoid = 1./(1.+np.exp(-1.*netj))
-            return np.array(sigmoid*(1-sigmoid))
+            return np.array(sigmoid*(1.-sigmoid))
 
     def __Phi_prime_prime(self, x = 0):
         if self.model.layers[-1].get_config()['activation'] == 'linear':
@@ -135,7 +124,7 @@ class NeuralNetworkPredictor():
             netj = np.arctanh(self.prediction)
             return np.array(-2.*np.tanh(netj)/ np.cosh(netj)**2.)
         if self.model.layers[-1].get_config()['activation'] == 'sigmoid':
-            x = np.ln(self.prediction / (1-self.prediction))
+            x = np.ln(self.prediction / (1.-self.prediction))
             return np.array((2.*np.exp(-2.*x))/(np.exp(-1.*x)+ 1.)**3. - (np.exp(-1.*x))/(np.exp(-1.*x)+1.)**2.)
 
     def __partial_2_fnet_partial_nph_partial_npm(self, h, m, j):
@@ -159,8 +148,8 @@ class NeuralNetworkPredictor():
         weights = self.model.layers[-1].get_weights()[0]
         sum_output = 0.0
         for i in range(self.hid):
-            for j in range(weights.shape[1]):
-                sum_output+= weights[i, j] * \
+            for ii in range(weights.shape[1]):
+                sum_output+= weights[i, ii] * \
                             self.__partial_2_fnet_partial_nph_partial_npm(h, m, j)
         self.previous_second_der = sum_output
         return np.array(sum_output)
