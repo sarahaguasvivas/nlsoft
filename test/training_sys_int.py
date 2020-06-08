@@ -26,18 +26,21 @@ filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data13.csv"
 filename1 = str(os.environ["HOME"]) + "/gpc_controller/data/model_data14.csv"
 
 def custom_loss(y_true, y_pred):
-    return 1000*K.mean(K.square(y_pred - y_true), axis = -1)
+    loss = K.square(K.abs((y_pred - y_true)))
+    loss = loss * [1., 0.3, 0.7]
+    loss = K.mean(loss, axis = -1)
+    return loss
 
 keras.losses.custom_loss = custom_loss
 def neural_network_training(X, y):
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3)
 
     model = Sequential()
-    model.add(Dense(25, activation =  'relu', kernel_initializer='random_normal'))
-    model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
+    model.add(Dense(20, activation =  'relu', kernel_initializer='random_normal'))
+    model.add(Dense(3,  activation = 'tanh', kernel_initializer='random_normal'))
 
-    model.compile(optimizer= 'adam', loss =custom_loss, metrics=['mse'])
-    model.fit(X_train, y_train, epochs = 2000, batch_size = 1000, validation_split=0.2)
+    model.compile(optimizer= 'adam', loss = custom_loss, metrics=['mse'])
+    model.fit(X_train, y_train, epochs = 200, batch_size = 100, validation_split=0.2)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
@@ -76,7 +79,7 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
         plt.xlabel('timesteps')
     plt.show()
 
-    L = 300
+    L = 100
     START = random.randint(0, yn.shape[0] - L)
     fig = plt.figure()
     ax = Axes3D(fig)
