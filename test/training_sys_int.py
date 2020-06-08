@@ -30,15 +30,14 @@ def custom_loss(y_true, y_pred):
 
 keras.losses.custom_loss = custom_loss
 def neural_network_training(X, y):
-    #y = 1000*y
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2)
 
     model = Sequential()
-    model.add(Dense(15, activation =  'tanh', kernel_initializer='random_normal'))
-    model.add(Dense(3,  activation = 'tanh', kernel_initializer='random_normal'))
+    model.add(Dense(25, activation =  'relu', kernel_initializer='random_normal'))
+    model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
     model.compile(optimizer= 'adam', loss =custom_loss, metrics=['mse'])
-    model.fit(X_train, y_train, epochs = 5000, batch_size = 1000, validation_split=0.2)
+    model.fit(X_train, y_train, epochs = 2000, batch_size = 1000, validation_split=0.2)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
@@ -140,7 +139,6 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
     X = np.concatenate((U, Y[:, 3:]), axis = 1)
     X = np.concatenate((X, S), axis = 1)
     y = Y[:, :3] # we are using all of this to estimate current
-    print X[0, :], y[0, :]
     return X, y
 
 
