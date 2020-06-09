@@ -100,8 +100,8 @@ class NeuralNetworkPredictor():
         self.ym_deque.appendleft(ym)
 
     def get_computation_vectors(self):
-        Y = 1000.*np.array(self.yn)
-        YM = 1000.*np.array(self.ym)
+        Y = np.array(self.yn)
+        YM = np.array(self.ym)
         U = np.array(list(self.u_deque))
         delU = np.array(list(self.delu_deque))
         return Y, YM, U, delU
@@ -253,9 +253,9 @@ class NeuralNetworkPredictor():
                 ynu, ynu1, temp = np.array(ynu), np.array(ynu1), \
                         np.array(temp).reshape(-1, self.num_y)
 
-                Hessian[h, m] += np.sum(2.*ynu.T.dot(self.Q).dot(np.array(ynu1)) - \
-                        self.Q.dot(YM[self.N1:self.N2, :] - \
-                        Y[self.N1:self.N2, :]).T.dot(np.array(temp)))
+                Hessian += np.sum(2.*ynu.T.dot(self.Q + self.Q.T).dot(np.array(ynu1)) - \
+                            self.Q.dot(YM[self.N1:self.N2, :] - \
+                            Y[self.N1:self.N2, :]).T.dot(np.array(temp)))
 
                 second_y, second_y1, temp = [], [], []
 
@@ -288,21 +288,23 @@ class NeuralNetworkPredictor():
             for j in range(self.N1, self.N2):
                 ynu += [self.__partial_yn_partial_u(j, h)]
 
-            sub_sum =  (YM[self.N1:self.N2, :] - \
-                            Y[self.N1:self.N2, :]).T.dot(self.Q).T.dot(np.array(ynu).T)
-
-            sum_output += -2. * np.sum(sub_sum[:, :self.num_u], axis = 0)
-
-            ynu = []
+            ynu1 = []
             for j in range(self.Nu):
-                ynu+=[self.__partial_delta_u_partial_u(j, h)]
+                ynu1+=[self.__partial_delta_u_partial_u(j, h)]
             if self.Nu == 1:
-                ynu = np.asscalar(np.array(ynu))
+                ynu1 = np.asscalar(np.array(ynu1))
             else:
-                ynu = np.array(ynu)
+                ynu1 = np.array(ynu1)
 
-            sum_output += np.sum(2.* np.dot(np.dot(np.array(delU).T, self.Lambda.T),
-                                        ynu), axis = 0)
+        sub_sum =  (YM[self.N1:self.N2, :] - \
+                        Y[self.N1:self.N2, :]).dot(np.array(ynu).T).dot(self.Q)
+
+        sum_output += -2. * np.sum(sub_sum, axis = 0)
+
+        sum_output += np.sum(2.* np.dot(np.dot(np.array(delU).T, ynu1),
+                                    self.Lambda), axis = 0)
+
+        for h in range(self.Nu):
             for j in range(self.Nu):
                 sub_sum = np.array([0.0, 0.0])
                 for i in range(self.num_u):
@@ -311,7 +313,7 @@ class NeuralNetworkPredictor():
                                 self.constraints.s/ np.power(self.constraints.r/2.0 + \
                                 self.constraints.b - U[j, i] , 2.0) )
                 sum_output += sub_sum
-            dJ[h, :] = sum_output
+        dJ[h, :] = sum_output
         return dJ
 
     def Fu(self, u, del_u):

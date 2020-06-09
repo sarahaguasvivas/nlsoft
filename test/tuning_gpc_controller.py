@@ -22,11 +22,11 @@ verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
                     N1 = 0, N2 = 2, Nu = 1, nd = 3, dd = 3, K = 5,
-                    Q =  np.array([[50., 1e-5],
-                                   [1e-5, 100.]]),
-                    Lambda = np.array([[5e-1]]),
+                    Q =  1e-2*np.array([[50., 0.],
+                                       [0., 70.]]),
+                    Lambda = np.array([[1e-2]]),
                         y0 = [0.0, 0.0, 0.0],
-                        u0 = [0.0, 0.0], s = 1e-5, b = 100., r = .4)
+                        u0 = [0.0, 0.0], s = 1e-20, b = 1e3, r = 4e-1)
 
 NR_opt, Block = SolowayNR(d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
@@ -76,8 +76,7 @@ try:
             NNP.yn = []
             ydeq = copy.copy(y_deque)
             for k in range(NNP.K):
-                neural_network_input = np.array((np.array(list(u_deque))/
-                                                    100.).flatten().tolist() + \
+                neural_network_input = np.array((np.array(list(u_deque))).flatten().tolist() + \
                                                     np.array(list(ydeq)
                                                         ).flatten().tolist() + \
                                                         signal).reshape(1, -1)
@@ -97,13 +96,11 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            #u_action[0] = np.cos(2.*np.pi*n/100.)
-            #u_action[1] = -0.5 #np.sin(2.*np.pi*n/100.)
-
-            u_action[0] = np.clip(SCALE0*u_action[0],-100, 80)
-            u_action[1] = np.clip(SCALE1*u_action[1],-100, 60)
+            u_action[0] = np.clip(np.rad2deg(u_action[0]),-100, 80)
+            u_action[1] = np.clip(np.rad2deg(u_action[1]),-100, 60)
 
             Block.step(action = u_action)
+
             NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action, \
                                 predicted_states.tolist(), NNP.ym[0, :].tolist())
 
