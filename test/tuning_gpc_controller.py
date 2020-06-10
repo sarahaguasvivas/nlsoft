@@ -21,10 +21,10 @@ SCALE1 = 1.
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 2, Nu = 1, nd = 3, dd = 3, K = 5,
+                    N1 = 0, N2 = 2, Nu = 2, nd = 3, dd = 3, K = 5,
                     Q =  1e-2*np.array([[50., 0.],
                                        [0., 70.]]),
-                    Lambda = np.array([[1e-2]]),
+                    Lambda = np.eye(2),
                         y0 = [0.0, 0.0, 0.0],
                         u0 = [0.0, 0.0], s = 1e-20, b = 1e3, r = 4e-1)
 
