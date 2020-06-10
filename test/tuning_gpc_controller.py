@@ -15,16 +15,14 @@ model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 1000
 
-SCALE0 = 1.
-SCALE1 = 1.
-
+input_scale = [1., 1.]
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 2, Nu = 2, nd = 3, dd = 3, K = 5,
+                    N1 = 0, N2 = 2, Nu = 1, nd = 3, dd = 3, K = 5,
                     Q =  1e-2*np.array([[50., 0.],
                                        [0., 70.]]),
-                    Lambda = np.eye(2),
+                    Lambda = 1e-2*np.eye(1),
                         y0 = [0.0, 0.0, 0.0],
                         u0 = [0.0, 0.0], s = 1e-20, b = 1e3, r = 4e-1)
 
@@ -96,8 +94,8 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(np.rad2deg(u_action[0]),-100, 80)
-            u_action[1] = np.clip(np.rad2deg(u_action[1]),-100, 60)
+            u_action[0] = np.clip(input_scale[0]*np.rad2deg(u_action[0]),-100, 80)
+            u_action[1] = np.clip(input_scale[1]*np.rad2deg(u_action[1]),-100, 60)
 
             Block.step(action = u_action)
 
