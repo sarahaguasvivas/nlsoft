@@ -19,12 +19,12 @@ input_scale = [1., 1.]
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 2, Nu = 1, nd = 3, dd = 3, K = 3,
-                    Q =  np.array([[1e1, 1e-5],
-                                   [1e-5, 5e1]]),
-                    Lambda = np.array([[5e-3]]),
+                    N1 = 0, N2 = 2, Nu = 1, nd = 3, dd = 3, K = 5,
+                    Q =  np.array([[1e1, 1e-3],
+                                   [1e-3, 5e2]]),
+                    Lambda = np.array([[5e-2]]),
                         y0 = [0.0, 0.0, 0.0],
-                        u0 = [0.0, 0.0], s = 1e-7, b = 1e-5, r = 4e-1)
+                        u0 = [0.0, 0.0], s = 1e-20, b = 1e-3, r = 4e-1)
 
 NR_opt, Block = SolowayNR(d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
@@ -34,7 +34,7 @@ Block.reset()
 Block.step([0., 0.])
 
 neutral_point = Block.get_state()
-NNP.y0  = neutral_point
+#NNP.y0  = neutral_point
 
 print "neutral_point: ", neutral_point
 
@@ -99,11 +99,11 @@ try:
 
             Block.step(action = u_action)
 
-            NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action, \
+            NNP.update_dynamics(np.deg2rad(u_action).tolist(), del_u_action, \
                                 predicted_states.tolist(), NNP.ym[0, :].tolist())
 
             u_optimal_old = u_optimal
-            u_deque = roll_deque(u_deque, u_optimal[0, :].tolist())
+            u_deque = roll_deque(u_deque, np.deg2rad(u_action).tolist())
             y_deque = roll_deque(y_deque, predicted_states.tolist())
 
             if verbose == 0:
