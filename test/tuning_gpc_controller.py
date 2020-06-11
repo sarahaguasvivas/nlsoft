@@ -15,16 +15,17 @@ model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 1000
 
-input_scale = [1., 1.]
+input_scale = [1., 1]
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 2, Nu = 1, nd = 3, dd = 3, K = 5,
-                    Q =  1e-2*np.array([[50., 0.],
-                                       [0., 70.]]),
-                    Lambda = 1e-2*np.eye(1),
+                    N1 = 0, N2 = 3, Nu = 1, nd = 3, dd = 3, K = 3,
+                    Q =  np.array([[5., 1e-3, 1e-4],
+                                 [1e-3, 7., 1e-4],
+                                 [1e-4, 1e-4, 10.] ]),
+                    Lambda = np.array([[1.]]),
                         y0 = [0.0, 0.0, 0.0],
-                        u0 = [0.0, 0.0], s = 1e-20, b = 1e3, r = 4e-1)
+                        u0 = [0.0, 0.0], s = 0.0, b = 1., r = 4e50)
 
 NR_opt, Block = SolowayNR(d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
@@ -38,7 +39,7 @@ NNP.y0  = neutral_point
 
 print "neutral_point: ", neutral_point
 
-target = Pringle2(wavelength = 300, amplitude = 10./1000., center = neutral_point)
+target = Pringle2(wavelength = 1000, amplitude = 10./1000., center = neutral_point)
 
 Block.calibration_max = np.array([ 80, 322, 109,   1,   1,   1, 102,   1,   1,  33,   1 ])
 #Block.get_signal_calibration()
@@ -97,7 +98,7 @@ try:
             u_action[0] = np.clip(input_scale[0]*np.rad2deg(u_action[0]),-100, 80)
             u_action[1] = np.clip(input_scale[1]*np.rad2deg(u_action[1]),-100, 60)
 
-            Block.step(action = u_action)
+            #Block.step(action = u_action)
 
             NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action, \
                                 predicted_states.tolist(), NNP.ym[0, :].tolist())
