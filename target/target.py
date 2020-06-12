@@ -59,21 +59,17 @@ class Pringle2:
         target = np.empty([n2 - n1, dims])
 
         phase = self.find_projection_along_path(current_point)
-        i = 0
 
-        for _ in range(n1, n2):
-            y = self.amplitude * np.sin(2.*np.pi*(timestep + i) \
-                                                        / (self.wavelength) + phase) - \
-                                                                0.0 #self.amplitude/2.
-            z = self.amplitude * np.cos(2*np.pi*(timestep + i)/ \
-                                                        (self.wavelength) + phase)\
-                                                                - 0.0 #self.amplitude/2.
+        for i in range(n1, n2):
+            y = self.amplitude / 2. * np.sin(2.*np.pi*(timestep) \
+                                                        / (self.wavelength) + phase)
+            z = self.amplitude * np.cos(2*np.pi*(timestep)/ \
+                                                        (self.wavelength) + phase) + 10./1000.
 
-            x = self.amplitude * np.sin(100*z*y) #- self.amplitude
+            x = self.amplitude * np.sin(100*z*y)
 
             target[i, :] = [self.center[0] + x, self.center[1] + y, self.center[2] + z]
 
-            i+=1
         return target
 class Pringle:
     def __init__(self, wavelength = 500, amplitude = 0.025, \
