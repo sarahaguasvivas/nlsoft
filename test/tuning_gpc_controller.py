@@ -20,20 +20,20 @@ verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
                     N1 = 0, N2 = 2, Nu = 2, nd = 3, dd = 3, K = 3,
-                    Q =  np.array([[7e-2, 0.],
-                                   [0., 5e-2]]),
-                    Lambda = np.array([[5e2, 0.],
-                                       [0., 1e-4]]),
-                    states_to_control = [0, 1, 1],
+                    Q =  np.array([[1., 0.],
+                                   [0., 1.]]),
+                    Lambda = np.array([[1., 0.],
+                                       [0., 1.]]),
+                    states_to_control = [1, 1, 1],
                         x0 = [0.0, 0.0, 0.0],
-                        u0 = [0.0, -50.0], s = 1e-20, b = 1., r = 4e-1)
+                        u0 = [0.0, 0.0], s = 1e-20, b = 1., r = 4e-1)
 
 NR_opt, Block = SolowayNR(d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")
 log = Logger()
 Block.reset()
 
-Block.step([0., -50.])
+Block.step([0., 0.])
 
 neutral_point = Block.get_state()
 NNP.x0  = neutral_point
@@ -93,7 +93,7 @@ try:
 
             Target = target.spin(n, 0, NNP.K, 3, neutral_point)
 
-            NNP.ym = NNP.C.dot(Target.T).reshape(NNP.N2-NNP.N1, -1).T.tolist()
+            NNP.ym = NNP.C.dot(Target.T).reshape(-1, NNP.num_y).T.tolist()
 
             new_state_old = new_state_new
 
