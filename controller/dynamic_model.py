@@ -34,10 +34,11 @@ class NeuralNetworkPredictor():
     def __init__(self, model_file, N1 = 0 , N2 = 3 ,  Nu = 2 , \
                             K = 3 , Q = [[1, 0, 0], [0, 1, 0], [0, 0, 1]],\
                             Lambda = [[0.3, 0.0], [0., 0.2]] , nd = 3,\
-                                    dd = 3, y0= [0, 0], u0= [0, 0], \
-                                        s = 1e-20, b = 1e-10, r = 4e-1):
+                                    dd = 3, x0= [0, 0], u0= [0, 0], \
+                                        s = 1e-20, b = 1e-10, r = 4e-1,
+                                        states_to_control = [0, 1, 1]):
 
-        self.N1, self.N2, self.Nu, self.y0, self.u0 = N1, N2, Nu, y0, u0
+        self.N1, self.N2, self.Nu, self.x0, self.u0 = N1, N2, Nu, x0, u0
 
         self.ym = None
         self.yn = None
@@ -45,9 +46,19 @@ class NeuralNetworkPredictor():
         self.Q = np.array(Q)
         self.Lambda = np.array(Lambda)
 
+        self.Q = 0.5*(self.Q + self.Q.T)
+        self.Lambda = 0.5*(self.Lambda + self.Lambda.T)
+
         self.K = K
         self.constraints = Constraints(s = s, b = b, r = r)
         self.model = load_model(model_file)
+
+        self.C = np.zeros((sum(states_to_control), len(states_to_control)))
+        ii = 0
+        for t in range(len(states_to_control)):
+            if states_to_control[t] == 1:
+                self.C[ii, t] = 1
+                ii+=1
 
         self.first_layer_index = 0 # first layer may be Gaussian noise
         layertype = self.model.layers[self.first_layer_index]
@@ -70,15 +81,15 @@ class NeuralNetworkPredictor():
         self.hid = self.model.layers[-1].input_shape[1] - 11 # minus 11 sensor signals
 
         self.num_u = 2
-        self.num_y = 3
+        self.num_y = sum(states_to_control)
 
-        self.initialize_deques(self.u0, self.y0)
+        self.initialize_deques(self.u0, self.x0)
         self.cost = NN_Cost(self)
 
-    def initialize_deques(self, u0, y0):
+    def initialize_deques(self, u0, x0):
         for _ in range(self.N2 - self.N1):
-            self.y_deque.appendleft(self.y0)
-            self.ym_deque.appendleft(y0)
+            self.y_deque.appendleft(self.x0)
+            self.ym_deque.appendleft(x0)
         for _ in range(self.Nu):
             self.u_deque.appendleft(u0)
             self.delu_deque.appendleft([0, 0])
@@ -102,6 +113,7 @@ class NeuralNetworkPredictor():
     def get_computation_vectors(self):
         Y = np.array(self.yn)
         YM = np.array(self.ym)
+
         U = np.array(list(self.u_deque))
         delU = np.array(list(self.delu_deque))
         return Y, YM, U, delU
@@ -151,8 +163,9 @@ class NeuralNetworkPredictor():
             for ii in range(weights.shape[1]):
                 sum_output+= weights[i, ii] * \
                             self.__partial_2_fnet_partial_nph_partial_npm(h, m, j)
-        self.previous_second_der = sum_output
-        return np.array(sum_output)
+        self.previous_second_der = self.C.dot(sum_output.T)
+
+        return self.C.dot(np.array(sum_output).T)
 
     def __partial_2_net_partial_u_nph_partial_npm(self, h, m, j):
         """
@@ -164,6 +177,7 @@ class NeuralNetworkPredictor():
         sum_output = 0.0
         for i in range(min(j, self.dd)):
             step_ = []
+
             for ii in range(self.num_y):
                 step_ += [step(j - i + ii - 1)]
             sum_output += np.sum(weights[i*self.num_u + self.nd*self.num_u: i*self.num_u + \
@@ -187,6 +201,8 @@ class NeuralNetworkPredictor():
         for i in range(self.hid):
             sum_output += np.dot(np.array(weights[i, :]) ,
                             self.__partial_fnet_partial_u(h, j).T)
+        sum_output = self.C.dot(sum_output.T).T
+
         self.previous_first_der = sum_output.tolist()
         return np.array(sum_output)
 
@@ -277,7 +293,7 @@ class NeuralNetworkPredictor():
         return Hessian
 
     def compute_jacobian(self, u, del_u):
-        Y, YM, _, _= self.get_computation_vectors()
+        Y, YM, _, _ = self.get_computation_vectors()
         U = u.copy()
         delU = del_u.copy()
 
@@ -287,17 +303,20 @@ class NeuralNetworkPredictor():
         for h in range(self.Nu):
             ynu = []
             for j in range(self.num_u):
-                ynu += [self.__partial_yn_partial_u(j, h)]
+                ynu += [self.__partial_yn_partial_u(j, h).tolist()]
 
             ynu1 = []
             for j in range(self.Nu):
                 ynu1+=[self.__partial_delta_u_partial_u(j, h)]
+
             if self.Nu==1:
                 ynu1 = np.asscalar(np.array(ynu1))
+
             ynu1 = np.array(ynu1)
 
-            sub_sum =((YM[self.N1:self.N2, :] - \
-                            Y[self.N1:self.N2, :]).T.dot(self.Q.T)).T.dot(np.array(ynu).T)
+            ynu = np.array(ynu)
+            sub_sum = ((YM[self.N1:self.N2, :] - Y[self.N1:self.N2, :]).T.dot(
+                                    self.Q.T)).T.dot(np.array(ynu).T)
 
             sum_output += (-2.*np.sum(sub_sum, axis = 0)).flatten().tolist()
 
