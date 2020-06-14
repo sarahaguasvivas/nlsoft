@@ -53,7 +53,7 @@ class NeuralNetworkPredictor():
         self.constraints = Constraints(s = s, b = b, r = r)
         self.model = load_model(model_file)
 
-        self.C = np.zeros((sum(states_to_control), len(states_to_control)))
+        self.C = np.zeros((int(sum(states_to_control)), int(len(states_to_control))))
         ii = 0
         for t in range(len(states_to_control)):
             if states_to_control[t] == 1:
