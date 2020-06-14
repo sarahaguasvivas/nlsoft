@@ -43,6 +43,7 @@ class Circle(Target):
             target[i, :] = [x,y,z]
             i+=1
         return target
+
 class Pringle2:
     def __init__(self, wavelength = 500, amplitude = 0.025, \
                                 center = [0.0, 0.0, 0.0]):
@@ -64,13 +65,12 @@ class Pringle2:
             y = self.amplitude / 2. * np.sin(2.*np.pi*(timestep) \
                                                         / (self.wavelength) + phase)
             z = self.amplitude * np.cos(2*np.pi*(timestep)/ \
-                                                        (self.wavelength) + phase) + 10./1000.
-
+                                            (self.wavelength) + phase) + 10./1000.
             x = self.amplitude * np.sin(100*z*y)
 
             target[i, :] = [self.center[0] + x, self.center[1] + y, self.center[2] + z]
-
         return target
+
 class Pringle:
     def __init__(self, wavelength = 500, amplitude = 0.025, \
                                 center = [0.0, 0.0, 0.0]):
