@@ -22,8 +22,8 @@ verbose = 1
 NNP = NeuralNetworkPredictor(model_file = model_filename,
                     N1 = 0, N2 = 2, Nu = 1, nd = 3, dd = 3, K = 3,
                     Q =  np.array([[1e1, 0.],
-                                   [0., 500]]),
-                    Lambda = np.array([[5e-10]]),
+                                   [0., 50]]),
+                    Lambda = np.array([[5e-1]]),
                     states_to_control = [0, 1, 1],
                         x0 = [0.0, 0.0, 0.0],
                         u0 = [0.0, 0.0])
