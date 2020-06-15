@@ -62,10 +62,10 @@ class Pringle2:
         phase = self.find_projection_along_path(current_point)
 
         for i in range(n1, n2):
-            y = self.amplitude / 2. * np.sin(2.*np.pi*(timestep) \
+            y = self.amplitude  * np.sin(2.*np.pi*(timestep) \
                                                         / (self.wavelength) + phase)
             z = self.amplitude * np.cos(2*np.pi*(timestep)/ \
-                                            (self.wavelength) + phase) + 10./1000.
+                                            (self.wavelength) + phase) - 0./1000.
             x = self.amplitude * np.sin(100*z*y)
 
             target[i, :] = [self.center[0] + x, self.center[1] + y, self.center[2] + z]
