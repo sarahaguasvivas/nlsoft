@@ -164,9 +164,10 @@ class NeuralNetworkPredictor():
                 sum_output+= weights[i, ii] * \
                             self.__partial_2_fnet_partial_nph_partial_npm(h, m, j)
         self.previous_second_der = self.C.dot(sum_output.T)
-
-        return self.C.dot(np.array(sum_output).T)
-
+        if len(sum_output) > 0:
+            return self.C.dot(np.array(sum_output).T)
+        else:
+            return self.C.dot(sum_output)
     def __partial_2_net_partial_u_nph_partial_npm(self, h, m, j):
         """
               D^2 net_j
@@ -282,14 +283,6 @@ class NeuralNetworkPredictor():
                 Hessian[h, m] += np.sum(2.*np.dot(self.Lambda, \
                                 second_y).dot(np.array(second_y1).T), axis = 0)
 
-        #        for j in range(self.Nu):
-        #            for i in range(self.num_u):
-        #                Hessian[h, m] += kronecker_delta(h, j)*kronecker_delta(m, j) * \
-        #                        (2.0*self.constraints.s / np.power((U[j, i] + \
-        #                        self.constraints.r / 2. - \
-        #                        self.constraints.b), 3.0) + \
-        #                        2.0 * self.constraints.s / np.power(self.constraints.r/2. +\
-        #                        self.constraints.b - U[j, i], 3.0))
         return Hessian
 
     def compute_jacobian(self, u, del_u):
@@ -315,22 +308,14 @@ class NeuralNetworkPredictor():
             ynu1 = np.array(ynu1)
 
             ynu = np.array(ynu)
+
             sub_sum = ((YM[self.N1:self.N2, :] - Y[self.N1:self.N2, :]).T.dot(
                                     self.Q.T)).T.dot(np.array(ynu).T)
-
+            print sub_sum
             sum_output += (-2.*np.sum(sub_sum, axis = 0)).flatten().tolist()
 
             sum_output += 2.* np.sum(np.dot(np.array(delU).T,
                                         self.Lambda.T).dot(ynu1), axis = 0)
-
-        #    for j in range(self.Nu):
-        #        sub_sum = np.array([0.0, 0.0])
-        #        for i in range(self.num_u):
-        #            sub_sum[i] += kronecker_delta(h, j) * ( -self.constraints.s / np.power(U[j, i] +  \
-        #                self.constraints.r / 2.0 - self.constraints.b , 2) + \
-        #                        self.constraints.s/ np.power(self.constraints.r/2.0 + \
-        #                        self.constraints.b - U[j, i] , 2.0) )
-        #        sum_output += sub_sum
             dJ[h, :] = sum_output
         return dJ
 
