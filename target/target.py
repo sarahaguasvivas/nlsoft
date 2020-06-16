@@ -29,15 +29,15 @@ class Circle(Target):
     def spin(self, timestep, n1, n2, dims, current_point):
         target = np.empty([n2 - n1, dims])
 
-        phase = self.find_projection_along_path(current_point)
-#        phase = 0
+        #phase = self.find_projection_along_path(current_point)
+        phase = 0
         i = 0
 
         for _ in range(n1, n2):
-            y = self.center[1] + self.amplitude * np.sin(2.*np.pi*(timestep + i ) \
-                                                        / self.wavelength + phase)
-            z = self.center[2] + self.amplitude*np.cos(2*np.pi*(timestep + i )/ \
-                                                        self.wavelength + phase)
+            y = self.center[1] + self.amplitude * np.sin(2.*np.pi*(timestep + i) \
+                                                        / self.wavelength + phase) #- 10./1000.
+            z = self.center[2] + self.amplitude*np.cos(2*np.pi*(timestep + i)/ \
+                                                        self.wavelength + phase) #- 10./1000.
             x = self.center[0]
 
             target[i, :] = [x,y,z]
@@ -62,9 +62,9 @@ class Pringle2:
         phase = self.find_projection_along_path(current_point)
 
         for i in range(n1, n2):
-            y = self.amplitude  * np.sin(2.*np.pi*(timestep) \
+            y = self.amplitude  * np.sin(2.*np.pi*(timestep+i) \
                                                         / (self.wavelength) + phase)
-            z = self.amplitude * np.cos(2*np.pi*(timestep)/ \
+            z = self.amplitude * np.cos(2*np.pi*(timestep + i)/ \
                                             (self.wavelength) + phase) - 0./1000.
             x = self.amplitude * np.sin(100*z*y)
 
