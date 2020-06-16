@@ -24,23 +24,24 @@ TRAIN = True
 plt.style.use('seaborn')
 filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data13.csv"
 filename1 = str(os.environ["HOME"]) + "/gpc_controller/data/model_data14.csv"
+filename2 = str(os.environ["HOME"]) + "/gpc_controller/data/model_data15.csv"
 
 def custom_loss(y_true, y_pred):
     loss = K.square(K.abs((y_pred - y_true)))
-    loss = loss * [1., 1., 1.]
+    loss = loss * [1000., 1000., 1000.]
     loss = K.mean(loss, axis = -1)
     return loss
 
 keras.losses.custom_loss = custom_loss
 def neural_network_training(X, y):
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.1)
 
     model = Sequential()
-    model.add(Dense(30, activation =  'relu', kernel_initializer='random_normal'))
-    model.add(Dense(3,  activation = 'tanh', kernel_initializer='random_normal'))
+    model.add(Dense(25, activation =  'relu', kernel_initializer='random_normal'))
+    model.add(Dense(3,  activation = 'tanh', kernel_initializer='uniform'))
 
-    model.compile(optimizer= 'adam', loss = custom_loss, metrics=['mae'])
-    model.fit(X_train, y_train, epochs = 5000, batch_size = 1000, validation_split=0.4)
+    model.compile(optimizer= 'adam', loss = 'mae', metrics=['mae'])
+    model.fit(X_train, y_train, epochs = 500, batch_size = 100, validation_split=0.2)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
@@ -108,8 +109,8 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
 
 def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
     data_array = np.genfromtxt(filename[0], delimiter=',')
-    #data_array = np.concatenate((data_array, np.genfromtxt(filename[1], delimiter = ',')), axis = 0)
-    print(data_array.shape)
+    for i in range(1, len(filename)):
+        data_array = np.concatenate((data_array, np.genfromtxt(filename[i], delimiter = ',')), axis = 0)
     signals = data_array[:, :11]
     max_signals = np.max(signals, axis = 0)
     for i in range(len(max_signals)):
@@ -148,7 +149,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
 if __name__ == "__main__":
     # dd is dd+2
     # nd is nd
-    X, y = prepare_data_file([filename, filename1], nd=3, dd=3+2)
+    X, y = prepare_data_file([filename, filename1, filename2], nd=2, dd=2+2)
     if TRAIN:
         modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)

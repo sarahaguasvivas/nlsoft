@@ -15,9 +15,9 @@ class NN_Cost:
         b       : offset of the range
         """
         self.d_model = dynamic_model
-        self.s = self.d_model.constraints.s
-        self.r = self.d_model.constraints.r
-        self.b = self.d_model.constraints.b
+#        self.s = self.d_model.constraints.s
+#        self.r = self.d_model.constraints.r
+#        self.b = self.d_model.constraints.b
         self.cost= 0.0
 
     def compute_cost(self):
@@ -29,19 +29,18 @@ class NN_Cost:
         self.cost = 0.0
 
         Y, YM , U, delU = self.d_model.get_computation_vectors()
-
+        delY = YM - Y
         for j in range(self.d_model.N1, self.d_model.N2):
-            self.cost += np.dot(np.dot(YM[j, :] - Y[j, :], self.d_model.Q[:, j]),  YM[j, :] - Y[j, :])
+            self.cost += delY[j, :].dot(self.d_model.Q).dot(delY[j, :].T)
 
         for j in range(self.d_model.Nu):
-            self.cost += np.dot(np.dot(np.array(delU[j, :]).T, np.array(self.d_model.Lambda[:, j])), \
-                                np.array(delU[j, :]))
+            self.cost += np.array(delU[j, :]).dot(np.array(self.d_model.Lambda)).dot(np.array(delU[j, :]).T)
 
-        for j in range(self.d_model.Nu):
-            for i in range(self.d_model.num_u):
-                self.cost += self.s / (U[j, i] + self.r / 2.0 - \
-                            self.b) + self.s / (self.r/2.0 + \
-                                self.b - U[j, i]) - 4.0 / self.r
+        #for j in range(self.d_model.Nu):
+        #    for i in range(self.d_model.num_u):
+        #        self.cost += self.s / (U[j, i] + self.r / 2.0 - \
+        #                    self.b) + self.s / (self.r/2.0 + \
+        #                        self.b - U[j, i]) - 4.0 / self.r
         return self.cost
 
 

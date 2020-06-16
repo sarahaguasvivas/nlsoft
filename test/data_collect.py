@@ -24,7 +24,7 @@ f = open("data_" + today.strftime("%b_%d_%Y_8")+".csv", "w+")
 # my_string = ','.join(map(str, my_list))
 
 try:
-    for exp in range(100):
+    for exp in range(50):
         print "_________"
         print " Round #", exp
         print "_________"
@@ -45,7 +45,7 @@ try:
         for ii in range(N):
             aaction = random_points[ii, :].tolist()
             B.step(action = aaction)
-            time.sleep(0.3)
+            time.sleep(1.)
             print ii, aaction
             data = B.get_observation() + B.get_real_position()
             data = data + aaction
