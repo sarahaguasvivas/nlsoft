@@ -38,7 +38,7 @@ def neural_network_training(X, y):
 
     model = Sequential()
     model.add(Dense(20, activation =  'relu', kernel_initializer='random_normal'))
-    model.add(Dense(3,  activation = 'tanh', kernel_initializer='random_normal'))
+    model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
     model.compile(optimizer= 'adam', loss = custom_loss, metrics=['mae'])
     model.fit(X_train, y_train, epochs = 5000, batch_size = 1000, validation_split=0.2)

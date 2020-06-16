@@ -172,7 +172,7 @@ class NeuralNetworkPredictor():
             for ii in range(weights.shape[1]):
                 sum_output+= weights[i, ii] * \
                             self.__partial_2_fnet_partial_nph_partial_npm(h, m, j)
-        self.previous_second_der = self.C.dot(sum_output.T)
+        self.previous_second_der = sum_output.T
         if len(sum_output) > 0:
             return self.C.dot(np.array(sum_output).T)
         else:
@@ -317,6 +317,9 @@ class NeuralNetworkPredictor():
             for j in range(self.nu):
                 ynu += [self.__partial_yn_partial_u(j, h).tolist()]
                 ynu1+=[self.__partial_delta_u_partial_u(j, h)]
+
+            #if self.Nu==1:
+            #    ynu1 = ynu1.tolist()
 
             ynu1 = np.array(ynu1)
             ynu = np.array(ynu)
