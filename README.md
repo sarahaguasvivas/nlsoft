@@ -1,5 +1,5 @@
 # Nonlinear MIMO Controller for Generalized Soft Robots
-### by Sarah Aguasvivas Manzano
+### by Sarah Aguasvivas Manzan-o
 
 - Step 1: Learn the forward dynamics
 

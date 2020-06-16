@@ -30,13 +30,13 @@ class Circle(Target):
         target = np.empty([n2 - n1, dims])
 
         phase = self.find_projection_along_path(current_point)
-        phase = 0
+#        phase = 0
         i = 0
 
         for _ in range(n1, n2):
-            y = self.center[1] + self.amplitude * np.sin(2.*np.pi*(timestep + i) \
+            y = self.center[1] + self.amplitude * np.sin(2.*np.pi*(timestep + i ) \
                                                         / self.wavelength + phase)
-            z = self.center[2] + self.amplitude*np.cos(2*np.pi*(timestep + i)/ \
+            z = self.center[2] + self.amplitude*np.cos(2*np.pi*(timestep + i )/ \
                                                         self.wavelength + phase)
             x = self.center[0]
 

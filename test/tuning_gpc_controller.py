@@ -9,7 +9,7 @@ import copy
 from logger.logger import Logger
 from utilities.util import *
 from target.target import Circle, Pringle,Pringle2, SingleAxisSineWave, SingleAxisSquareWave, Square3D
-from scipy.spatial.transform import Rotation as R
+#from scipy.spatial.transform import Rotation as R
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
@@ -20,16 +20,17 @@ input_scale = [1., 1.]
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 2, Nu = 1, nd = 3, dd = 3, K = 3,
-                    Q =  np.array([[1e1, 0.],
-                                   [0., 50]]),
-                    Lambda = np.array([[5e-1]]),
+                    N1 = 1, N2 = 3, Nu = 1, nd = 2, dd = 2, K = 3,
+                    Q = 1e-5*np.array([[5., 0.5],
+                                       [0.5,  1.]]),
+                    Lambda = np.array([[1e-4, 0.5],
+                                       [0.5, 1e-2]]),
                     states_to_control = [0, 1, 1],
                         x0 = [0.0, 0.0, 0.0],
                         u0 = [0.0, 0.0])
 
-NR_opt, Block = SolowayNR(d_model = NNP), \
-                        BlockGym(vrpn_ip = "192.168.50.24:3883")
+NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
+
 log = Logger()
 Block.reset()
 
@@ -40,7 +41,7 @@ NNP.x0  = neutral_point
 
 print "neutral_point: ", neutral_point
 
-target = Pringle2(wavelength = 100, amplitude = 5./1000., center = neutral_point)
+target = Pringle2(wavelength = 100, amplitude = 15./1000., center = neutral_point)
 
 Block.calibration_max = np.array([ 80, 322, 109,   1,   1,   1, 102,   1,   1,  33,   1 ])
 #Block.get_signal_calibration()
@@ -49,13 +50,12 @@ u_optimal_old = np.reshape(NNP.u0*NNP.Nu, (-1, 2))
 new_state_new = copy.copy(neutral_point)
 del_u = np.zeros(u_optimal_old.shape)
 
-log.log({'metadata' : {'neutral_point' : neutral_point,\
-         'num_experiments' : NUM_EXPERIMENTS, \
+log.log({'metadata' : {'neutral_point' : neutral_point,
+         'num_experiments' : NUM_EXPERIMENTS,
          'num_timesteps': NUM_TIMESTEPS}})
 
 u_deque, y_deque = first_load_deques(NNP.x0, NNP.u0, NNP.nd, NNP.dd)
 u_action, predicted_states = np.array(NNP.u0), np.array(new_state_new)
-Rot = R.from_rotvec(np.array([0.0, 0.0, 0.0]))
 
 try:
     for e in range(NUM_EXPERIMENTS):
@@ -86,7 +86,6 @@ try:
 
 
                 predicted_states = NNP.predict(neural_network_input).flatten()
-                predicted_states = Rot.apply(predicted_states)
                 NNP.yn += [NNP.C.dot(predicted_states).tolist()]
                 ydeq = roll_deque(ydeq, predicted_states.tolist())
 
@@ -96,7 +95,7 @@ try:
 
             Target = target.spin(n, 0, NNP.K, 3, neutral_point)
 
-            NNP.ym = NNP.C.dot(Target.T).reshape(NNP.num_y, -1).T.tolist()
+            NNP.ym = NNP.C.dot(Target.T).reshape(NNP.ny, -1).T.tolist()
 
             new_state_old = new_state_new
 
