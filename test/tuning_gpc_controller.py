@@ -20,25 +20,25 @@ input_scale = [1., 1.]
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 4, Nu = 3, nd = 2, dd = 2, K = 5,
-                    Q = 1e5*np.array([[1.,  0.],
-                                 [0.,  1.]]),
-                    Lambda = np.array([[1., 0.],
-                                       [0., 1.]]),
+                    N1 = 0, N2 = 2, Nu = 1, nd = 3, dd = 3, K = 3,
+                    Q = np.array([[100.,  1.],
+                                 [1.,  5.]]),
+                    Lambda = np.array([[0.1, 0.],
+                                      [0., 0.1]]),
                     states_to_control = [0, 1, 1],
                         x0 = [0.0, 0.0, 0.0],
-                        u0 = [0.0, 0.0], s = 0., b = 1., r = 4.)
+                        u0 = [0.0, 0.0], s = 1e-20, b = 1., r = 4.)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
 log = Logger()
 Block.reset()
 
-Block.step([0., -50.])
+Block.step([0., 0.])
 
 neutral_point = Block.get_state()
 
-#NNP.x0=neutral_point
+NNP.x0=neutral_point
 
 print "neutral_point: ", neutral_point
 
