@@ -8,42 +8,43 @@ import time, os
 import copy
 from logger.logger import Logger
 from utilities.util import *
-from target.target import Circle, Pringle,Pringle2, SingleAxisSineWave, SingleAxisSquareWave, Square3D
+from target.target import Circle, Pringle, Pringle2, SingleAxisSineWave, SingleAxisSquareWave, Square3D
 #from scipy.spatial.transform import Rotation as R
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 500
+NUM_TIMESTEPS = 1000
 
 input_scale = [1., 1.]
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 1, N2 = 3, Nu = 1, nd = 2, dd = 2, K = 3,
-                    Q = 1e-5*np.array([[5., 0.5],
-                                       [0.5,  1.]]),
-                    Lambda = np.array([[1e-4, 0.5],
-                                       [0.5, 1e-2]]),
+                    N1 = 0, N2 = 4, Nu = 3, nd = 2, dd = 2, K = 5,
+                    Q = 1e5*np.array([[1.,  0.],
+                                 [0.,  1.]]),
+                    Lambda = np.array([[1., 0.],
+                                       [0., 1.]]),
                     states_to_control = [0, 1, 1],
                         x0 = [0.0, 0.0, 0.0],
-                        u0 = [0.0, 0.0])
+                        u0 = [0.0, 0.0], s = 0., b = 1., r = 4.)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
 log = Logger()
 Block.reset()
 
-Block.step([0., 0.])
+Block.step([0., -50.])
 
 neutral_point = Block.get_state()
-NNP.x0  = neutral_point
+
+#NNP.x0=neutral_point
 
 print "neutral_point: ", neutral_point
 
-target = Pringle2(wavelength = 100, amplitude = 15./1000., center = neutral_point)
+target = Pringle2(wavelength = 100, amplitude = 10./1000., center = neutral_point)
 
-Block.calibration_max = np.array([ 80, 322, 109,   1,   1,   1, 102,   1,   1,  33,   1 ])
+Block.calibration_max = np.array([ 80, 309, 113,   1,   4,   1, 100,   1,   1,  33,   1])
 #Block.get_signal_calibration()
 
 u_optimal_old = np.reshape(NNP.u0*NNP.Nu, (-1, 2))
@@ -131,6 +132,7 @@ try:
                             'yn' : predicted_states.tolist(), \
                             'ym' : Target[0, :].tolist(),\
                             'elapsed' : time.time() - seconds,\
+                            'cost' : NNP.cost.compute_cost(), \
                             'u' : [u_action], \
                             'signal' : signal}})
 
