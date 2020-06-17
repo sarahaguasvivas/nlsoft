@@ -18,28 +18,30 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D
 import random
 NUM_DATA_RUNS = 100
-TRAIN = True
+TRAIN = False
 
 #plt.style.use('dark_background')
 plt.style.use('seaborn')
-filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data10.csv"
+filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data13.csv"
+filename1 = str(os.environ["HOME"]) + "/gpc_controller/data/model_data14.csv"
+filename2 = str(os.environ["HOME"]) + "/gpc_controller/data/model_data15.csv"
 
 def custom_loss(y_true, y_pred):
-    return 1000*K.mean(K.square(y_pred - y_true), axis = -1)
+    loss = K.square(K.abs((y_pred - y_true)))
+    loss = loss * [1., 1., 1.]
+    loss = K.mean(loss, axis = -1)
+    return loss
 
 keras.losses.custom_loss = custom_loss
 def neural_network_training(X, y):
-    #y = 1000*y
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.4)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2)
 
     model = Sequential()
-    #model.add(GaussianNoise(0.1))
-    model.add(Dense(20, activation =  'tanh', kernel_initializer='random_normal'))
-    #model.add(GaussianNoise(0.1))
+    model.add(Dense(20, activation =  'relu', kernel_initializer='random_normal'))
     model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
-    model.compile(optimizer= 'adam', loss =custom_loss, metrics=['mse'])
-    model.fit(X_train, y_train, epochs = 10000, batch_size = 1000, validation_split=0.2)
+    model.compile(optimizer= 'adam', loss = custom_loss, metrics=['mae'])
+    model.fit(X_train, y_train, epochs = 5000, batch_size = 1000, validation_split=0.2)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
@@ -47,8 +49,8 @@ def neural_network_training(X, y):
 def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
 
     model = load_model(modelfile)
-    y *= 1000 # convert meters to mm
-    yn = 1000*model.predict(X) #*1000
+    #y *= 1000 # convert meters to mm
+    yn = model.predict(X) #*1000
     plt.figure()
 
     lab = ['x', 'y', 'z']
@@ -78,7 +80,7 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
         plt.xlabel('timesteps')
     plt.show()
 
-    L = 300
+    L = 100
     START = random.randint(0, yn.shape[0] - L)
     fig = plt.figure()
     ax = Axes3D(fig)
@@ -97,15 +99,18 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
     plt.show()
 
     # Testing set loss
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.5)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.1)
     y_pred= model.predict(X_test)
 
-    diff = np.mean(np.linalg.norm(y_pred - y_test, axis = 1))
+    print y_pred, y_test
+    diff = np.mean((y_pred - y_test)**2, axis = 0)
     print "Testing set avg l2 norm:", diff
 
 
 def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
-    data_array = np.genfromtxt(filename, delimiter=',')
+    data_array = np.genfromtxt(filename[0], delimiter=',')
+    for i in range(1, len(filename)):
+        data_array = np.concatenate((data_array, np.genfromtxt(filename[i], delimiter = ',')), axis = 0)
     signals = data_array[:, :11]
     max_signals = np.max(signals, axis = 0)
     for i in range(len(max_signals)):
@@ -115,8 +120,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
         signals[:, i]/= max_signals[i]
 
     position = data_array[:, 11:14] # not using Euler angles
-    print position
-    inputs = data_array[:, 17:]
+    inputs = data_array[:, 14:]
 
     N = max(nd, dd) # data sample where we will start first
 
@@ -131,23 +135,23 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
     for i in range(dd):
         Y = np.concatenate((Y, position[dd - i - 1 + (N - dd) : L-i, :]), axis = 1)
 
-    print Y.shape
-    U = U[:, 2:]/100
+    U = np.deg2rad(U[:, 2:])
     S = signals[N - 1:, :]
+
     Y = Y[:, 3:-3] # Y
 
     X = np.concatenate((U, Y[:, 3:]), axis = 1)
     X = np.concatenate((X, S), axis = 1)
-
     y = Y[:, :3] # we are using all of this to estimate current
-
+    print y.shape
+    print np.cov(y.T, bias = True)
     return X, y
 
 
 if __name__ == "__main__":
     # dd is dd+2
     # nd is nd
-    X, y = prepare_data_file(filename, nd=2, dd=2+2)
+    X, y = prepare_data_file([filename, filename1, filename2], nd=3, dd=3+2)
     if TRAIN:
         modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)

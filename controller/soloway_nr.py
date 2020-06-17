@@ -1,17 +1,16 @@
 import numpy as np
-from cost import *
 from dynamic_model import *
 from scipy import optimize
 import copy
 
 class SolowayNR:
 
-    def __init__(self, cost, d_model):
-        self.cost = cost
+    def __init__(self, d_model):
         self.d_model = d_model
 
-    def __fsolve_newton(self, u0, rtol=1e-10, maxit=50, verbose=False):
+    def __fsolve_newton(self, u0, del_u, rtol=1e-10, maxit=50, verbose=False):
         u = np.array(u0).copy()
+
         del_u = np.zeros(u.shape)
 
         Fu = -self.d_model.Fu(u, del_u)
@@ -30,7 +29,7 @@ class SolowayNR:
 
             norm = np.linalg.norm(Fu)
             if verbose:
-                enorm = np.linalg.norm(u - np.ones(u.shape))
+                enorm = np.linalg.norm(u[0, :] - np.array([1, 1]))
                 print('Newton {:d} anorm {:6.2e} rnorm {:6.2e} eratio {:6.2f}'.
                                 format(i+1, norm, norm/norm0, enorm/enorm_last**2))
                 enorm_last = enorm
@@ -40,5 +39,5 @@ class SolowayNR:
         return u, del_u, i
 
 
-    def optimize(self, u, maxit = 1, rtol = 1e-8, verbose=False):
-       return self.__fsolve_newton(u0 = u, rtol = rtol, maxit = maxit,  verbose = verbose)
+    def optimize(self, u, delu,maxit = 1, rtol = 1e-8, verbose=False):
+       return self.__fsolve_newton(u0 = u, del_u = delu, rtol = rtol, maxit = maxit,  verbose = verbose)
