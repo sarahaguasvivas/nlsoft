@@ -1,15 +1,11 @@
 #!/usr/bin/env python2.7
-from controller.dynamic_model import *
 from controller.soloway_nr import *
 from gym.block_gym import *
-from collections import deque
-from scipy import signal as sig
 import time, os
 import copy
 from logger.logger import Logger
 from utilities.util import *
 from target.target import Circle, Pringle, Pringle2, SingleAxisSineWave, SingleAxisSquareWave, Square3D
-#from scipy.spatial.transform import Rotation as R
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
@@ -43,8 +39,8 @@ NNP.x0=neutral_point
 print "neutral_point: ", neutral_point
 
 target = Pringle2(wavelength = 100, amplitude = 10./1000., center = neutral_point)
-
-Block.calibration_max = np.array([ 80, 309, 113,   1,   4,   1, 100,   1,   1,  33,   1])
+# 5 289 114   1   1   1 115   1   1  38   1
+Block.calibration_max = np.array([ 5, 289, 114,   1,   1,   1, 115,   1,   1,  38,   1])
 #Block.get_signal_calibration()
 
 u_optimal_old = np.reshape(NNP.u0*NNP.Nu, (-1, 2))
@@ -72,7 +68,7 @@ try:
 
         for n in range(NUM_TIMESTEPS):
             seconds = time.time()
-            signal = np.divide(Block.get_observation(), Block.calibration_max, \
+            signal = np.divide(Block.get_observation(), Block.calibration_max,
                                 dtype = np.float64).tolist()
 
             NNP.yn = []
@@ -114,11 +110,11 @@ try:
 
             Block.step(action = u_action)
 
-            NNP.update_dynamics(np.deg2rad(u_action).tolist(), del_u_action, \
+            NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action, \
                                 predicted_states.tolist(), Target[0, :].tolist())
 
             u_optimal_old = u_optimal
-            u_deque = roll_deque(u_deque, np.deg2rad(u_action).tolist())
+            u_deque = roll_deque(u_deque, u_optimal[0, :].tolist())
             y_deque = roll_deque(y_deque, predicted_states.tolist())
 
             if verbose == 0:
