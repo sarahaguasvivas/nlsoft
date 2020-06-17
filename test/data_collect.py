@@ -9,9 +9,9 @@ B = BlockGym()
 
 B.reset()
 
-actions1 = list(np.arange(100, -100, -5.))
-actions2 = list(np.arange(60, -100, -1.)) # need to change this
-actions3 = list(np.arange(-100, 60, 1.))  # need to change this
+actions1 = list(np.arange(60, -100, -5.))
+actions2 = list(np.arange(80, -100, -1.)) # need to change this
+actions3 = list(np.arange(-100, 80, 1.))  # need to change this
 
 N = 150
 updown = np.random.randint(-100, 100, (N, 1))
@@ -20,11 +20,11 @@ random_points = np.concatenate((updown, sides), axis = 1)
 
 flag = True
 today = date.today()
-f = open("data_" + today.strftime("%b_%d_%Y_8")+".txt", "w+")
+f = open("data_" + today.strftime("%b_%d_%Y_8")+".csv", "w+")
 # my_string = ','.join(map(str, my_list))
 
 try:
-    for exp in range(100):
+    for exp in range(50):
         print "_________"
         print " Round #", exp
         print "_________"
@@ -39,17 +39,17 @@ try:
                 print i, j
                 data = B.get_observation() + B.get_real_position()
                 data = data + [i, j]
-                print >> f, data
+                print >> f, ", ".join(map(str, data))
             flag = not flag
 
         for ii in range(N):
             aaction = random_points[ii, :].tolist()
             B.step(action = aaction)
-            time.sleep(0.3)
+            time.sleep(1.)
             print ii, aaction
             data = B.get_observation() + B.get_real_position()
             data = data + aaction
-            print >> f, data
+            print >> f, ", ".join(map(str, data))
         B.reset()
 except Exception as e:
     B.reset()
