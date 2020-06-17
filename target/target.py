@@ -37,7 +37,7 @@ class Circle(Target):
             y = self.center[1] + self.amplitude * np.sin(2.*np.pi*(timestep + i) \
                                                         / self.wavelength + phase) #- 10./1000.
             z = self.center[2] + self.amplitude*np.cos(2*np.pi*(timestep + i)/ \
-                                                        self.wavelength + phase) #- 10./1000.
+                                                        self.wavelength + phase) + 10./1000.
             x = self.center[0]
 
             target[i, :] = [x,y,z]
