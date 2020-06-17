@@ -13,10 +13,11 @@ NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 1000
 
 input_scale = [1., 1.]
+shift = [0., 0.]
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 2, Nu = 1, nd = 3, dd = 3, K = 3,
+                    N1 = 0, N2 = 2, Nu = 1, nd = 3, dd = 3, K = 5,
                     Q = np.array([[100.,  1.],
                                  [1.,  5.]]),
                     Lambda = np.array([[0.1, 0.],
@@ -38,7 +39,7 @@ NNP.x0=neutral_point
 
 print "neutral_point: ", neutral_point
 
-target = Pringle2(wavelength = 100, amplitude = 10./1000., center = neutral_point)
+target = Pringle2(wavelength = 100, amplitude = 20./1000., center = neutral_point)
 # 5 289 114   1   1   1 115   1   1  38   1
 Block.calibration_max = np.array([ 5, 289, 114,   1,   1,   1, 115,   1,   1,  38,   1])
 #Block.get_signal_calibration()
@@ -102,8 +103,8 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(input_scale[0]*np.rad2deg(u_action[0]),-100, 80)
-            u_action[1] = np.clip(input_scale[1]*np.rad2deg(u_action[1]),-100, 60)
+            u_action[0] = np.clip(input_scale[0]*(np.rad2deg(u_action[0]) + shift[0]),-100, 80)
+            u_action[1] = np.clip(input_scale[1]*(np.rad2deg(u_action[1]) + shift[1]),-100, 60)
 
             #u_action[0] = np.clip(100*np.cos(2.*np.pi/100.*n), -100., 80.)
             #u_action[1] = np.clip(100*np.sin(2.*np.pi/100.*n), -100., 60.)
