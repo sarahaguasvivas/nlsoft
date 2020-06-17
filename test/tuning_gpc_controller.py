@@ -12,19 +12,19 @@ model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 1000
 
-input_scale = [15., 1.]
+input_scale = [5., 1.]
 shift = [-25., 0.]
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 2, Nu = 1, nd = 3, dd = 3, K = 5,
-                    Q = np.array([[100.,  1.],
-                                 [1.,  5.]]),
+                    N1 = 0, N2 = 2, Nu = 1, nd = 3, dd = 3, K = 2,
+                    Q = np.array([[150.,  1.],
+                                  [1.,  5.]]),
                     Lambda = np.array([[5e-2, -5e-2],
                                       [-5e-2, 1e-1]]),
                     states_to_control = [0, 1, 1],
                         x0 = [0.0, 0.0, 0.0],
-                        u0 = [0.0, 0.0], s = 1e-20, b = 1., r = 1.)
+                        u0 = [0.0, 0.0], s = 1e-15, b = 1., r = 1.)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
