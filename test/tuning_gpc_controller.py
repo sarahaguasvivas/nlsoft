@@ -12,19 +12,19 @@ model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 1000
 
-input_scale = [1., 1.]
-shift = [0., 0.]
+input_scale = [15., 1.]
+shift = [-25., 0.]
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
                     N1 = 0, N2 = 2, Nu = 1, nd = 3, dd = 3, K = 5,
                     Q = np.array([[100.,  1.],
                                  [1.,  5.]]),
-                    Lambda = np.array([[0.1, 0.],
-                                      [0., 0.1]]),
+                    Lambda = np.array([[5e-2, -5e-2],
+                                      [-5e-2, 1e-1]]),
                     states_to_control = [0, 1, 1],
                         x0 = [0.0, 0.0, 0.0],
-                        u0 = [0.0, 0.0], s = 1e-20, b = 1., r = 4.)
+                        u0 = [0.0, 0.0], s = 1e-20, b = 1., r = 1.)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -39,7 +39,7 @@ NNP.x0=neutral_point
 
 print "neutral_point: ", neutral_point
 
-target = Pringle2(wavelength = 100, amplitude = 20./1000., center = neutral_point)
+target = Pringle2(wavelength = 200, amplitude = 20./1000., center = neutral_point)
 # 5 289 114   1   1   1 115   1   1  38   1
 Block.calibration_max = np.array([ 5, 289, 114,   1,   1,   1, 115,   1,   1,  38,   1])
 #Block.get_signal_calibration()
