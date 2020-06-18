@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D
 import random
 NUM_DATA_RUNS = 100
-TRAIN = False
+TRAIN = True
 
 #plt.style.use('dark_background')
 plt.style.use('seaborn')
@@ -41,7 +41,7 @@ def neural_network_training(X, y):
     model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
     model.compile(optimizer= 'adam', loss = custom_loss, metrics=['mae'])
-    model.fit(X_train, y_train, epochs = 5000, batch_size = 1000, validation_split=0.2)
+    model.fit(X_train, y_train, epochs = 10000, batch_size = 1000, validation_split=0.2)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
@@ -151,7 +151,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
 if __name__ == "__main__":
     # dd is dd+2
     # nd is nd
-    X, y = prepare_data_file([filename, filename1, filename2], nd=3, dd=3+2)
+    X, y = prepare_data_file([filename, filename1, filename2], nd=5, dd=5+2)
     if TRAIN:
         modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)
