@@ -10,21 +10,21 @@ from target.target import Circle, Pringle, Pringle2, SingleAxisSineWave, SingleA
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 1000
+NUM_TIMESTEPS = 500
 
 input_scale = [1., 1.]
 shift = [0., 0.0]
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 2,
-                    Q = np.array([[5e-3,  1e-3],
-                                  [1e-3, 200.]]),
-                    Lambda = np.array([[3e-2, 5e-5],
-                                       [5e-5,  1.]]),
+                    N1 = 0, N2 = 1, Nu = 1, nd = 5, dd = 5, K = 1,
+                    Q = np.array([[5000.,  0.],
+                                  [0., 10000.]]),
+                    Lambda = np.array([[1e-1, 0.],
+                                       [0.,  1.]]),
                     states_to_control = [0, 1, 1],
                         x0 = [0.0, 0.0, 0.0],
-                        u0 = [0.0, 0.0], s = 1e-20, b = 1., r = 1e5)
+                        u0 = [0.0, 0.0], s = [1e-20, 1e-10], b = [1e-5, 1e-4], r = [4e5, 4e-5])
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -39,7 +39,7 @@ NNP.x0=neutral_point
 
 print "neutral_point: ", neutral_point
 
-target = Pringle2(wavelength = 200, amplitude = 10./1000., center = neutral_point)
+target = Pringle2(wavelength = 200, amplitude = 20./1000., center = neutral_point)
 # 5 289 114   1   1   1 115   1   1  38   1
 Block.calibration_max = np.array([ 5, 289, 114,   1,   1,   1, 115,   1,   1,  38,   1])
 #Block.get_signal_calibration()
