@@ -77,6 +77,12 @@ class Logger:
         error_mm = (yn - ym) / np.maximum(ym, 1)
         error_pred = (yn - actual_)/ np.maximum(actual_, 1)
         signal = np.reshape(signal, (NUM_EXPERIMENTS, -1, 11))
+
+        # Zeroing each state:
+        max_target = np.max(ym, axis = (0, 1))
+        min_target = np.min(ym, axis = (0, 1))
+        shift = (max_target + min_target) / 2.
+
         color_palette = ['#1446A0', '#DB3069', '#F5D547', '#F5D547', '#3C3C3B']
         labels = ['x', 'y', 'z', 'u']
         plt.figure()
@@ -84,26 +90,26 @@ class Logger:
         timesteps = range(max(yn.shape))
         for i in range(3):
             plt.subplot(3, 1, i+1)
-            plt.plot(np.mean(ym, axis = AXIS)[:, i], color = color_palette[-1], linestyle = 'dashed', label = 'target')
-            plt.plot(np.mean(yn, axis = AXIS)[:, i], color_palette[0], label = 'predicted state')
-            plt.fill_between(timesteps, np.mean(yn, axis = AXIS)[:, i] - np.std(yn, axis = AXIS)[:, i] ,\
-                                np.mean(yn, axis = AXIS)[:, i] + np.std(yn, axis = AXIS)[:, i], \
+            plt.plot(np.mean(ym, axis = AXIS)[:, i] - shift[i], color = color_palette[-1], linestyle = 'dashed', label = 'target')
+            plt.plot(np.mean(yn, axis = AXIS)[:, i] - shift[i], color_palette[0], label = 'predicted state')
+            plt.fill_between(timesteps, np.mean(yn, axis = AXIS)[:, i] - np.std(yn, axis = AXIS)[:, i] - shift[i],
+                                np.mean(yn, axis = AXIS)[:, i] + np.std(yn, axis = AXIS)[:, i] - shift[i],
                                     color = color_palette[0], alpha = 0.5)
-            plt.plot(np.mean(actual_, axis = AXIS)[:, i], color = color_palette[1], label = 'actual state') # only 0 and 2
+            plt.plot(np.mean(actual_, axis = AXIS)[:, i] - shift[i], color = color_palette[1], label = 'actual state') # only 0 and 2
 
-            plt.fill_between(timesteps, np.mean(actual_, axis = AXIS)[:, i] - np.std(actual_, axis = AXIS)[:, i],\
-                                            np.mean(actual_, axis = AXIS)[:, i] + np.std(actual_, axis = AXIS)[:, i],\
+            plt.fill_between(timesteps, np.mean(actual_, axis = AXIS)[:, i] - np.std(actual_, axis = AXIS)[:, i] - shift[i],
+                                            np.mean(actual_, axis = AXIS)[:, i] + np.std(actual_, axis = AXIS)[:, i] - shift[i],
                                                 color = color_palette[1], alpha = 0.5, label = r"$2\sigma$")
 
-            #plt.ylim([-65, 4])
             plt.legend()
             plt.ylabel(str(labels[i]) + ' [mm]')
-            plt.plot(1000*neutral_point[i], marker = 'h')
+            plt.plot(1000*neutral_point[i]- shift[i], marker = 'h')
             if i==2:
                 plt.xlabel('timesteps')
             if i==0:
                 plt.title("Changes in States with respect to Timesteps")
         plt.show()
+
         max_input = np.max(np.max(u_optimal_list))
         min_input = np.min(np.min(u_optimal_list))
         color_palette1= ['#272838', '#F3DE8A', '#F3DE8A', '#F3DE8A']
