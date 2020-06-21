@@ -13,18 +13,19 @@ NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 500
 
 input_scale = [1., 1.]
-shift = [0., 0.0]
+shift = [0., 0.]
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 1, Nu = 1, nd = 5, dd = 5, K = 1,
-                    Q = np.array([[5000.,  0.],
-                                  [0., 10000.]]),
+                    N1 = 0, N2 = 3, Nu = 1, nd = 5, dd = 5, K = 3,
+                    Q = np.array([[1000., 0.],
+                                  [0., 1000.]]),
                     Lambda = np.array([[1e-1, 0.],
-                                       [0.,  1.]]),
+                                       [0., 2.]]),
                     states_to_control = [0, 1, 1],
                         x0 = [0.0, 0.0, 0.0],
-                        u0 = [0.0, 0.0], s = [1e-20, 1e-10], b = [1e-5, 1e-4], r = [4e5, 4e-5])
+                        u0 = [0.0, 0.0], s = [1e-20, 1e-10], b = [1., 1.],
+                             r = [4e10, 4e10])
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -84,6 +85,7 @@ try:
 
 
                 predicted_states = NNP.predict(neural_network_input).flatten()
+
                 NNP.yn += [NNP.C.dot(predicted_states).tolist()]
                 ydeq = roll_deque(ydeq, predicted_states.tolist())
 
@@ -97,10 +99,12 @@ try:
 
             new_state_old = new_state_new
 
-            u_optimal, del_u,  _ = NR_opt.optimize(u = u_optimal_old, delu = del_u, \
+            u_optimal, del_u,  _ = NR_opt.optimize(u = u_optimal_old, delu = del_u,
                                         maxit = 1, rtol = 1e-4, verbose = True)
 
             u_action = u_optimal[0, :].tolist()
+            #u_action = np.arctan2(np.sin(u_action), np.cos(u_action)) + np.pi
+
             del_u_action = del_u[0, :].tolist()
 
             u_action[0] = np.clip(input_scale[0]*(np.rad2deg(u_action[0]) + shift[0]),-100, 80)
@@ -117,11 +121,12 @@ try:
             u_optimal_old = u_optimal
             u_deque = roll_deque(u_deque, u_optimal[0, :].tolist())
             y_deque = roll_deque(y_deque, predicted_states.tolist())
-
+            #y_deque = roll_deque(y_deque, np.array(Block.get_state()).tolist())
             if verbose == 0:
                 log.verbose(actual = np.array(Block.get_state()).tolist(),
-                        yn = predicted_states, ym = Target[0, :], \
-                            elapsed = time.time()-seconds, u = u_action)
+                        yn = predicted_states, ym = Target[0, :],
+                            elapsed = time.time()-seconds, u = u_action,
+                            cost = NNP.cost.compute_cost())
             if verbose == 1:
                 log.verbose(u_action = u_action, elapsed = time.time() - seconds)
 

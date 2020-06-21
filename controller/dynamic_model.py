@@ -185,7 +185,7 @@ class NeuralNetworkPredictor():
         """
         weights = self.model.layers[self.first_layer_index].get_weights()[0]
         sum_output = 0.0
-        for i in range(min(j, self.dd)):
+        for i in range(min(j, self.dd*self.nx)):
             step_ = []
 
             for ii in range(self.nx):
@@ -202,9 +202,6 @@ class NeuralNetworkPredictor():
                D yn
             -----------
              D u(n+h)
-
-            TODO this is supposed to be a vector
-            num_y x num_u
         """
         weights = self.model.layers[-1].get_weights()[0]
         sum_output = np.array([0.0]*weights.shape[1])
@@ -318,13 +315,10 @@ class NeuralNetworkPredictor():
                 ynu += [self.__partial_yn_partial_u(j, h).tolist()]
                 ynu1+=[self.__partial_delta_u_partial_u(j, h)]
 
-            #if self.Nu==1:
-            #    ynu1 = ynu1.tolist()
-
             ynu1 = np.array(ynu1)
             ynu = np.array(ynu)
 
-            sub_sum = delY.dot(self.Q).dot(np.array(ynu.T))
+            sub_sum = delY.dot(self.Q.T).dot(np.array(ynu.T))
 
             sum_output += (-2.*np.sum(sub_sum, axis = 0)).flatten().tolist()
 
