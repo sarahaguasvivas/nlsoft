@@ -5,6 +5,7 @@
 #from controller.newton_raphson import *
 import numpy as np
 import os
+from tensorflow.keras.constraints import max_norm
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
@@ -25,7 +26,7 @@ plt.style.use('seaborn')
 filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data13.csv"
 filename1 = str(os.environ["HOME"]) + "/gpc_controller/data/model_data14.csv"
 filename2 = str(os.environ["HOME"]) + "/gpc_controller/data/model_data15.csv"
-
+filename3 = str(os.environ["HOME"]) + "/gpc_controller/data/model_data16.csv"
 def custom_loss(y_true, y_pred):
     loss = K.square(K.abs((y_pred - y_true)))
     loss = loss * [1., 1., 1.]
@@ -37,11 +38,11 @@ def neural_network_training(X, y):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2)
 
     model = Sequential()
-    model.add(Dense(20, activation =  'relu', kernel_initializer='random_normal'))
-    model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
+    model.add(Dense(20, activation='relu', kernel_initializer='random_normal'))
+    model.add(Dense(3,  activation = 'tanh', kernel_initializer='random_normal'))
 
     model.compile(optimizer= 'adam', loss = custom_loss, metrics=['mae'])
-    model.fit(X_train, y_train, epochs = 10000, batch_size = 1000, validation_split=0.2)
+    model.fit(X_train, y_train, epochs = 1000, batch_size = 100, validation_split = 0.2)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
@@ -151,7 +152,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
 if __name__ == "__main__":
     # dd is dd+2
     # nd is nd
-    X, y = prepare_data_file([filename, filename1, filename2], nd=5, dd=5+2)
+    X, y = prepare_data_file([filename, filename1, filename2, filename3], nd=5, dd=5+2)
     if TRAIN:
         modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)

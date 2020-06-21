@@ -40,7 +40,7 @@ try:
                 data = B.get_observation() + B.get_real_position()
                 data = data + [i, j]
                 print >> f, ", ".join(map(str, data))
-            flag = not flag
+            #flag = not flag
 
         for ii in range(N):
             aaction = random_points[ii, :].tolist()
