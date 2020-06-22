@@ -17,7 +17,7 @@ shift = [0., 0.]
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 3,
+                    N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 5,
                     Q = np.array([[1000., 0],
                                   [0., 1000.]]),
                     Lambda = np.array([[100., -5e-2],
@@ -103,7 +103,6 @@ try:
                                         maxit = 1, rtol = 1e-4, verbose = True)
 
             u_action = u_optimal[0, :].tolist()
-            #u_action = np.arctan2(np.sin(u_action), np.cos(u_action)) + np.pi
 
             del_u_action = del_u[0, :].tolist()
 
