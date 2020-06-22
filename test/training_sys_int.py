@@ -27,20 +27,23 @@ filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data13.csv"
 filename1 = str(os.environ["HOME"]) + "/gpc_controller/data/model_data14.csv"
 filename2 = str(os.environ["HOME"]) + "/gpc_controller/data/model_data15.csv"
 filename3 = str(os.environ["HOME"]) + "/gpc_controller/data/model_data16.csv"
+
 def custom_loss(y_true, y_pred):
-    loss = K.sqrt(K.sum(K.square(1000.*y_pred- 1000.*y_true), axis = -1))
+    loss = 1000.*K.sqrt(K.sum(K.square(y_pred- y_true), axis = -1))
     return loss
 
 keras.losses.custom_loss = custom_loss
 def neural_network_training(X, y):
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.4)
 
     model = Sequential()
-    model.add(Dense(25, activation='relu', kernel_initializer='random_normal'))
-    model.add(Dense(3,  activation = 'tanh', kernel_initializer='random_normal'))
+    model.add(Dense(5, activation='relu', kernel_initializer='random_normal'))
+    model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
-    model.compile(optimizer= 'adam', loss = custom_loss, metrics=['mse'])
-    model.fit(X_train, y_train, epochs = 5000, batch_size = 100, validation_split = 0.2)
+    #optimizer = keras.optimizers.Adam(lr = 0.01)
+    model.compile(optimizer= "adam", loss = custom_loss, metrics=['mse'])
+
+    model.fit(X_train, y_train, epochs = 500, batch_size = 1000, validation_split = 0.3)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
@@ -53,18 +56,22 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
     plt.figure()
 
     lab = ['x', 'y', 'z']
-    L = X.shape[0]//NUM_DATA_RUNS
+    L = 5000
+
+    max_target = np.max(y, axis=0)
+    min_target = np.min(y, axis=0)
+    shift = (max_target + min_target) / 2.
 
     for i in range(3):
         plt.subplot(3, 2, 2*i+1)
-        plt.plot(yn[1:L, i], color = '#E74C3C',   label = r"$" + str(lab[i]) + "_{est}$")
-        plt.plot(y[1:L, i], color = '#5D6D7E',linestyle ='dashed', label = r"$" + str(lab[i]) + "_{true}$", alpha = 0.7)
+        plt.plot(yn[2:L, i] - shift[i], color = '#E74C3C',   label = r"$" + str(lab[i]) + "_{est}$")
+        plt.plot(y[2:L, i] - shift[i], color = '#5D6D7E',linestyle ='dashed', label = r"$" + str(lab[i]) + "_{true}$", alpha = 0.7)
         plt.ylabel(str(lab[i]) + " [mm]")
 #        plt.title("Estimation vs. Truth for " + str(lab[i]) + " [mm]")
-        #plt.ylim([-0.1, 0.1])
+
         plt.legend()
         if 2*i+1 == 1:
-            plt.title("States with respect to Timesteps")
+            plt.title("Estimated vs. Ground Truth States")
         if 2*i+1 == 5:
             plt.xlabel('timesteps')
 
@@ -72,12 +79,13 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
         plt.plot(y[1:L, i] - yn[1:L, i], color = '#34495E', linewidth = 0.5, label = r"$\Delta " + str(lab[i]) + " [mm]$")
 #        plt.title("Error in estimation for " + str(lab[i]) + " [mm]")
         plt.ylabel(r"$\varepsilon_{" + str(lab[i]) + "}$ [mm]")
-        #plt.ylim([-0.1, 0.1])
+        plt.ylim([-1., 1.])
         plt.legend()
         if 2*i+2 == 2:
             plt.title("Errors in Testing Set Predictions")
         plt.xlabel('timesteps')
     plt.show()
+    plt.savefig("sysint", format ='svg', dpi = 1000)
 
     L = 100
     START = random.randint(0, yn.shape[0] - L)
@@ -152,7 +160,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
 if __name__ == "__main__":
     # dd is dd+2
     # nd is nd
-    X, y = prepare_data_file([filename, filename1, filename2, filename3], nd=3, dd=3+2)
+    X, y = prepare_data_file([filename, filename1, filename2, filename3], nd=1, dd=1+2)
     if TRAIN:
         modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)
