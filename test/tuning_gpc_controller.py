@@ -10,22 +10,22 @@ from target.target import Circle, Pringle, Pringle2, SingleAxisSineWave, SingleA
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 500
+NUM_TIMESTEPS = 2000
 
 input_scale = [1., 1.]
 shift = [0., 0.]
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 3, Nu = 1, nd = 5, dd = 5, K = 3,
-                    Q = np.array([[1000., 0.],
+                    N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 3,
+                    Q = np.array([[1000., 0],
                                   [0., 1000.]]),
-                    Lambda = np.array([[1e-1, 0.],
-                                       [0., 2.]]),
+                    Lambda = np.array([[100., -5e-2],
+                                       [-5e-2, 200.]]),
                     states_to_control = [0, 1, 1],
                         x0 = [0.0, 0.0, 0.0],
-                        u0 = [0.0, 0.0], s = [1e-20, 1e-10], b = [1., 1.],
-                             r = [4e10, 4e10])
+                        u0 = [0.0, 0.0], s = [1e-20, 1e-20], b = [1., 1.],
+                             r = [4., 4.])
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -40,7 +40,7 @@ NNP.x0=neutral_point
 
 print "neutral_point: ", neutral_point
 
-target = Pringle2(wavelength = 200, amplitude = 20./1000., center = neutral_point)
+target = Pringle2(wavelength = 10000, amplitude = 20./1000., center = neutral_point)
 # 5 289 114   1   1   1 115   1   1  38   1
 Block.calibration_max = np.array([ 5, 289, 114,   1,   1,   1, 115,   1,   1,  38,   1])
 #Block.get_signal_calibration()
@@ -121,7 +121,7 @@ try:
             u_optimal_old = u_optimal
             u_deque = roll_deque(u_deque, u_optimal[0, :].tolist())
             y_deque = roll_deque(y_deque, predicted_states.tolist())
-            #y_deque = roll_deque(y_deque, np.array(Block.get_state()).tolist())
+
             if verbose == 0:
                 log.verbose(actual = np.array(Block.get_state()).tolist(),
                         yn = predicted_states, ym = Target[0, :],
