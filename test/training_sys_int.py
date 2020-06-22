@@ -36,11 +36,11 @@ def neural_network_training(X, y):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2)
 
     model = Sequential()
-    model.add(Dense(20, activation='relu', kernel_initializer='random_normal'))
-    model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
+    model.add(Dense(25, activation='relu', kernel_initializer='random_normal'))
+    model.add(Dense(3,  activation = 'tanh', kernel_initializer='random_normal'))
 
-    model.compile(optimizer= 'rmsprop', loss = custom_loss, metrics=['mse'])
-    model.fit(X_train, y_train, epochs = 500, batch_size = 1000, validation_split = 0.2)
+    model.compile(optimizer= 'adam', loss = custom_loss, metrics=['mse'])
+    model.fit(X_train, y_train, epochs = 5000, batch_size = 100, validation_split = 0.2)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
@@ -102,8 +102,9 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.5)
     y_pred= 1000.*model.predict(X_test)
 
-    print y_pred, y_test
+    print y_pred, y_test, y_pred.shape
     diff = np.linalg.norm(y_test-y_pred)
+
     print "Testing set avg l2 norm:", diff
 
 
@@ -151,7 +152,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
 if __name__ == "__main__":
     # dd is dd+2
     # nd is nd
-    X, y = prepare_data_file([filename, filename1, filename2], nd=5, dd=5+2)
+    X, y = prepare_data_file([filename, filename1, filename2, filename3], nd=3, dd=3+2)
     if TRAIN:
         modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)
