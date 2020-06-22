@@ -28,9 +28,7 @@ filename1 = str(os.environ["HOME"]) + "/gpc_controller/data/model_data14.csv"
 filename2 = str(os.environ["HOME"]) + "/gpc_controller/data/model_data15.csv"
 filename3 = str(os.environ["HOME"]) + "/gpc_controller/data/model_data16.csv"
 def custom_loss(y_true, y_pred):
-    loss = K.square(K.abs((y_pred - y_true)))
-    loss = loss * [1., 1., 1.]
-    loss = K.mean(loss, axis = -1)
+    loss = K.sqrt(K.sum(K.square(1000.*y_pred- 1000.*y_true), axis = -1))
     return loss
 
 keras.losses.custom_loss = custom_loss
@@ -41,8 +39,8 @@ def neural_network_training(X, y):
     model.add(Dense(20, activation='relu', kernel_initializer='random_normal'))
     model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
-    model.compile(optimizer= 'adam', loss = custom_loss, metrics=['mae'])
-    model.fit(X_train, y_train, epochs = 50, batch_size = 1000, validation_split = 0.2)
+    model.compile(optimizer= 'rmsprop', loss = custom_loss, metrics=['mse'])
+    model.fit(X_train, y_train, epochs = 500, batch_size = 1000, validation_split = 0.2)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
@@ -50,8 +48,8 @@ def neural_network_training(X, y):
 def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
 
     model = load_model(modelfile)
-    #y *= 1000 # convert meters to mm
-    yn = model.predict(X) #*1000
+    y *= 1000 # convert meters to mm
+    yn = 1000.*model.predict(X) #*1000
     plt.figure()
 
     lab = ['x', 'y', 'z']
@@ -100,15 +98,16 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
     plt.show()
 
     # Testing set loss
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.1)
-    y_pred= model.predict(X_test)
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.5)
+    y_pred= 1000.*model.predict(X_test)
 
     print y_pred, y_test
-    diff = np.linalg.norm(y_pred - y_test, 2)
+    diff = np.linalg.norm(y_test-y_pred)
     print "Testing set avg l2 norm:", diff
 
 
-def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
+def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
     data_array = np.genfromtxt(filename[0], delimiter=',')
     for i in range(1, len(filename)):
         data_array = np.concatenate((data_array, np.genfromtxt(filename[i], delimiter = ',')), axis = 0)
@@ -152,7 +151,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 3, dd = 3):
 if __name__ == "__main__":
     # dd is dd+2
     # nd is nd
-    X, y = prepare_data_file([filename, filename1, filename2, filename3], nd=5, dd=5+2)
+    X, y = prepare_data_file([filename, filename1, filename2], nd=5, dd=5+2)
     if TRAIN:
         modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)
