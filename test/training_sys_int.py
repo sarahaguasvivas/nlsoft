@@ -39,10 +39,10 @@ def neural_network_training(X, y):
 
     model = Sequential()
     model.add(Dense(20, activation='relu', kernel_initializer='random_normal'))
-    model.add(Dense(3,  activation = 'tanh', kernel_initializer='random_normal'))
+    model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
     model.compile(optimizer= 'adam', loss = custom_loss, metrics=['mae'])
-    model.fit(X_train, y_train, epochs = 1000, batch_size = 100, validation_split = 0.2)
+    model.fit(X_train, y_train, epochs = 50, batch_size = 1000, validation_split = 0.2)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
@@ -104,7 +104,7 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
     y_pred= model.predict(X_test)
 
     print y_pred, y_test
-    diff = np.mean((y_pred - y_test)**2, axis = 0)
+    diff = np.linalg.norm(y_pred - y_test, 2)
     print "Testing set avg l2 norm:", diff
 
 
