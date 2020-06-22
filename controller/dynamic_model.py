@@ -72,7 +72,7 @@ class NeuralNetworkPredictor():
 
         self.constraints = Constraints(s = s, b = b, r = r)
 
-        self.hid = self.model.layers[-1].input_shape[1] - 11 # minus 11 sensor signals
+        self.hid = self.model.layers[-1].input_shape[1]
 
         self.initialize_deques(self.u0, self.x0)
         self.cost = NN_Cost(self)

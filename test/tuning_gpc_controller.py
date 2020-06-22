@@ -17,11 +17,11 @@ shift = [0., 0.]
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 5,
+                    N1 = 0, N2 = 3, Nu = 1, nd = 1, dd = 1, K = 3,
                     Q = np.array([[1000., 0],
                                   [0., 1000.]]),
-                    Lambda = np.array([[1e-4, -5e-2],
-                                       [-5e-2, 1e-4]]),
+                    Lambda = np.array([[1., 0.],
+                                       [0., 1.]]),
                     states_to_control = [0, 1, 1],
                         x0 = [0.0, 0.0, 0.0],
                         u0 = [0.0, 0.0], s = [1e-20, 1e-20], b = [1., 1.],
