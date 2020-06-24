@@ -9,7 +9,7 @@ from tensorflow.keras.constraints import max_norm
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
-
+from tensorflow.keras import regularizers
 import keras
 from keras.models import Sequential, load_model
 from keras.layers import Dense, GaussianNoise, LSTM, BatchNormalization
@@ -19,14 +19,14 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D
 import random
 NUM_DATA_RUNS = 100
-TRAIN = True
+TRAIN = False
 
 #plt.style.use('dark_background')
 plt.style.use('seaborn')
-filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data13.csv"
-filename1 = str(os.environ["HOME"]) + "/gpc_controller/data/model_data14.csv"
-filename2 = str(os.environ["HOME"]) + "/gpc_controller/data/model_data15.csv"
-filename3 = str(os.environ["HOME"]) + "/gpc_controller/data/model_data16.csv"
+filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data17.csv"
+filename1 = str(os.environ["HOME"]) + "/gpc_controller/data/model_data18.csv"
+#filename2 = str(os.environ["HOME"]) + "/gpc_controller/data/model_data15.csv"
+#filename3 = str(os.environ["HOME"]) + "/gpc_controller/data/model_data16.csv"
 
 def custom_loss(y_true, y_pred):
     loss = 1000.*K.sqrt(K.sum(K.square(y_pred- y_true), axis = -1))
@@ -34,16 +34,18 @@ def custom_loss(y_true, y_pred):
 
 keras.losses.custom_loss = custom_loss
 def neural_network_training(X, y):
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.4)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2)
 
     model = Sequential()
-    model.add(Dense(5, activation='relu', kernel_initializer='random_normal'))
-    model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
+    model.add(Dense(10, activation='relu', kernel_initializer='random_normal',
+                        kernel_regularizer = regularizers.l1(0.01),
+                        activity_regularizer= regularizers.l2(0.02)))
+    model.add(Dense(3,  activation = 'tanh', kernel_initializer='random_normal'))
 
     #optimizer = keras.optimizers.Adam(lr = 0.01)
     model.compile(optimizer= "adam", loss = custom_loss, metrics=['mse'])
 
-    model.fit(X_train, y_train, epochs = 500, batch_size = 1000, validation_split = 0.3)
+    model.fit(X_train, y_train, epochs = 1000, batch_size = 1000, validation_split = 0.3)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
@@ -148,7 +150,11 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
     S = signals[N - 1:, :]
 
     Y = Y[:, 3:-3] # Y
-
+    min_y = np.min(Y, axis =0)
+    max_y = np.max(Y, axis =0)
+    shift = (min_y + max_y)/2.
+    Y -= shift
+    print shift
     X = np.concatenate((U, Y[:, 3:]), axis = 1)
     X = np.concatenate((X, S), axis = 1)
     y = Y[:, :3] # we are using all of this to estimate current
@@ -160,7 +166,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
 if __name__ == "__main__":
     # dd is dd+2
     # nd is nd
-    X, y = prepare_data_file([filename, filename1, filename2, filename3], nd=1, dd=1+2)
+    X, y = prepare_data_file([filename, filename1], nd=3, dd=3+2)
     if TRAIN:
         modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)
