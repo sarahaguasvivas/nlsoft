@@ -17,15 +17,15 @@ shift = [0., 0.]
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 5, Nu = 1, nd = 3, dd = 3, K = 15,
-                    Q = np.array([[100., 20.],
-                                  [20., 80.]]),
-                    Lambda = np.array([[1e-1, 0.],
-                                       [0., 5e-1]]),
+                    N1 = 0, N2 = 2, Nu = 1, nd = 3, dd = 3, K = 2,
+                    Q = np.array([[1000., 0.],
+                                  [0., 1000.]]),
+                    Lambda = np.array([[1e-8, 0.],
+                                       [0., 5e-8]]),
                     states_to_control = [0, 1, 1],
                         x0 = [0.0, 0.0, 0.0],
-                        u0 = [np.pi/2., 0.0], s = [1e-20, 1e-20], b = [1e-5, 1.],
-                             r = [4e5, 4.])
+                        u0 = [0.0, 0.0], s = [1e-20, 1e-20], b = [1., 1.],
+                             r = [4., 4.])
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -107,7 +107,7 @@ try:
             del_u_action = del_u[0, :].tolist()
 
             u_action[0] = np.clip(input_scale[0]*(np.rad2deg(u_action[0]) + shift[0]),-100, 80)
-            u_action[1] = np.clip(input_scale[1]*(np.rad2deg(u_action[1] + shift[1])),-100, 60)
+            u_action[1] = np.clip(input_scale[1]*(np.rad2deg(u_action[1] + shift[1])),-100, 40)
 
             #u_action[0] = np.clip(100*np.cos(2.*np.pi/100.*n), -100., 80.)
             #u_action[1] = -50. #np.clip(100*np.sin(2.*np.pi/100.*n), -100., 100.)
