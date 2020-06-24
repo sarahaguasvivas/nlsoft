@@ -58,10 +58,11 @@ class BlockOrientation():
     def get_observation(self):
         head_o = self.head.get_observation()[:3]
         base_o = self.base.get_observation()[:3]
-        v = (np.array(head_o) - np.array(base_o)) + np.array([0.0, -7.92/1000., 1.177/1000.])
-        Rot = R.from_rotvec(np.array([0.85, -0.1435,0.0305])) # coming from off centroids
-        ob=  Rot.apply(v).tolist()
-        return ob
+        shift = [-0.01436728, -0.01648215,  0.00491437]
+        v = (np.array(head_o) - np.array(base_o))
+        Rot = R.from_rotvec(np.array([np.pi/4., 0, 0]))
+        ob= Rot.apply(v).tolist() - np.array(shift)
+        return ob.tolist()
 
     def get_target(self):
         wand_o = self.wand.get_observation()
