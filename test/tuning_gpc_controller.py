@@ -40,7 +40,7 @@ NNP.x0=neutral_point
 
 print "neutral_point: ", neutral_point
 
-target = Pringle2(wavelength = 1000, amplitude = 20./1000., center = neutral_point)
+target = Pringle2(wavelength = 1000, amplitude = 10./1000., center = neutral_point)
 
 Block.calibration_max = np.array([ 42, 1, 12,   1,   1,   197, 183,   1,   1,  1,  39])
 #Block.get_signal_calibration()
