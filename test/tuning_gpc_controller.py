@@ -10,18 +10,18 @@ from target.target import Circle, Pringle, Pringle2, SingleAxisSineWave, SingleA
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 2000
+NUM_TIMESTEPS = 1000
 
-input_scale = [1., 10.]
+input_scale = [1., 1.]
 shift = [0., 0.]
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 2, Nu = 1, nd = 3, dd = 3, K = 2,
-                    Q = np.array([[1000., 0.],
-                                  [0., 1000.]]),
-                    Lambda = np.array([[1e-8, 0.],
-                                       [0., 5e-8]]),
+                    N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 10,
+                    Q = np.array([[2500., 0.],
+                                  [0., 2500.]]),
+                    Lambda = np.array([[1e-3, -1e-5],
+                                       [-1e-5, 3e-4]]),
                     states_to_control = [0, 1, 1],
                         x0 = [0.0, 0.0, 0.0],
                         u0 = [0.0, 0.0], s = [1e-20, 1e-20], b = [1., 1.],
@@ -41,8 +41,8 @@ NNP.x0=neutral_point
 print "neutral_point: ", neutral_point
 
 target = Pringle2(wavelength = 1000, amplitude = 20./1000., center = neutral_point)
-# 5 289 114   1   1   1 115   1   1  38   1
-Block.calibration_max = np.array([ 5, 289, 114,   1,   1,   1, 115,   1,   1,  38,   1])
+
+Block.calibration_max = np.array([ 42, 1, 12,   1,   1,   197, 183,   1,   1,  1,  39])
 #Block.get_signal_calibration()
 
 u_optimal_old = np.reshape(NNP.u0*NNP.Nu, (-1, 2))
@@ -72,7 +72,6 @@ try:
             seconds = time.time()
             signal = np.divide(Block.get_observation(), Block.calibration_max,
                                 dtype = np.float64).tolist()
-
             NNP.yn = []
 
             ydeq = copy.copy(y_deque)
@@ -100,7 +99,7 @@ try:
             new_state_old = new_state_new
 
             u_optimal, del_u,  _ = NR_opt.optimize(u = u_optimal_old, delu = del_u,
-                                        maxit = 1, rtol = 1e-4, verbose = True)
+                                        maxit = 10, rtol = 1e-4, verbose = True)
 
             u_action = u_optimal[0, :].tolist()
 
@@ -112,9 +111,9 @@ try:
             #u_action[0] = np.clip(100*np.cos(2.*np.pi/100.*n), -100., 80.)
             #u_action[1] = -50. #np.clip(100*np.sin(2.*np.pi/100.*n), -100., 100.)
 
-            Block.step(action = u_action)
+            #Block.step(action = u_action)
 
-            NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action, \
+            NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action,
                                 predicted_states.tolist(), Target[0, :].tolist())
 
             u_optimal_old = u_optimal
@@ -129,12 +128,12 @@ try:
             if verbose == 1:
                 log.verbose(u_action = u_action, elapsed = time.time() - seconds)
 
-            log.log({str(e) : {'actual' : np.array(Block.get_state()).tolist(), \
-                            'yn' : predicted_states.tolist(), \
-                            'ym' : Target[0, :].tolist(),\
-                            'elapsed' : time.time() - seconds,\
-                            'cost' : NNP.cost.compute_cost(), \
-                            'u' : [u_action], \
+            log.log({str(e) : {'actual' : np.array(Block.get_state()).tolist(),
+                            'yn' : predicted_states.tolist(),
+                            'ym' : Target[0, :].tolist(),
+                            'elapsed' : time.time() - seconds,
+                            'cost' : NNP.cost.compute_cost(),
+                            'u' : [u_action],
                             'signal' : signal}})
 
         u_optimal_old = np.reshape(NNP.u0*NNP.Nu, (-1, 2))
