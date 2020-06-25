@@ -244,13 +244,11 @@ class NeuralNetworkPredictor():
                 sum_output += np.dot(weights[i*self.nu:i*self.nu + self.nu, j] ,\
                                                                 delta)
         for i in range(min(j, self.dd)):
-            step_ = []
-            for enum, ii in enumerate(self.states_to_control):
-                step_ += [step(j-i+ii-1)]
+            step_ = step(j-i)
             sum_output += np.dot(weights[i*self.nx + self.nd*self.nu: i*self.nx + \
                                         self.nd*self.nu + \
                                         self.nx, j], \
-                                np.multiply(self.previous_first_der , np.array(step_)))
+                                            step_*self.previous_first_der)
         return np.array(sum_output)
 
     def __partial_delta_u_partial_u(self, j, h):
@@ -314,7 +312,7 @@ class NeuralNetworkPredictor():
 
             for j in range(self.nu):
                 ynu += [self.__partial_yn_partial_u(j, h).tolist()]
-                ynu1+=[self.__partial_delta_u_partial_u(j, h)]
+                ynu1 += [self.__partial_delta_u_partial_u(j, h)]
 
             ynu1 = np.array(ynu1)
             ynu = np.array(ynu)

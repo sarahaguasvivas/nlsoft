@@ -15,7 +15,7 @@ from matplotlib.font_manager import FontProperties
 from mpl_toolkits.mplot3d import axes3d, Axes3D
 import random
 NUM_DATA_RUNS = 200
-TRAIN = False
+TRAIN = True
 
 plt.style.use('seaborn')
 filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data19.csv"
@@ -45,14 +45,14 @@ def neural_network_training(X, y):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.4)
 
     model = Sequential()
-    model.add(Dense(20, activation='relu', kernel_initializer='random_normal',
+    model.add(Dense(22, activation='relu', kernel_initializer='random_normal',
                         kernel_regularizer = regularizers.l1(0.01),
                         activity_regularizer= regularizers.l2(0.02)))
-    model.add(Dense(3,  activation = 'tanh', kernel_initializer='random_normal'))
+    model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
 
     model.compile(optimizer= "adam", loss = huber_loss, metrics=['mse'])
 
-    model.fit(X_train, y_train, epochs = 200, batch_size = 64, validation_split = 0.2)
+    model.fit(X_train, y_train, epochs = 1000, batch_size = 64, validation_split = 0.2)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
@@ -78,7 +78,8 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
         plt.plot(y[2:L, i] - shift[i], color = color_palette[1], label = r"$" + str(lab[i]) + "_{true}$", alpha = 0.7)
         plt.ylabel(str(lab[i]) + " [mm]", **font)
 #        plt.title("Estimation vs. Truth for " + str(lab[i]) + " [mm]")
-
+        plt.xticks(fontsize=14, **font)
+        plt.yticks(fontsize=14, **font)
         plt.legend(prop={"family":"Times New Roman", "size": 14})
         if 2*i+1 == 1:
             plt.title("Estimated vs. Ground Truth States", **font)
@@ -89,12 +90,14 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
 #        plt.title("Error in estimation for " + str(lab[i]) + " [mm]")
         plt.ylabel(r"$\varepsilon_{" + str(lab[i]) + "}$ [mm]", **font)
         plt.ylim([-10, 10.])
+        plt.xticks(fontsize=14, **font)
+        plt.yticks(fontsize=14, **font)
         plt.legend(prop={"family": "Times New Roman", "size": 14})
         if 2*i+2 == 2:
             plt.title("Errors in Testing Set Predictions", **font)
         plt.xlabel('timesteps', **font)
-    plt.xticks(fontsize = 14)
-    plt.yticks(fontsize = 14)
+    plt.xticks(fontsize = 14, **font)
+    plt.yticks(fontsize = 14, **font)
     plt.show()
     plt.savefig("sysint", format ='svg', dpi = 1000)
 
@@ -171,7 +174,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
 if __name__ == "__main__":
     # dd is dd+2
     # nd is nd
-    X, y = prepare_data_file([filename], nd=3, dd=3+2)
+    X, y = prepare_data_file([filename], nd=5, dd=5+2)
     if TRAIN:
         modelfile = neural_network_training(X, y)
     plot_sys_id(X, y)
