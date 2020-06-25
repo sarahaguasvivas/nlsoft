@@ -17,11 +17,11 @@ shift = [0., 0.]
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 10,
-                    Q = np.array([[2500., 0.],
-                                  [0., 2500.]]),
-                    Lambda = np.array([[1e-3, -1e-5],
-                                       [-1e-5, 3e-4]]),
+                    N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 2,
+                    Q = np.array([[1., 0.],
+                                  [0., 1.]]),
+                    Lambda = np.array([[1e-5, 0.],
+                                       [0., 1e-3]]),
                     states_to_control = [0, 1, 1],
                         x0 = [0.0, 0.0, 0.0],
                         u0 = [0.0, 0.0], s = [1e-20, 1e-20], b = [1., 1.],
@@ -99,7 +99,7 @@ try:
             new_state_old = new_state_new
 
             u_optimal, del_u,  _ = NR_opt.optimize(u = u_optimal_old, delu = del_u,
-                                        maxit = 10, rtol = 1e-4, verbose = True)
+                                        maxit = 1, rtol = 1e-4, verbose = True)
 
             u_action = u_optimal[0, :].tolist()
 
