@@ -63,8 +63,8 @@ class Logger:
         actual_ = 1000*np.reshape(actual_, (NUM_EXPERIMENTS,-1, 3))
         elapsed_ = np.reshape(elapsed, (NUM_EXPERIMENTS, -1, 1))
 
-        error_p=(yn - actual_) / actual_
-        error_e=(actual_ - ym) / ym
+        error_p=np.abs((yn - actual_) / actual_)
+        error_e=np.abs((actual_ - ym) / ym)
 
         print "Average prediction error: ", np.mean(error_p, axis = (0, 1))
         print "Average control error: ", np.mean(error_e, axis = (0, 1))
@@ -102,7 +102,7 @@ class Logger:
 
             plt.legend()
             plt.ylabel(str(labels[i]) + ' [mm]')
-            plt.plot(1000*neutral_point[i]- shift[i], marker = 'h')
+#            plt.plot(1000*neutral_point[i]- shift[i], marker = 'h')
             if i==2:
                 plt.xlabel('timesteps')
             if i==0:
