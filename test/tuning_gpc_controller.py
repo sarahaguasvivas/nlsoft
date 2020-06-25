@@ -17,10 +17,10 @@ shift = [0., 0.]
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 2,
-                    Q = np.array([[1., 0.],
+                    N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 3,
+                    Q = np.array([[5., 0.],
                                   [0., 1.]]),
-                    Lambda = np.array([[1e-5, 0.],
+                    Lambda = np.array([[3e-4, 0.],
                                        [0., 1e-3]]),
                     states_to_control = [0, 1, 1],
                         x0 = [0.0, 0.0, 0.0],
@@ -111,7 +111,7 @@ try:
             #u_action[0] = np.clip(100*np.cos(2.*np.pi/100.*n), -100., 80.)
             #u_action[1] = -50. #np.clip(100*np.sin(2.*np.pi/100.*n), -100., 100.)
 
-            #Block.step(action = u_action)
+            Block.step(action = u_action)
 
             NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action,
                                 predicted_states.tolist(), Target[0, :].tolist())

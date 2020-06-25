@@ -45,14 +45,14 @@ def neural_network_training(X, y):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.4)
 
     model = Sequential()
-    model.add(Dense(22, activation='relu', kernel_initializer='random_normal',
+    model.add(Dense(5, activation='relu', kernel_initializer='random_normal',
                         kernel_regularizer = regularizers.l1(0.01),
                         activity_regularizer= regularizers.l2(0.02)))
-    model.add(Dense(3,  activation = 'linear', kernel_initializer='random_normal'))
+    model.add(Dense(3,  activation = 'tanh', kernel_initializer='random_normal'))
 
-    model.compile(optimizer= "adam", loss = huber_loss, metrics=['mse'])
+    model.compile(optimizer= "adam", loss = custom_loss, metrics=['mse'])
 
-    model.fit(X_train, y_train, epochs = 1000, batch_size = 64, validation_split = 0.2)
+    model.fit(X_train, y_train, epochs = 50, batch_size = 64, validation_split = 0.4)
     print model.predict(X_test)
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5'
