@@ -10,18 +10,18 @@ from target.target import Circle, Pringle, Pringle2, SingleAxisSineWave, SingleA
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 1000
+NUM_TIMESTEPS = 2000
 
 input_scale = [1., 1.]
 shift = [0., 0.]
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 3,
-                    Q = np.array([[5., 0.],
-                                  [0., 1.]]),
-                    Lambda = np.array([[3e-4, 0.],
-                                       [0., 1e-3]]),
+                    N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 2,
+                    Q = np.array([[1000., 0.],
+                                  [0., 1000.]]),
+                    Lambda = np.array([[1e-2, 0.],
+                                       [0., 1.]]),
                     states_to_control = [0, 1, 1],
                         x0 = [0.0, 0.0, 0.0],
                         u0 = [0.0, 0.0], s = [1e-20, 1e-20], b = [1., 1.],
