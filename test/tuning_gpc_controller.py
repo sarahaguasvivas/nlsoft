@@ -10,14 +10,14 @@ from target.target import Circle, Pringle, Pringle2, SingleAxisSineWave, SingleA
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 2000
+NUM_TIMESTEPS = 1000
 
 input_scale = [1., 1.]
 shift = [0., 0.]
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 2,
+                    N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 5,
                     Q = np.array([[1000., 0.],
                                   [0., 1000.]]),
                     Lambda = np.array([[1e-2, 0.],
@@ -40,7 +40,7 @@ NNP.x0=neutral_point
 
 print "neutral_point: ", neutral_point
 
-target = Pringle2(wavelength = 1000, amplitude = 10./1000., center = neutral_point)
+target = Pringle2(wavelength = 1000, amplitude = 20./1000., center = neutral_point)
 
 Block.calibration_max = np.array([ 42, 1, 12,   1,   1,   197, 183,   1,   1,  1,  39])
 #Block.get_signal_calibration()
