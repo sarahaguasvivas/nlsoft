@@ -8,7 +8,8 @@ import keras
 from keras.models import Sequential, load_model
 from keras.layers import Dense, GaussianNoise, LSTM, BatchNormalization
 from keras.losses import Huber
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, KFold
+from keras.wrappers.scikit_learn import KerasRegressor
 import keras.backend as K
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
@@ -41,21 +42,28 @@ def huber_loss(y_true, y_pred):
     return 1000.*h(y_true, y_pred)
 
 keras.losses.custom_loss = custom_loss
-def neural_network_training(X, y):
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.4)
 
+def create_network():
     model = Sequential()
     model.add(Dense(10, activation='relu', kernel_initializer='random_normal',
-                        kernel_regularizer = regularizers.l1(0.01),
-                        activity_regularizer= regularizers.l2(0.02)))
-    model.add(Dense(3,  activation = 'tanh', kernel_initializer='random_normal'))
+                    kernel_regularizer=regularizers.l1(0.01),
+                    activity_regularizer=regularizers.l2(0.02)))
+    model.add(Dense(3, activation='tanh', kernel_initializer='random_normal'))
 
-    model.compile(optimizer= "adam", loss = huber_loss, metrics=['mse'])
+    model.compile(optimizer="adam", loss=huber_loss, metrics=['mse'])
+    return model
 
-    model.fit(X_train, y_train, epochs = 500, batch_size = 64, validation_split = 0.4)
-    print model.predict(X_test)
+def neural_network_training(X, y):
+    kfold = KFold(n_splits = 5, shuffle=True)
+    k_fold_results = []
+    for train, test in kfold.split(X, y):
+        model = create_network()
+        model.fit(X[train], y[train], epochs = 20, batch_size = 64)
+
+        k_fold_results += [np.mean(np.linalg.norm(1000.*model.predict(X[test])- 1000.*y[test], axis = 1))]
+
     model.save('sys_id.hdf5')
-    return 'sys_id.hdf5'
+    return 'sys_id.hdf5', k_fold_results
 
 def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
     color_palette1 = ['#272838', '#F3DE8A', '#F3DE8A', '#F3DE8A']
@@ -176,6 +184,7 @@ if __name__ == "__main__":
     # nd is nd
     X, y = prepare_data_file([filename], nd=5, dd=5+2)
     if TRAIN:
-        modelfile = neural_network_training(X, y)
+        modelfile, k_fold_summary = neural_network_training(X, y)
+        print k_fold_summary
     plot_sys_id(X, y)
 

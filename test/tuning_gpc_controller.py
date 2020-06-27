@@ -5,7 +5,7 @@ import time, os
 import copy
 from logger.logger import Logger
 from utilities.util import *
-from target.target import Circle, Pringle, Pringle2, SingleAxisSineWave, SingleAxisSquareWave, Square3D
+from target.target import Pringle2
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
@@ -17,15 +17,15 @@ shift = [0., 0.]
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 5,
+                    N1 = 0, N2 = 2, Nu = 1, nd = 4, dd = 4, K = 5,
                     Q = np.array([[1000., 0.],
                                   [0., 1000.]]),
-                    Lambda = np.array([[1e-2, 0.],
-                                       [0., 1.]]),
+                    Lambda = np.array([[1e-1, 0.],
+                                       [0., 10.]]),
                     states_to_control = [0, 1, 1],
                         x0 = [0.0, 0.0, 0.0],
-                        u0 = [0.0, 0.0], s = [1e-20, 1e-20], b = [1., 1.],
-                             r = [4., 4.])
+                        u0 = [0.0, 0.0], s = [1e-20, 1e-20], b = [1e-1, 1e-1],
+                             r = [4e3, 4e3])
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -42,7 +42,7 @@ print "neutral_point: ", neutral_point
 
 target = Pringle2(wavelength = 1000, amplitude = 20./1000., center = neutral_point)
 
-Block.calibration_max = np.array([ 42, 1, 12,   1,   1,   197, 183,   1,   1,  1,  39])
+Block.calibration_max = np.array([ 48, 3, 80,   8,   9,   151, 187,   1,   1,  1,  32])
 #Block.get_signal_calibration()
 
 u_optimal_old = np.reshape(NNP.u0*NNP.Nu, (-1, 2))
@@ -72,6 +72,7 @@ try:
             seconds = time.time()
             signal = np.divide(Block.get_observation(), Block.calibration_max,
                                 dtype = np.float64).tolist()
+
             NNP.yn = []
 
             ydeq = copy.copy(y_deque)
@@ -102,7 +103,6 @@ try:
                                         maxit = 1, rtol = 1e-4, verbose = True)
 
             u_action = u_optimal[0, :].tolist()
-
             del_u_action = del_u[0, :].tolist()
 
             u_action[0] = np.clip(input_scale[0]*(np.rad2deg(u_action[0]) + shift[0]),-100, 80)
@@ -118,7 +118,6 @@ try:
 
             u_optimal_old = u_optimal
             u_deque = roll_deque(u_deque, u_optimal[0, :].tolist())
-            y_deque = roll_deque(y_deque, predicted_states.tolist())
 
             if verbose == 0:
                 log.verbose(actual = np.array(Block.get_state()).tolist(),
