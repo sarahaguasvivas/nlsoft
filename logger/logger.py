@@ -67,8 +67,8 @@ class Logger:
         actual_ = 1000*np.reshape(actual_, (NUM_EXPERIMENTS,-1, 3))
         elapsed_ = np.reshape(elapsed, (NUM_EXPERIMENTS, -1, 1))
 
-        error_p=np.abs((yn - actual_) / actual_)
-        error_e=np.abs((actual_ - ym) / ym)
+        error_p=(yn - actual_) / actual_
+        error_e=(actual_ - ym) / ym
 
         print "Average prediction error: ", np.mean(error_p, axis = (0, 1))
         print "Average control error: ", np.mean(error_e, axis = (0, 1))
@@ -77,8 +77,8 @@ class Logger:
         print "Standard error control: ", np.std(error_e, axis=(0, 1), ddof=0)
 
         u_optimal_list = np.reshape(u_optimal_list, (NUM_EXPERIMENTS, -1, 2))
-        error_mm = (yn - ym) / np.maximum(ym, 1)
-        error_pred = (yn - actual_)/ np.maximum(actual_, 1)
+        error_mm = error_e #abs((actual_ - ym) / np.maximum(ym, 1))
+        error_pred = error_p #abs((yn - actual_)/ np.maximum(actual_, 1))
         signal = np.reshape(signal, (NUM_EXPERIMENTS, -1, 11))
 
         # Zeroing each state:
