@@ -67,8 +67,8 @@ class Logger:
         actual_ = 1000*np.reshape(actual_, (NUM_EXPERIMENTS,-1, 3))
         elapsed_ = np.reshape(elapsed, (NUM_EXPERIMENTS, -1, 1))
 
-        error_p=(yn - actual_) / actual_
-        error_e=(actual_ - ym) / ym
+        error_p=np.abs((yn - actual_) / actual_)
+        error_e=np.abs((actual_ - ym) / ym)
 
         print "Average prediction error: ", np.mean(error_p, axis = (0, 1))
         print "Average control error: ", np.mean(error_e, axis = (0, 1))
@@ -170,8 +170,8 @@ class Logger:
 
         AXIS = 0
         timesteps = range(max(yn.shape))
-        for i in range(3):
-            plt.subplot(3, 1, i+1)
+        for i in range(1, 3, 1):
+            plt.subplot(3, 1, i)
             plt.plot(np.mean(error_mm, axis = AXIS)[:, i], color = 'k', label = '% control error in ' + labels[i])
             plt.fill_between(timesteps, np.mean(error_mm, axis = AXIS)[:, i] - np.std(error_mm, axis = AXIS)[:, i] ,\
                                 np.mean(error_mm, axis = AXIS)[:, i] + np.std(error_mm, axis = AXIS)[:, i], \
