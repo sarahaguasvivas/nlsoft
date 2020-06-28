@@ -104,7 +104,7 @@ class Logger:
                                             np.mean(actual_, axis = AXIS)[:, i] + np.std(actual_, axis = AXIS)[:, i] - shift[i],
                                                 color = color_palette[1], alpha = 0.5, label = r"$2\sigma$")
 
-            plt.legend(prop = {"family": "Times New Roman", "size": 14})
+            plt.legend(prop = {"family": "Times New Roman", "size": 14}, loc= 'right', frameon= True)
             plt.ylabel(str(labels[i]) + ' [mm]', **font)
             plt.xticks(fontsize=14, **font)
             plt.yticks(fontsize=14, **font)
@@ -128,7 +128,7 @@ class Logger:
                                                 color = color_palette1[0], alpha = 0.3, label = r"$2\sigma$")
 
 
-            plt.legend(prop = {"family": "Times New Roman", "size": 14})
+            plt.legend(prop = {"family": "Times New Roman", "size": 14}, loc= 'right', frameon= True)
             plt.xticks(fontsize=14, **font)
             plt.yticks(fontsize=14, **font)
             #plt.ylim([min_input, max_input])
@@ -154,7 +154,7 @@ class Logger:
         #ax.set_xlim(-20., 5.)
         #ax.set_ylim(-20., 5.)
         #ax.set_zlim(-20., 5.)
-        plt.legend(prop = {"family": "Times New Roman", "size": 14})
+        plt.legend(prop = {"family": "Times New Roman", "size": 14}, loc = 'right', frameon = True)
         plt.xticks(fontsize=14, **font)
         plt.yticks(fontsize=14, **font)
         plt.xlabel('x[mm]', **font)
@@ -183,7 +183,7 @@ class Logger:
 
 
             #plt.ylim([-50, 50])
-            plt.legend(prop = {"family": "Times New Roman", "size": 14})
+            plt.legend(prop = {"family": "Times New Roman", "size": 14}, loc = 'right', frameon= True)
             plt.xticks(fontsize=14, **font)
             plt.yticks(fontsize=14, **font)
             plt.ylabel(str(labels[i]) + ' %', **font)
@@ -202,7 +202,7 @@ class Logger:
         plt.fill_between(timesteps, np.mean(elapsed_, axis = AXIS)[:, 0] - np.std(elapsed_,
             axis = AXIS)[:, 0] ,np.mean(elapsed_, axis = AXIS)[:, 0] + np.std(elapsed_, axis = AXIS)[:, 0],
                                 color = '#D2691E', alpha = 0.5)
-        plt.legend(prop = {"family": "Times New Roman", "size": 14})
+        plt.legend(prop = {"family": "Times New Roman", "size": 14}, loc = 'right', frameon = True)
         plt.ylabel('Time [s]', **font)
         plt.xlabel('timesteps', **font)
         plt.title("Control Loop Computation Time", **font)
