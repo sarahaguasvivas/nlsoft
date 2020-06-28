@@ -17,22 +17,22 @@ shift = [0., 0.]
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 2,
+                N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 5,
                     Q = np.array([[1000., 0.],
                                   [0., 1000.]]),
-                    Lambda = np.array([[5e-2, 0.],
+                    Lambda = np.array([[1e-2 , 0.],
                                        [0., 1.]]),
                     states_to_control = [0, 1, 1],
                         x0 = [0.0, 0.0, 0.0],
-                        u0 = [0.0, 0.0], s = [1e-20, 1e-20], b = [1e-2, 1e-2],
-                             r = [4e5, 4e5])
+                        u0 = [-1., 0.3], s = [1e-20, 1e-20], b = [1e-3, 1e-3],
+                             r = [4e5,  4e5])
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
 log = Logger()
 Block.reset()
 
-Block.step([0., 0.])
+Block.step([-1., .3])
 
 neutral_point = Block.get_state()
 
@@ -42,7 +42,7 @@ print "neutral_point: ", neutral_point
 
 target = Pringle2(wavelength = 1000, amplitude = 20./1000., center = neutral_point)
 
-Block.calibration_max = np.array([ 48, 3, 80,   8,   9,   151, 187,   1,   1,  1,  32])
+Block.calibration_max = np.array([ 539, 1, 26,   1,   1,   145, 212,   1,   1,  1,  33])
 #Block.get_signal_calibration()
 
 u_optimal_old = np.reshape(NNP.u0*NNP.Nu, (-1, 2))
