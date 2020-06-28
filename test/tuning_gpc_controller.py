@@ -18,13 +18,13 @@ verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
                 N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 2,
-                    Q = np.array([[10000., 0.],
-                                  [0., 10000.]]),
-                    Lambda = np.array([[1e-2, 0.],
+                    Q = np.array([[1e6, 0.],
+                                  [0., 1e6]]),
+                    Lambda = 1e2*np.array([[1e-1, 0.],
                                        [0., 1.]]),
                     states_to_control = [0, 1, 1],
                         x0 = [0.0, 0.0, 0.0],
-                        u0 = [0.,  0.], s = [1e-20, 1e-20], b = [1e-2, 1e-2],
+                        u0 = [0.,  0.], s = [1e-20, 1e-20], b = [1e-3, 1e-3],
                              r = [4e5,  4e5])
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
