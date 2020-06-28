@@ -93,19 +93,21 @@ class Logger:
         timesteps = range(max(yn.shape))
         for i in range(1, 3, 1):
             plt.subplot(2, 1, i)
-            plt.plot(np.mean(ym, axis = AXIS)[:, i] - shift[i], color = color_palette[-1], linestyle = 'dashed', label = 'target')
-            plt.plot(np.mean(yn, axis = AXIS)[:, i] - shift[i], color_palette[0], label = 'predicted state')
+            plt.plot(np.mean(ym, axis = AXIS)[:, i] - shift[i], color = color_palette[-1], linestyle = 'dashed', label =r"$" + labels[i] + "_{target}$")
+            plt.plot(np.mean(yn, axis = AXIS)[:, i] - shift[i], color_palette[0], label = r"$\hat{" + labels[i] + "}$" )
             plt.fill_between(timesteps, np.mean(yn, axis = AXIS)[:, i] - np.std(yn, axis = AXIS)[:, i] - shift[i],
                                 np.mean(yn, axis = AXIS)[:, i] + np.std(yn, axis = AXIS)[:, i] - shift[i],
                                     color = color_palette[0], alpha = 0.5)
-            plt.plot(np.mean(actual_, axis = AXIS)[:, i] - shift[i], color = color_palette[1], label = 'actual state') # only 0 and 2
+            plt.plot(np.mean(actual_, axis = AXIS)[:, i] - shift[i], color = color_palette[1], label =r"$" + labels[i] + "_{true}$") # only 0 and 2
 
             plt.fill_between(timesteps, np.mean(actual_, axis = AXIS)[:, i] - np.std(actual_, axis = AXIS)[:, i] - shift[i],
                                             np.mean(actual_, axis = AXIS)[:, i] + np.std(actual_, axis = AXIS)[:, i] - shift[i],
                                                 color = color_palette[1], alpha = 0.5, label = r"$2\sigma$")
 
             plt.legend(prop = {"family": "Times New Roman", "size": 14})
-            plt.ylabel(str(labels[i]) + ' [mm]')
+            plt.ylabel(str(labels[i]) + ' [mm]', **font)
+            plt.xticks(fontsize=14, **font)
+            plt.yticks(fontsize=14, **font)
             plt.plot(1000*neutral_point[i]- shift[i], marker = 'h')
             if i==2:
                 plt.xlabel('timesteps', **font)
@@ -127,6 +129,8 @@ class Logger:
 
 
             plt.legend(prop = {"family": "Times New Roman", "size": 14})
+            plt.xticks(fontsize=14, **font)
+            plt.yticks(fontsize=14, **font)
             #plt.ylim([min_input, max_input])
             plt.ylabel(str(labels[-1]) + ' [degrees]', **font)
             if i == 0:
@@ -151,6 +155,8 @@ class Logger:
         #ax.set_ylim(-20., 5.)
         #ax.set_zlim(-20., 5.)
         plt.legend(prop = {"family": "Times New Roman", "size": 14})
+        plt.xticks(fontsize=14, **font)
+        plt.yticks(fontsize=14, **font)
         plt.xlabel('x[mm]', **font)
         plt.ylabel('y[mm]', **font)
         plt.title('Target Position vs. Controlled Positions', **font)
@@ -178,6 +184,8 @@ class Logger:
 
             #plt.ylim([-50, 50])
             plt.legend(prop = {"family": "Times New Roman", "size": 14})
+            plt.xticks(fontsize=14, **font)
+            plt.yticks(fontsize=14, **font)
             plt.ylabel(str(labels[i]) + ' %', **font)
             if i==2:
                 plt.xlabel('timesteps', **font)
@@ -199,10 +207,14 @@ class Logger:
         plt.xlabel('timesteps', **font)
         plt.title("Control Loop Computation Time", **font)
         plt.ylim([0, 0.2])
+        plt.xticks(fontsize=14, **font)
+        plt.yticks(fontsize=14, **font)
         plt.show()
 
         plt.figure()
         plt.plot(np.mean(signal, axis = 0)[:-1, :])
         plt.title("Tracking of the Mean Optical Lace Signals During Experiment", **font)
+        plt.xticks(fontsize=14, **font)
+        plt.yticks(fontsize=14, **font)
         plt.show()
 
