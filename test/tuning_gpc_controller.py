@@ -17,7 +17,7 @@ shift = [0., 0.]
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 5,
+                N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 2,
                     Q = np.array([[10000., 0.],
                                   [0., 10000.]]),
                     Lambda = np.array([[1e-2, 0.],
