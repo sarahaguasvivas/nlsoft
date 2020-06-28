@@ -18,8 +18,8 @@ verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
                 N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 5,
-                    Q = np.array([[1000., 0.],
-                                  [0., 1000.]]),
+                    Q = np.array([[10000., 0.],
+                                  [0., 10000.]]),
                     Lambda = np.array([[1e-2, 0.],
                                        [0., 1.]]),
                     states_to_control = [0, 1, 1],
@@ -40,7 +40,7 @@ NNP.x0=neutral_point
 
 print "neutral_point: ", neutral_point
 
-target = Pringle2(wavelength = 1000, amplitude = 20./1000., center = neutral_point)
+target = Pringle2(wavelength = 1000, amplitude = 15./1000., center = neutral_point)
 
 Block.calibration_max = np.array([ 48., 1, 23.,   1,   1,   134., 187.,   1,   1,  1,  24.])
 #Block.get_signal_calibration()
