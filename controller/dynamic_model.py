@@ -134,7 +134,7 @@ class NeuralNetworkPredictor():
             netj = np.arctanh(self.prediction)
             return  np.array(1.-np.tanh(netj)**2)
         if self.model.layers[-1].get_config()['activation'] == 'sigmoid':
-            netj = np.ln(self.prediction / (1-self.prediction))
+            netj = np.ln(self.prediction / (1.-self.prediction))
             sigmoid = 1./(1.+np.exp(-1.*netj))
             return np.array(sigmoid*(1.-sigmoid))
 
@@ -318,6 +318,7 @@ class NeuralNetworkPredictor():
             ynu = np.array(ynu)
 
             sub_sum = delY.dot(self.Q).dot(ynu.T)
+            #sub_sum = delY.dot(self.Q)
 
             sum_output += (-2.*np.sum(sub_sum, axis = 0)).flatten().tolist()
 
