@@ -10,14 +10,14 @@ from target.target import Pringle2
 model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 2000
+NUM_TIMESTEPS = 1000
 
 input_scale = [1., 1.]
 shift = [0., 0.]
 verbose = 1
 
 NNP = NeuralNetworkPredictor(model_file = model_filename,
-                N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 2,
+                N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 15,
                     Q = np.array([[1e6, 0.],
                                   [0., 1e5]]),
                     Lambda = 1e2*np.array([[1e-1, 0.],
