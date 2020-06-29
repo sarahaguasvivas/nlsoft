@@ -318,7 +318,6 @@ class NeuralNetworkPredictor():
             ynu = np.array(ynu)
 
             sub_sum = delY.dot(self.Q).dot(ynu.T)
-            #sub_sum = delY.dot(self.Q)
 
             sum_output += (-2.*np.sum(sub_sum, axis = 0)).flatten().tolist()
 
