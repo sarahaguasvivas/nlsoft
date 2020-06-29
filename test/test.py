@@ -2,10 +2,8 @@
 from gym.block_gym import *
 B = BlockGym()
 
-print B.get_target()
-
-print "stretching..."
-B.step([0.0, -50])
+B.step([0.0, -40.])
+print B.get_state()
 print "Getting motors positions: "
 print B.motors.get_present_position()
 
