@@ -65,7 +65,7 @@ class Pringle2:
                                             / (self.wavelength) + phase + \
                                                 0.00001*(timestep + i )**2) - 0./1000.
 
-            z = self.amplitude * np.cos(2*np.pi*(timestep + i  ) / \
+            z = self.amplitude * np.sin(2*np.pi*(timestep + i  ) / \
                                             (self.wavelength) + phase +\
                                         0.00001*(timestep + i )**2) + 0./1000.
 

@@ -66,19 +66,19 @@ class Logger:
         yn = 1000*np.reshape(yn, (NUM_EXPERIMENTS, -1, 3))
         actual_ = 1000*np.reshape(actual_, (NUM_EXPERIMENTS,-1, 3))
         elapsed_ = np.reshape(elapsed, (NUM_EXPERIMENTS, -1, 1))
+        #np.sqrt(((predictions - targets) ** 2).mean())
+        error_p= np.sqrt(((yn - actual_) **2).mean(axis = -1))
+        error_e=np.sqrt(((actual_ - ym)**2).mean( axis = -1))
 
-        error_p=np.abs((yn - actual_) / actual_)
-        error_e=np.abs((actual_ - ym) / ym)
+        print "Average prediction error: ", error_p.mean() #np.mean(error_p, axis = (0, 1))
+        print "Average control error: ",  error_e.mean()  #np.mean(error_e, axis = (0, 1))
 
-        print "Average prediction error: ", np.mean(error_p, axis = (0, 1))
-        print "Average control error: ", np.mean(error_e, axis = (0, 1))
-
-        print "Standard error prediction: ", np.std(error_p, axis=(0, 1), ddof=0)
-        print "Standard error control: ", np.std(error_e, axis=(0, 1), ddof=0)
+        print "Standard error prediction: ", np.std(error_p, ddof=0)
+        print "Standard error control: ", np.std(error_e,  ddof=0)
 
         u_optimal_list = np.reshape(u_optimal_list, (NUM_EXPERIMENTS, -1, 2))
-        error_mm = error_e #abs((actual_ - ym) / np.maximum(ym, 1))
-        error_pred = error_p #abs((yn - actual_)/ np.maximum(actual_, 1))
+        error_mm = actual_ - ym
+        error_pred = yn - actual_
         signal = np.reshape(signal, (NUM_EXPERIMENTS, -1, 11))
 
         # Zeroing each state:
@@ -172,11 +172,11 @@ class Logger:
         timesteps = range(max(yn.shape))
         for i in range(1, 3, 1):
             plt.subplot(2, 1, i)
-            plt.plot(np.mean(error_mm, axis = AXIS)[:, i], color = 'k', label = '% control error in ' + labels[i])
+            plt.plot(np.mean(error_mm, axis = AXIS)[:, i], color = 'k', label = 'control RMS  ' + labels[i])
             plt.fill_between(timesteps, np.mean(error_mm, axis = AXIS)[:, i] - np.std(error_mm, axis = AXIS)[:, i] ,\
                                 np.mean(error_mm, axis = AXIS)[:, i] + np.std(error_mm, axis = AXIS)[:, i], \
                                     color = 'k', alpha = 0.5)
-            plt.plot(np.mean(error_pred, axis = AXIS)[:, i], color = 'gray', label = '%prediction error')
+            plt.plot(np.mean(error_pred, axis = AXIS)[:, i], color = 'gray', label = 'prediction RMS')
             plt.fill_between(timesteps, np.mean(error_pred, axis = AXIS)[:, i] - np.std(error_pred, axis = AXIS)[:, i] ,\
                                             np.mean(error_pred, axis = AXIS)[:, i] + np.std(error_pred, axis = AXIS)[:, i], \
                                                 color = 'gray', alpha = 0.5)
@@ -186,11 +186,11 @@ class Logger:
             plt.legend(prop = {"family": "Times New Roman", "size": 14}, loc = 'right', frameon= True)
             plt.xticks(fontsize=14, **font)
             plt.yticks(fontsize=14, **font)
-            plt.ylabel(str(labels[i]) + ' %', **font)
+            plt.ylabel(r"" + str(labels[i]) + '_{RMS}', **font)
             if i==2:
                 plt.xlabel('timesteps', **font)
             if i==0:
-                plt.title("Off-track Error", **font)
+                plt.title("RMS Error", **font)
         plt.show()
         """
             Elapsed Time Plot
