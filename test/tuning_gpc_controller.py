@@ -19,7 +19,7 @@ verbose = 1
 NNP = NeuralNetworkPredictor(model_file = model_filename,
                 N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 2,
                     Q = np.array([[1e6, 0.],
-                                  [0., 1e6]]),
+                                  [0., 1e5]]),
                     Lambda = 1e2*np.array([[1e-1, 0.],
                                        [0., 1.]]),
                     states_to_control = [0, 1, 1],
