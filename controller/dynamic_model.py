@@ -35,7 +35,7 @@ class NeuralNetworkPredictor():
                             K = 3 , Q = [[1, 0, 0], [0, 1, 0], [0, 0, 1]],\
                             Lambda = [[0.3, 0.0], [0., 0.2]] , nd = 3,\
                                     dd = 3, x0= [0, 0], u0= [0, 0], \
-                                        s = 1e-20, b = 1e-10, r = 4e-1,
+                                        s = [1e-20, 1e-20], b = [1e-10, 1e-10], r = [4e-1, 4e-1],
                                         states_to_control = [0, 1, 1]):
 
         self.N1, self.N2, self.Nu, self.x0, self.u0 = N1, N2, Nu, x0, u0
@@ -72,7 +72,7 @@ class NeuralNetworkPredictor():
 
         self.constraints = Constraints(s = s, b = b, r = r)
 
-        self.hid = self.model.layers[-1].input_shape[1] - 11 # minus 11 sensor signals
+        self.hid = self.model.layers[-1].input_shape[1]
 
         self.initialize_deques(self.u0, self.x0)
         self.cost = NN_Cost(self)
@@ -134,7 +134,7 @@ class NeuralNetworkPredictor():
             netj = np.arctanh(self.prediction)
             return  np.array(1.-np.tanh(netj)**2)
         if self.model.layers[-1].get_config()['activation'] == 'sigmoid':
-            netj = np.ln(self.prediction / (1-self.prediction))
+            netj = np.ln(self.prediction / (1.-self.prediction))
             sigmoid = 1./(1.+np.exp(-1.*netj))
             return np.array(sigmoid*(1.-sigmoid))
 
@@ -172,6 +172,7 @@ class NeuralNetworkPredictor():
             for ii in range(weights.shape[1]):
                 sum_output+= weights[i, ii] * \
                             self.__partial_2_fnet_partial_nph_partial_npm(h, m, j)
+
         self.previous_second_der = sum_output.T
         if len(sum_output) > 0:
             return self.C.dot(np.array(sum_output).T)
@@ -185,7 +186,7 @@ class NeuralNetworkPredictor():
         """
         weights = self.model.layers[self.first_layer_index].get_weights()[0]
         sum_output = 0.0
-        for i in range(min(j, self.dd)):
+        for i in range(min(j, self.dd*self.nx)):
             step_ = []
 
             for ii in range(self.nx):
@@ -202,9 +203,6 @@ class NeuralNetworkPredictor():
                D yn
             -----------
              D u(n+h)
-
-            TODO this is supposed to be a vector
-            num_y x num_u
         """
         weights = self.model.layers[-1].get_weights()[0]
         sum_output = np.array([0.0]*weights.shape[1])
@@ -246,13 +244,11 @@ class NeuralNetworkPredictor():
                 sum_output += np.dot(weights[i*self.nu:i*self.nu + self.nu, j] ,\
                                                                 delta)
         for i in range(min(j, self.dd)):
-            step_ = []
-            for enum, ii in enumerate(self.states_to_control):
-                step_ += [step(j-i+ii-1)]
+            step_ = step(j-i)
             sum_output += np.dot(weights[i*self.nx + self.nd*self.nu: i*self.nx + \
                                         self.nd*self.nu + \
                                         self.nx, j], \
-                                np.multiply(self.previous_first_der , np.array(step_)))
+                                            step_*self.previous_first_der)
         return np.array(sum_output)
 
     def __partial_delta_u_partial_u(self, j, h):
@@ -295,10 +291,10 @@ class NeuralNetworkPredictor():
                 for j in range(self.Nu):
                    for i in range(self.nu):
                        hessian[h, m] += kronecker_delta(h, j)*kronecker_delta(m, j) * \
-                               (2.0*self.constraints.s / np.power((U[j, i] + self.constraints.r / 2. - \
-                               self.constraints.b), 3.0) + \
-                               2.0 * self.constraints.s / np.power(self.constraints.r/2. +\
-                               self.constraints.b - U[j, i], 3.0))
+                               (2.0*self.constraints.s[i] / np.power((U[j, i] + self.constraints.r[i] / 2. - \
+                               self.constraints.b[i]), 3.0) + \
+                               2.0 * self.constraints.s[i] / np.power(self.constraints.r[i]/2. +\
+                               self.constraints.b[i] - U[j, i], 3.0))
         return hessian
 
     def compute_jacobian(self, u, del_u):
@@ -316,15 +312,12 @@ class NeuralNetworkPredictor():
 
             for j in range(self.nu):
                 ynu += [self.__partial_yn_partial_u(j, h).tolist()]
-                ynu1+=[self.__partial_delta_u_partial_u(j, h)]
-
-            #if self.Nu==1:
-            #    ynu1 = ynu1.tolist()
+                ynu1 += [self.__partial_delta_u_partial_u(j, h)]
 
             ynu1 = np.array(ynu1)
             ynu = np.array(ynu)
 
-            sub_sum = delY.dot(self.Q).dot(np.array(ynu.T))
+            sub_sum = delY.dot(self.Q).dot(ynu.T)
 
             sum_output += (-2.*np.sum(sub_sum, axis = 0)).flatten().tolist()
 
@@ -333,10 +326,10 @@ class NeuralNetworkPredictor():
             for j in range(self.Nu):
                sub_sum = np.array([0.0, 0.0])
                for i in range(self.nu):
-                   sub_sum[i] += kronecker_delta(h, j) * ( -self.constraints.s / np.power(U[j, i] +  \
-                       self.constraints.r / 2.0 - self.constraints.b , 2) + \
-                               self.constraints.s/ np.power(self.constraints.r/2.0 + \
-                               self.constraints.b - U[j, i] , 2.0) )
+                   sub_sum[i] += kronecker_delta(h, j) * ( -self.constraints.s[i] / np.power(U[j, i] +  \
+                       self.constraints.r[i] / 2.0 - self.constraints.b[i] , 2) + \
+                               self.constraints.s[i] / np.power(self.constraints.r[i]/2.0 + \
+                               self.constraints.b[i] - U[j, i] , 2.0) )
                sum_output += sub_sum
             dJ[h, :] = sum_output
         return dJ
