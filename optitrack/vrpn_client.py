@@ -3,17 +3,18 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 
 class VRPNclient:
+    """
+        This client has only been tested in <= Python2.7
+    """
     def callback(self, userdata, data):
         self.tracked = True
         self.data_read = {userdata: data}
-        #print self.data_read;
 
     def __init__(self, tracker_name, hostID):
         self.tracker_name = tracker_name
         self.hostID= hostID
 
         self.tracked = False
-
         self.data_read = None
 
         self.tracker = vrpn.receiver.Tracker(tracker_name + "@" + hostID)
@@ -46,14 +47,14 @@ class VRPNclient:
         self.tracked = False
         return self.info
 
-class BlockOrientation():
+class BlockState():
     def __init__(self, ip = "192.168.50.24:3883"):
         self.v = []
         self.wand = VRPNclient("Wand",  "tcp://" + ip)
         self.head = VRPNclient("DHead", "tcp://" + ip)
         self.base = VRPNclient("DBase", "tcp://" + ip)
         self.end_eff_orientation = None
-        print "Optitrack Comm Initialized!"
+        print("Optitrack Comm Initialized!")
 
     def get_observation(self):
         head_o = self.head.get_observation()[:3]
@@ -73,13 +74,10 @@ class BlockOrientation():
 
 if __name__=='__main__':
     import time
-
     C = VRPNclient("DHead", "tcp://192.168.50.24:3883")
     B = VRPNclient("DBase", "tcp://192.168.50.24:3883")
     while True:
         start = time.time()
-        print "head: ", C.get_observation() # collect a single observation
-        print "base: ", B.get_observation() # collect a single observation
-
+        print("head: ", C.get_observation()) # collect a single observation
+        print("base: ", B.get_observation()) # collect a single observation
         elapsed = time.time() - start
-        #print "elapsed: ", elapsed, " ms"

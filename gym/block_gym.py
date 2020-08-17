@@ -1,4 +1,4 @@
-from optitrack.optitrack import *
+from optitrack.vrpn_client import *
 from signals.serial_client import *
 from dynamixels.dynamixels import *
 
@@ -17,12 +17,12 @@ class BlockGym():
         self.sensor_signals = OpticalSignal()
         self.state = None
         self.vrpn_ip = vrpn_ip
-        self.block_or = BlockOrientation(ip = self.vrpn_ip)
+        self.block_or = BlockState(ip = self.vrpn_ip)
         #self.target = self.block_or.get_target() # TODO: Uncomment when we find the stick
         self.calibration_max = np.array([0]* \
                     self.sensor_signals.num_sensors)
 
-        print "Gym Environment created!"
+        print("Gym Environment created!")
 
     def step(self, action = [0, 0]):
         obs = self.get_observation()
@@ -38,7 +38,7 @@ class BlockGym():
     def get_info(self):
         # get info wrt the types of verbose
         info, a1, a2 = self.motors.get_info()
-        print info
+        print(info)
         return a1, a2
 
     def get_state(self):
@@ -87,7 +87,7 @@ class BlockGym():
         for i in range(len(self.calibration_max)):
             if self.calibration_max[i] == 0:
                 self.calibration_max[i] = 1
-        print "BLOCK: calibration vector : ", self.calibration_max
+        print("BLOCK: calibration vector : ", self.calibration_max)
         return self.calibration_max
 
     def stretch(self):
@@ -109,6 +109,6 @@ if __name__ == "__main__":
     B = BlockGym()
 
     while True:
-        print "Observation: ", B.get_observation()
-        print "Target: ", B.get_target()
+        print("Observation: ", B.get_observation())
+        print("Target: ", B.get_target())
 
