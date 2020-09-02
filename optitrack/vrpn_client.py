@@ -1,4 +1,4 @@
-import vrpn
+import lib.vrpn as vrpn
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
@@ -6,7 +6,6 @@ class VRPNclient:
     def callback(self, userdata, data):
         self.tracked = True
         self.data_read = {userdata: data}
-        #print self.data_read;
 
     def __init__(self, tracker_name, hostID):
         self.tracker_name = tracker_name
@@ -53,7 +52,7 @@ class BlockOrientation():
         self.head = VRPNclient("DHead", "tcp://" + ip)
         self.base = VRPNclient("DBase", "tcp://" + ip)
         self.end_eff_orientation = None
-        print "Optitrack Comm Initialized!"
+        print("Optitrack Comm Initialized!")
 
     def get_observation(self):
         head_o = self.head.get_observation()[:3]
@@ -78,8 +77,7 @@ if __name__=='__main__':
     B = VRPNclient("DBase", "tcp://192.168.50.24:3883")
     while True:
         start = time.time()
-        print "head: ", C.get_observation() # collect a single observation
-        print "base: ", B.get_observation() # collect a single observation
-
+        print("head: ", C.get_observation()) # collect a single observation
+        print("base: ", B.get_observation()) # collect a single observation
         elapsed = time.time() - start
         #print "elapsed: ", elapsed, " ms"
