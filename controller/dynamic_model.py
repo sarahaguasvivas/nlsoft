@@ -15,7 +15,6 @@ from collections import deque
 
 def custom_loss(y_true, y_pred):
     return 1000*K.mean(K.square(y_pred - y_true), axis = 1)
-
 keras.losses.custom_loss = custom_loss
 
 class ModelException(Exception):
@@ -236,13 +235,13 @@ class NeuralNetworkPredictor():
             if (j - self.Nu) < i:
                 for ii in range(self.nu):
                     delta += [kronecker_delta(j - i + ii, h)]
-                sum_output += np.dot(weights[i*self.nu:i*self.nu + self.nu, j] , \
+                sum_output += np.dot(weights[i*self.nu:i*self.nu + self.nu, j] ,
                                                                 delta)
             else:
                 delta = []
                 for ii in range(self.nu):
                     delta += [kronecker_delta(self.Nu, h)]
-                sum_output += np.dot(weights[i*self.nu:i*self.nu + self.nu, j] ,\
+                sum_output += np.dot(weights[i*self.nu:i*self.nu + self.nu, j] ,
                                                                 delta)
         for i in range(min(j, self.dd)):
             step_ = step(j-i)
@@ -349,7 +348,7 @@ class NeuralNetworkPredictor():
 
     def predict(self, x):
         self.prediction = self.model.predict(x, batch_size=1)
-        return  self.prediction
+        return self.prediction
 
 
 

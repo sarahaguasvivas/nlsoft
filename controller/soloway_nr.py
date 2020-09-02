@@ -9,6 +9,27 @@ class SolowayNR:
     def __init__(self, d_model):
         self.d_model = d_model
 
+    def fsolve_newtonkrylov(self, F, u0, epsilon=1e-8, rtol=1e-10, maxit=50, verbose=False):
+        u = u0.copy()
+        Fu = F(u)
+        norm0 = numpy.linalg.norm(Fu)
+        for i in range(maxit):
+            def Ju_fd(v):
+                return (F(u + epsilon * v) - Fu) / epsilon
+
+            Ju = splinalg.LinearOperator((len(Fu), len(u)), matvec=Ju_fd)
+            du, info = splinalg.gmres(Ju, Fu)
+            if info != 0:
+                raise RuntimeError('GMRES failed to converge: {:d}'.format(info))
+            u -= du
+            Fu = F(u)
+            norm = numpy.linalg.norm(Fu)
+            if verbose:
+                print('Newton {:d} anorm {:6.2e} rnorm {:6.2e}'.format(i, norm, norm / norm0))
+            if norm < rtol * norm0:
+                break
+        return u, i
+
     def __fsolve_newton(self, u0, del_u, rtol=1e-10, maxit=50, verbose=False):
         u = np.array(u0).copy()
         del_u = np.zeros(u.shape)
