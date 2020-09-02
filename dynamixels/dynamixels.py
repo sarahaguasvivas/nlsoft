@@ -8,7 +8,7 @@ class DynamixelActor:
         self.serial_port = port
 
         self._serial_connection = pydxl.DxlIO(self.serial_port,  baudrate = self.baudrate)
-        print "Scanned motor ids:", self._serial_connection.scan()
+        print("Scanned motor ids:", self._serial_connection.scan())
         self._dynamixel1, self._dynamixel2 =  self._serial_connection.scan([1, 2])
 
         self.max0 = [-100, 80]
@@ -22,7 +22,7 @@ class DynamixelActor:
 
         self.__info = ""
         self.verbose = verbose
-        print "Dynamixels started!"
+        print("Dynamixels started!")
 
     def neutral_point(self):
         return [self._zero1, self._zero2]
@@ -32,7 +32,7 @@ class DynamixelActor:
         TODO
         """
         self._serial_connection.reboot((1, 2))
-        print dir(self._serial_connection)
+        print(dir(self._serial_connection))
 
     def get_present_position(self):
         return list(self._serial_connection.get_present_position((1,2)))
@@ -67,6 +67,6 @@ if __name__=="__main__":
     motors.step(action=[150, -50])
     time.sleep(1)
     motors.reset()
-    print motors.get_info()
+    print(motors.get_info())
     motors.flush()
     motors.close_connection()

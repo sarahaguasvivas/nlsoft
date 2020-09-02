@@ -44,7 +44,7 @@ if __name__== '__main__':
     while True:
         start = time.time()
         signal.collect_signal_sample()
-        print signal.data
+        print(signal.data)
         elapsed = time.time() - start
-        print "elapsed" , elapsed
+        print("elapsed" , elapsed)
     signal.close_network()
