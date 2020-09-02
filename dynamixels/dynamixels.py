@@ -11,10 +11,10 @@ class DynamixelActor:
         print("Scanned motor ids:", self._serial_connection.scan())
         self._dynamixel1, self._dynamixel2 =  self._serial_connection.scan([1, 2])
 
-        self.max0 = [-100, 80]
-        self.max1 = [-100, 40]
+        self.max0 = [-100, 50]
+        self.max1 = [-50, 50]
 
-        self._zero1= -10.0
+        self._zero1= -50.0
         self._zero2= -50.0
 
         self._angle1 = self._zero1
@@ -64,8 +64,7 @@ if __name__=="__main__":
     import time
     motors = DynamixelActor()
     motors.get_present_position()
-    motors.step(action=[0., 0.])
+    motors.step(action=[-50., -50.])
     time.sleep(1)
-    #motors.reset()
     print(motors.get_info())
     motors.close_connection()

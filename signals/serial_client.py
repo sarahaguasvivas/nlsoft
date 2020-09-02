@@ -1,4 +1,3 @@
-#!/usr/bin/env python2.7
 import serial
 import time
 
@@ -15,7 +14,7 @@ class OpticalSignal:
     def initialize_serial(self):
         self.serial_ = serial.Serial(self.port, self.baudrate, \
                         stopbits = serial.STOPBITS_TWO, timeout = self.timeout)
-        print "Serial port initialized!"
+        print("Serial port initialized!")
 
     def collect_signal_sample(self):
         if not self.serial_.is_open:
@@ -28,8 +27,9 @@ class OpticalSignal:
         while len(x) < 25 or x[0] == "," or len(array_string) != self.num_sensors \
                 or len(self.data) != self.num_sensors or max(self.data) > 700:
             x = self.serial_.readline()
-            array_string = x.split(",")
             try:
+                x = x.decode('utf-8')
+                array_string = x.split(",")
                 self.data = [int(i) for i in array_string]
             except:
                 continue
