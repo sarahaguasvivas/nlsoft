@@ -87,7 +87,7 @@ if __name__=='__main__':
     import time
     #C = VRPNclient("DHead", "tcp://192.168.50.24:3883")
     #B = VRPNclient("DBase", "tcp://192.168.50.24:3883")
-    A = BlockOrientation()
+    A = BlockState()
     while True:
         start = time.time()
         print("head: ", A.get_observation()) # collect a single observation

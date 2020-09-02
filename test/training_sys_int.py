@@ -20,9 +20,6 @@ TRAIN = True
 
 plt.style.use('seaborn')
 filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data19.csv"
-#filename1 = str(os.environ["HOME"]) + "/gpc_controller/data/model_data18.csv"
-#filename2 = str(os.environ["HOME"]) + "/gpc_controller/data/model_data15.csv"
-#filename3 = str(os.environ["HOME"]) + "/gpc_controller/data/model_data16.csv"
 
 font = FontProperties()
 font.set_family('serif')
