@@ -1,4 +1,3 @@
-#!/usr/bin/env python2.7
 from gym.block_gym import *
 import time
 from datetime import date

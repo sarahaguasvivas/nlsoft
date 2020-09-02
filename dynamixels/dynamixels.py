@@ -53,7 +53,7 @@ class DynamixelActor:
         self._angle1 , self._angle2 = self.get_present_position()
 
         self.__info = "Dynamixels: ID1= " + str(self._angle1) + \
-                                " degrees;ID2= " + str(self._angle2) + " degrees"
+                                " degrees; ID2= " + str(self._angle2) + " degrees"
         return self.__info, self._angle1, self._angle2
 
     def close_connection(self):
@@ -64,9 +64,8 @@ if __name__=="__main__":
     import time
     motors = DynamixelActor()
     motors.get_present_position()
-    motors.step(action=[150, -50])
+    motors.step(action=[0., 0.])
     time.sleep(1)
-    motors.reset()
+    #motors.reset()
     print(motors.get_info())
-    motors.flush()
     motors.close_connection()

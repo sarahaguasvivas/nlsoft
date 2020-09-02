@@ -1,4 +1,3 @@
-#!/usr/bin/env python2.7
 from controller.soloway_nr import *
 from gym.block_gym import *
 import time, os
@@ -39,7 +38,7 @@ neutral_point = Block.get_state()
 
 NNP.x0=neutral_point
 
-print "neutral_point: ", neutral_point
+print("neutral_point: ", neutral_point)
 
 target = Pringle2(wavelength = 1000, amplitude = 15./1000., center = neutral_point)
 
@@ -139,8 +138,8 @@ try:
     log.save_log()
 except Exception as e:
     import traceback, sys
-    print str(e)
-    print "Closing all connections!"
+    print(str(e))
+    print("Closing all connections!")
     Block.reset()
     Block.motors.close_connection()
     traceback.print_exc(file = sys.stdout)

@@ -1,4 +1,3 @@
-#!/usr/bin/env python2.7
 from gym.block_gym import *
 import seaborn as sns
 import matplotlib.pyplot as plt
