@@ -1,4 +1,4 @@
-from optitrack.optitrack import *
+from optitrack.vrpn_client import *
 from signals.serial_client import *
 from dynamixels.dynamixels import *
 

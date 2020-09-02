@@ -3,5 +3,9 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib/dynamixel_hr" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/vrpn" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/vrpn/hidapi" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/vrpn/submodules/hidapi" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/vrpn/submodules/hidapi/hidapi" vcs="Git" />
   </component>
 </project>
