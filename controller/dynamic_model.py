@@ -1,6 +1,7 @@
-from functions import *
-from cost import NN_Cost
-from constraints import *
+from .functions import *
+from .cost import NN_Cost
+from .constraints import *
+from typing import List
 
 from keras import layers
 from keras.models import load_model
@@ -31,12 +32,12 @@ class ModelException(Exception):
         ---------------------------------------------------------------------
 """
 class NeuralNetworkPredictor():
-    def __init__(self, model_file, N1 = 0 , N2 = 3 ,  Nu = 2 , \
-                            K = 3 , Q = [[1, 0, 0], [0, 1, 0], [0, 0, 1]],\
-                            Lambda = [[0.3, 0.0], [0., 0.2]] , nd = 3,\
-                                    dd = 3, x0= [0, 0], u0= [0, 0], \
-                                        s = [1e-20, 1e-20], b = [1e-10, 1e-10], r = [4e-1, 4e-1],
-                                        states_to_control = [0, 1, 1]):
+    def __init__(self, model_file : str, N1 : int = 0 , N2 : int = 3 ,  Nu : int = 2 ,
+                            K : int = 3 , Q : List[List[float]] = [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+                            Lambda : List[List[float]] = [[0.3, 0.0], [0., 0.2]] , nd : int = 3,
+                                    dd : int = 3, x0 : List[float] = [0, 0], u0 : List[float] = [0., 0.],
+                                        s : float = 1e-20, b : float = 1e-10, r : float = 4e-1,
+                                        states_to_control : List[bool] = [0, 1, 1]):
 
         self.N1, self.N2, self.Nu, self.x0, self.u0 = N1, N2, Nu, x0, u0
 
@@ -95,7 +96,7 @@ class NeuralNetworkPredictor():
                 ii += 1
         return C
 
-    def initialize_deques(self, u0, x0):
+    def initialize_deques(self, u0 : List[float], x0 : List[float]):
         for _ in range(self.N2 - self.N1):
             self.y_deque.appendleft(self.x0)
             self.ym_deque.appendleft(x0)
@@ -103,8 +104,8 @@ class NeuralNetworkPredictor():
             self.u_deque.appendleft(u0)
             self.delu_deque.appendleft([0, 0])
 
-    def update_dynamics(self, u = [0, -50], del_u = [0, 0],\
-                            y = [0, 0, 0], ym = [0, 0]):
+    def update_dynamics(self, u : List[float] = [0., -50.], del_u : List[float] = [0., 0.],
+                            y : List[float] = [0., 0., 0.], ym : List[float] = [0., 0.]):
         """
             y_deque = y(n), y(n-1), y(n-2), ..., y(n-T)
             u_deque = u(n), u(n-1), u(n-2), ...., u(n-T)
@@ -291,10 +292,10 @@ class NeuralNetworkPredictor():
                 for j in range(self.Nu):
                    for i in range(self.nu):
                        hessian[h, m] += kronecker_delta(h, j)*kronecker_delta(m, j) * \
-                               (2.0*self.constraints.s[i] / np.power((U[j, i] + self.constraints.r[i] / 2. - \
-                               self.constraints.b[i]), 3.0) + \
-                               2.0 * self.constraints.s[i] / np.power(self.constraints.r[i]/2. +\
-                               self.constraints.b[i] - U[j, i], 3.0))
+                               (2.0*self.constraints.s / np.power((U[j, i] + self.constraints.r / 2. - \
+                               self.constraints.b), 3.0) + \
+                               2.0 * self.constraints.s / np.power(self.constraints.r/2. +\
+                               self.constraints.b - U[j, i], 3.0))
         return hessian
 
     def compute_jacobian(self, u, del_u):
@@ -326,10 +327,10 @@ class NeuralNetworkPredictor():
             for j in range(self.Nu):
                sub_sum = np.array([0.0, 0.0])
                for i in range(self.nu):
-                   sub_sum[i] += kronecker_delta(h, j) * ( -self.constraints.s[i] / np.power(U[j, i] +  \
-                       self.constraints.r[i] / 2.0 - self.constraints.b[i] , 2) + \
-                               self.constraints.s[i] / np.power(self.constraints.r[i]/2.0 + \
-                               self.constraints.b[i] - U[j, i] , 2.0) )
+                   sub_sum[i] += kronecker_delta(h, j) * ( -self.constraints.s / np.power(U[j, i] +  \
+                       self.constraints.r / 2.0 - self.constraints.b , 2) + \
+                               self.constraints.s / np.power(self.constraints.r/2.0 + \
+                               self.constraints.b - U[j, i] , 2.0) )
                sum_output += sub_sum
             dJ[h, :] = sum_output
         return dJ

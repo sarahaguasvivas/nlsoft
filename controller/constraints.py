@@ -1,5 +1,10 @@
 class Constraints:
-    def __init__(self, s = [1e-10]*2, r = [1.]*2, b = [1.]*2):
+    """
+        by Sarah Aguasvivas
+        Container of Constraints class
+        s, r and b specify roundness of corners
+    """
+    def __init__(self, s : float = 1e-10, r : float = 1., b : float = 1.):
         # s-> sharpness of the corners of the constraint function
         # r-> range of the constraint
         # b-> offset to the range

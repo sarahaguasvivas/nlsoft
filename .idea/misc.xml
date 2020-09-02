@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+<<<<<<< HEAD
   <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.5 (gpc_controller)" project-jdk-type="Python SDK" />
+=======
+  <component name="ProjectPlainTextFileTypeManager">
+    <file url="file://$PROJECT_DIR$/controller/newton_raphson.py" />
+  </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.7 (py2gpc)" project-jdk-type="Python SDK" />
+>>>>>>> 96d283c56ede170f555f6a1d06517a1478879be6
 </project>

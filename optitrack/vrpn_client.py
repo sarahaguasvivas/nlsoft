@@ -3,6 +3,9 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 
 class VRPNclient:
+    """
+        This client has only been tested in <= Python2.7
+    """
     def callback(self, userdata, data):
         self.tracked = True
         self.data_read = {userdata: data}
@@ -12,7 +15,6 @@ class VRPNclient:
         self.hostID= hostID
 
         self.tracked = False
-
         self.data_read = None
 
         self.tracker = vrpn.receiver.Tracker(tracker_name + "@" + hostID)
@@ -45,7 +47,7 @@ class VRPNclient:
         self.tracked = False
         return self.info
 
-class BlockOrientation():
+class BlockState():
     def __init__(self, ip = "192.168.50.24:3883"):
         self.v = []
         self.wand = VRPNclient("Wand",  "tcp://" + ip)

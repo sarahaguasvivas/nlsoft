@@ -20,9 +20,9 @@ class Logger:
                         self.log_dictionary[key][logged] += [log_dict[key][logged]]
 
     def verbose(self, **kwargs):
-        print "__________________________________"
+        print("__________________________________")
         for key, value in kwargs.items():
-            print "GPC : {0} = {1}".format(key, value)
+            print("GPC : {0} = {1}".format(key, value))
 
     def save_log(self, filename = 'log_output.json'):
         import json
@@ -61,7 +61,7 @@ class Logger:
         NUM_TIMESTEPS = self.log_dictionary['metadata']['num_timesteps']
         neutral_point = self.log_dictionary['metadata']['neutral_point']
 
-        print "Average control loop time in seconds:  ", np.mean(np.abs(elapsed))
+        print("Average control loop time in seconds:  ", np.mean(np.abs(elapsed)))
 
         ym = 1000*np.reshape(ym, (NUM_EXPERIMENTS,-1, 3))
         yn = 1000*np.reshape(yn, (NUM_EXPERIMENTS, -1, 3))
@@ -71,11 +71,11 @@ class Logger:
         error_p= np.sqrt(((yn - actual_) **2).mean(axis = -1))
         error_e=np.sqrt(((actual_ - ym)**2).mean( axis = -1))
 
-        print "Average prediction error: ", error_p.mean() #np.mean(error_p, axis = (0, 1))
-        print "Average control error: ",  error_e.mean()  #np.mean(error_e, axis = (0, 1))
+        print("Average prediction error: ", error_p.mean()) #np.mean(error_p, axis = (0, 1))
+        print("Average control error: ",  error_e.mean()) #np.mean(error_e, axis = (0, 1))
 
-        print "Standard error prediction: ", np.std(error_p, ddof=0)
-        print "Standard error control: ", np.std(error_e,  ddof=0)
+        print("Standard error prediction: ", np.std(error_p, ddof=0))
+        print("Standard error control: ", np.std(error_e,  ddof=0))
 
         u_optimal_list = np.reshape(u_optimal_list, (NUM_EXPERIMENTS, -1, 2))
         error_mm = actual_ - ym
