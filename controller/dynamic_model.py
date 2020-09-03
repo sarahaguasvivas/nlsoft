@@ -3,19 +3,14 @@ from .cost import NN_Cost
 from .constraints import *
 from typing import List
 
-from keras import layers
-from keras.models import load_model
-import keras
-
-import numpy as np
-from keras import backend as K
 import tensorflow as tf
+import tensorflow.keras.backend as K
+import numpy as np
 
 from collections import deque
 
 def custom_loss(y_true, y_pred):
     return 1000*K.mean(K.square(y_pred - y_true), axis = 1)
-keras.losses.custom_loss = custom_loss
 
 class ModelException(Exception):
     pass
@@ -53,7 +48,7 @@ class NeuralNetworkPredictor():
         self.Lambda = 0.5*(self.Lambda + self.Lambda.T)
 
         self.K = K
-        self.model = load_model(model_file)
+        self.model = tf.keras.models.load_model(model_file)
 
         self.C = self.__make_C_matrix(states_to_control)
         self.states_to_control = states_to_control
@@ -72,7 +67,7 @@ class NeuralNetworkPredictor():
 
         self.constraints = Constraints(s = s, b = b, r = r)
 
-        self.hid = self.model.layers[-1].input_shape[1]
+        self.hid = self.model.layers[0].units
 
         self.initialize_deques(self.u0, self.x0)
         self.cost = NN_Cost(self)
@@ -81,7 +76,7 @@ class NeuralNetworkPredictor():
         first_layer_index = 0  # first layer may be Gaussian noise
         layertype = self.model.layers[first_layer_index]
 
-        while not isinstance(layertype, layers.Dense):
+        while not isinstance(layertype, tf.keras.layers.Dense):
             first_layer_index += 1
             layertype = self.model.layers[first_layer_index]
         return first_layer_index, layertype

@@ -1,4 +1,4 @@
-import vrpn
+import lib.vrpn as vrpn
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 

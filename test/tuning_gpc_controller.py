@@ -1,6 +1,5 @@
 import os, sys
-#sys.path.append(os.path.join(os.environ['HOME'], 'gpc_controller'))
-sys.path.append('/home/jason/github_repos/gpc_controller')
+sys.path.append(os.path.join(os.environ['HOME'], 'gpc_controller'))
 from controller.soloway_nr import *
 from block_gym.block_gym import *
 import time, os
@@ -24,7 +23,6 @@ NNP = NeuralNetworkPredictor(model_file = model_filename,
                                   [0., 1e5]]),
                     Lambda = 1e2*np.array([[2e-1, 0.],
                                           [0., 1.]]),
-
                     states_to_control = [0, 1, 1],
                         x0 = [0.0, 0.0, 0.0],
                         u0 = [0.,  0.], s = [1e-20, 1e-20], b = [1e-3, 1e-3],
