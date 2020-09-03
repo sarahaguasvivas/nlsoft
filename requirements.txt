@@ -1,9 +1,0 @@
-vrpn
-numpy
-time
-pypot
-keras
-tensorflow
-collection
-copy
-pyserial

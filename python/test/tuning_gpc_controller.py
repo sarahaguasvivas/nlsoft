@@ -1,5 +1,5 @@
 import os, sys
-sys.path.append(os.path.join(os.environ['HOME'], 'gpc_controller'))
+sys.path.append(os.path.join(os.environ['HOME'], 'gpc_controller/python'))
 from controller.soloway_nr import *
 from block_gym.block_gym import *
 import time, os
@@ -8,7 +8,7 @@ from logger.logger import Logger
 from utilities.util import *
 from target.target import Pringle2
 
-model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
+model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id.hdf5'
 
 NUM_EXPERIMENTS = 100
 NUM_TIMESTEPS = 2000
