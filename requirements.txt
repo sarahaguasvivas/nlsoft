@@ -1,10 +1,9 @@
-python_version == '3.5'
 vrpn
 numpy
 time
 pypot
 keras
 tensorflow
-collections
+collection
 copy
 pyserial

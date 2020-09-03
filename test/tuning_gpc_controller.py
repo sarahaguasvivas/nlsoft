@@ -1,7 +1,8 @@
 import os, sys
-sys.path.append(os.path.join(os.environ['HOME'], 'gpc_controller'))
+#sys.path.append(os.path.join(os.environ['HOME'], 'gpc_controller'))
+sys.path.append('/home/jason/github_repos/gpc_controller')
 from controller.soloway_nr import *
-from gym.block_gym import *
+from block_gym.block_gym import *
 import time, os
 import copy
 from logger.logger import Logger

@@ -1,5 +1,5 @@
-from dynamic_model import *
-import constraints as constraints
+from controller.dynamic_model import *
+import controller.constraints as constraints
 import numpy as np
 
 class NN_Cost:
