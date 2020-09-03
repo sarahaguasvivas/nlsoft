@@ -1,5 +1,5 @@
 import numpy as np
-from .dynamic_model import *
+from controller.dynamic_model import *
 from scipy import optimize
 import copy
 import scipy.sparse.linalg as splinalg
