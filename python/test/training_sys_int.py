@@ -1,4 +1,5 @@
-#!/usr/bin/env python2.7
+import os, sys
+sys.path.append(os.path.join(os.environ['HOME'], 'gpc_controller/python'))
 import numpy as np
 import os
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
@@ -19,7 +20,7 @@ NUM_DATA_RUNS = 200
 TRAIN = True
 
 plt.style.use('seaborn')
-filename = str(os.environ["HOME"]) + "/gpc_controller/data/model_data19.csv"
+filename = str(os.environ["HOME"]) + "/gpc_controller/python/data/model_data19.csv"
 
 font = FontProperties()
 font.set_family('serif')
@@ -129,9 +130,9 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.5)
     y_pred= 1000.*model.predict(X_test)
 
-    print y_pred, y_test, y_pred.shape
+    print(y_pred, y_test, y_pred.shape)
     diff = np.linalg.norm(y_test-y_pred, axis = 1)
-    print "Testing set avg l2 norm:", np.mean(diff)
+    print("Testing set avg l2 norm:", np.mean(diff))
 
 
 def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
@@ -165,14 +166,14 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
     U = np.deg2rad(U[:, 2:])
     S = signals[N - 1:, :]
 
-    print "Y", Y
+    print("Y", Y)
     Y = Y[:, 3:-3] # Y
 
     X = np.concatenate((U, Y[:, 3:]), axis = 1)
     X = np.concatenate((X, S), axis = 1)
     y = Y[:, :3] # we are using all of this to estimate current
 
-    print np.cov(y.T, bias = True)
+    print(np.cov(y.T, bias = True))
     return X, y
 
 
@@ -182,6 +183,6 @@ if __name__ == "__main__":
     X, y = prepare_data_file([filename], nd=5, dd=5+2)
     if TRAIN:
         modelfile, k_fold_summary = neural_network_training(X, y)
-        print k_fold_summary
+        print(k_fold_summary)
     plot_sys_id(X, y)
 
