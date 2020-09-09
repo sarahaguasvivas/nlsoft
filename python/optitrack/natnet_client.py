@@ -6,12 +6,14 @@ class NatNetClient:
     """
         This client is compatible with >= Python3
     """
-    def __init__(self):
-        pass
-
+    def __init__(self, body : str = 'DHead',  ip : str = '192.168.50.24'):
+        self.body = body
+        self.ip = ip
+        self.client = natnet.NatClient(client_ip = ip, data_port = 1511, comm_port = 1510)
 
     def sample_data(self):
         pass
+
     def get_observation(self):
         pass
 
@@ -28,12 +30,12 @@ class BlockOrientation():
 
 if __name__=='__main__':
     import time
-    C = NatNetClient("DHead", "tcp://192.168.50.24:3883")
-    B = NatNetClient("DBase", "tcp://192.168.50.24:3883")
+    C = NatNetClient("DHead", "239.255.42.99")
+    #B = NatNetClient("DBase", "tcp://192.168.50.24:3883")
     while True:
         start = time.time()
         print("head: ", C.get_observation())
-        print("base: ", B.get_observation())
+        #print("base: ", B.get_observation())
         elapsed = time.time() - start
 
 

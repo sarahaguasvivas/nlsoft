@@ -187,7 +187,7 @@ class Logger:
             plt.legend(prop = {"family": "Times New Roman", "size": 14}, loc = 'right', frameon= True)
             plt.xticks(fontsize=14, **font)
             plt.yticks(fontsize=14, **font)
-            plt.ylabel(r"" + str(labels[i]) + '_{RMS}', **font)
+            plt.ylabel(r"$" + str(labels[i]) + '_{RMS}$', **font)
             if i==2:
                 plt.xlabel('timesteps', **font)
             if i==0:
