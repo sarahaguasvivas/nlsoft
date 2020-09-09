@@ -69,12 +69,12 @@ class BlockGym():
         # calibrate signals to find out
         # where each channel maxes
         zero = [self.motors._zero1, self.motors._zero2]
-        calibration_positions = [[100, 20],zero, [-100, -100], \
-                           zero, [-100, 20], zero, [100, -100], zero,
+        calibration_positions = [[50, 20],zero, [-100, -100], \
+                           zero, [-100, 20], zero, [50, -100], zero,
                            [-20, 20], zero, [-20, -100], zero, [-100, -90], zero, \
-                                   [100, -90], zero, [100, -100], zero, \
-                                   [100, 10], zero, [100, -100], zero, [-90, -90], zero, \
-                                   [50, -90], zero, [70, -90]]
+                                   [50, -90], zero, [50, -100], zero, \
+                                   [50, 10], zero, [50, -100], zero, [-90, -90], zero, \
+                                   [50, -90], zero, [50, -90]]
 
         for count, pos in enumerate(calibration_positions):
             self.step(pos)

@@ -6,7 +6,6 @@ from typing import List
 import tensorflow as tf
 import tensorflow.keras.backend as K
 import numpy as np
-
 from collections import deque
 
 def custom_loss(y_true, y_pred):
@@ -273,23 +272,16 @@ class NeuralNetworkPredictor():
                 ynu, ynu1, temp = np.array(ynu), np.array(ynu1), \
                         np.array(temp).reshape(-1, self.ny)
 
-                hessian[h, m] += np.sum(2.*ynu.dot(self.Q).dot(np.array(ynu1).T) -
-                                            2.*delY.dot(self.Q).dot(temp.T))
+                hessian[h, m] += np.sum(2. * self.Q @ np.array(ynu1).T -
+                                            2.*delY @ self.Q @temp.T)
 
                 second_y, second_y1, temp = [], [], []
                 for j in range(self.nu):
                     second_y+=[self.__partial_delta_u_partial_u(j, m)]
                     second_y1+=[self.__partial_delta_u_partial_u(j, h)]
-                hessian[h, m] += np.sum(2.* np.dot(self.Lambda,
-                                second_y).dot(np.array(second_y1).T))
 
-                for j in range(self.Nu):
-                   for i in range(self.nu):
-                       hessian[h, m] += kronecker_delta(h, j)*kronecker_delta(m, j) * \
-                               (2.0*self.constraints.s / np.power((U[j, i] + self.constraints.r / 2. - \
-                               self.constraints.b), 3.0) + \
-                               2.0 * self.constraints.s / np.power(self.constraints.r/2. +\
-                               self.constraints.b - U[j, i], 3.0))
+                hessian[h, m] += np.sum(2.* self.Lambda @
+                                second_y @ np.array(second_y1).T)
         return hessian
 
     def compute_jacobian(self, u, del_u):
@@ -312,20 +304,12 @@ class NeuralNetworkPredictor():
             ynu1 = np.array(ynu1)
             ynu = np.array(ynu)
 
-            sub_sum = delY.dot(self.Q).dot(ynu.T)
+            sub_sum = delY @ self.Q @ ynu.T
 
             sum_output += (-2.*np.sum(sub_sum, axis = 0)).flatten().tolist()
 
-            sum_output += 2.* np.sum(np.dot(np.array(delU),
-                                        self.Lambda).dot(ynu1), axis = 0)
-            for j in range(self.Nu):
-               sub_sum = np.array([0.0, 0.0])
-               for i in range(self.nu):
-                   sub_sum[i] += kronecker_delta(h, j) * ( -self.constraints.s / np.power(U[j, i] +  \
-                       self.constraints.r / 2.0 - self.constraints.b , 2) + \
-                               self.constraints.s / np.power(self.constraints.r/2.0 + \
-                               self.constraints.b - U[j, i] , 2.0) )
-               sum_output += sub_sum
+            sum_output += 2.* np.sum(np.array(delU) @
+                                        self.Lambda @ ynu1, axis = 0)
             dJ[h, :] = sum_output
         return dJ
 

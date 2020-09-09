@@ -1,10 +1,8 @@
 import os, sys
 sys.path.append(os.path.join(os.environ['HOME'], 'gpc_controller'))
-from gym.block_gym import *
-import time
+from block_gym.block_gym import *
 from datetime import date
-import traceback, sys
-import time
+import numpy as np
 
 B = BlockGym()
 
@@ -24,7 +22,7 @@ actions8 = list((1.+np.sin(2.* np.pi / 1000. * (np.arange(10000))))/2. * 150. - 
 N = 200
 
 today = date.today()
-f = open("data_" + today.strftime("%b_%d_%Y_8")+".csv", "w+")
+f = open("data_" + today.strftime("%b_%d_%Y")+".csv", "w+")
 # my_string = ','.join(map(str, my_list))
 #try:
 for exp in range(N):
@@ -41,6 +39,7 @@ for exp in range(N):
         data = data + [i, actions8[j]]
         #print >> f, ", ".join(map(str, data))
         f.write(", ".join(map(str, data)))
+        f.write("\n")
     B.reset()
     print("sides")
     for i in actions1:
@@ -56,6 +55,7 @@ for exp in range(N):
             data = data + [i, j]
             #print >> f, ", ".join(map(str, data))
             f.write(",".join(map(str, data)))
+            f.write("\n")
         flag = not flag
     B.reset()
     print("updown")
@@ -73,6 +73,7 @@ for exp in range(N):
             data = data + [j, i]
             #print >> f, ", ".join(map(str, data))
             f.write(", ".join(map(str, data)))
+            f.write("\n")
         flag = not flag
     B.reset()
 B.reset()

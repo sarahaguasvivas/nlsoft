@@ -36,11 +36,11 @@ class NN_Cost:
         for j in range(self.d_model.Nu):
             self.cost += np.array(delU[j, :]).dot(np.array(self.d_model.Lambda)).dot(np.array(delU[j, :]).T)
 
-        for j in range(self.d_model.Nu):
-            for i in range(self.d_model.nu):
-                self.cost += self.s[i] / (U[j, i] + self.r[i] / 2.0 - \
-                            self.b[i]) + self.s[i] / (self.r[i]/2.0 + \
-                                self.b[i] - U[j, i]) - 4.0 / self.r[i]
+        #for j in range(self.d_model.Nu):
+        #    for i in range(self.d_model.nu):
+        #        self.cost += self.s[i] / (U[j, i] + self.r[i] / 2.0 - \
+        #                    self.b[i]) + self.s[i] / (self.r[i]/2.0 + \
+        #                        self.b[i] - U[j, i]) - 4.0 / self.r[i]
         return self.cost
 
 
