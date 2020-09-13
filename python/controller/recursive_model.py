@@ -24,7 +24,7 @@ class ModelException(Exception):
             Calculating m'th and h'th element of the Hessian
         ---------------------------------------------------------------------
 """
-class NeuralNetworkPredictor():
+class RecursiveNeuralNetworkPredictor():
     def __init__(self, model_file : str, N1 : int = 0 , N2 : int = 3 ,  Nu : int = 2 ,
                             K : int = 3 , Q : List[List[float]] = [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
                             Lambda : List[List[float]] = [[0.3, 0.0], [0., 0.2]] , nd : int = 3,
@@ -257,23 +257,23 @@ class NeuralNetworkPredictor():
         Y, YM , _, _ = self.get_computation_vectors()
         delY = YM[self.N1:self.N2, :] - Y[self.N1:self.N2, :]
 
-        U = u.copy()
         del_u = del_u.copy()
 
         hessian = np.zeros((self.Nu, self.Nu))
+
         for h in range(self.Nu):
             for m in range(self.Nu):
                 ynu, ynu1, temp = [], [], []
                 for j in range(self.N1, self.N2):
-                    ynu  += [self.__partial_yn_partial_u(j, m)]
-                    ynu1 += [self.__partial_yn_partial_u(j, h)]
-                    temp += [self.__partial_2_yn_partial_nph_partial_npm(h, m, j)]
+                    ynu +=[self.__partial_yn_partial_u(j, m)]
+                    ynu1+=[self.__partial_yn_partial_u(j, h)]
+                    temp+=[self.__partial_2_yn_partial_nph_partial_npm(h, m, j)]
 
                 ynu, ynu1, temp = np.array(ynu), np.array(ynu1), \
-                        np.array(temp).reshape(-1, self.ny)
+                                          np.array(temp).reshape(-1, self.ny)
 
-                hessian[h, m] += np.sum(2. * self.Q @ np.array(ynu1).T -
-                                            2.*delY @ self.Q @temp.T)
+                hessian[h, m] += np.sum(2. * self.Q @ np.array(ynu1).T) - \
+                                            np.sum(2.*delY @ self.Q @temp.T)
 
                 second_y, second_y1, temp = [], [], []
                 for j in range(self.nu):
@@ -285,33 +285,22 @@ class NeuralNetworkPredictor():
         return hessian
 
     def compute_jacobian(self, u, del_u):
-        Y, YM, _, _ = self.get_computation_vectors()
-        delY = YM[self.N1:self.N2, :] - Y[self.N1:self.N2, :]
-
-        U = u.copy()
-        delU = del_u.copy()
-
-        dJ = np.zeros((self.Nu, U.shape[1]))
-        sum_output = np.array([0.0]*self.nu)
+        Y, YM, _ , _ = self.get_computation_vectors()
+        del_y = YM[self.N1:self.N2, :] - Y[self.N1:self.N2, :]
+        del_u = del_u.copy()
+        sub_sum = del_y @ self.Q
 
         for h in range(self.Nu):
             ynu, ynu1 = [], []
-
             for j in range(self.nu):
                 ynu += [self.__partial_yn_partial_u(j, h).tolist()]
                 ynu1 += [self.__partial_delta_u_partial_u(j, h)]
 
-            ynu1 = np.array(ynu1)
-            ynu = np.array(ynu)
-
-            sub_sum = delY @ self.Q @ ynu.T
-
-            sum_output += (-2.*np.sum(sub_sum, axis = 0)).flatten().tolist()
-
-            sum_output += 2.* np.sum(np.array(delU) @
-                                        self.Lambda @ ynu1, axis = 0)
-            dJ[h, :] = sum_output
-        return dJ
+        ynu1 = np.array(ynu1).reshape(self.Nu, -1)
+        ynu = np.array(ynu)
+        sum_output = np.sum(sub_sum @ ynu.T, axis = 0).reshape(self.Nu, -1)
+        sum_output += 2. * np.multiply(np.array(del_u) @ self.Lambda , ynu1)
+        return sum_output
 
     def Fu(self, u, del_u):
         return self.compute_jacobian(u, del_u)
