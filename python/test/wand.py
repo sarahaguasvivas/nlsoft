@@ -1,5 +1,5 @@
 #!/usr/bin/env python2.7
-from controller.dynamic_model import *
+from controller.recursive_model import *
 from controller.soloway_nr import *
 from gym.block_gym import *
 from collections import deque
@@ -18,15 +18,15 @@ NUM_TIMESTEPS = 1000
 verbose = 0
 #neutral point
 # -0.05693081021308899, -0.03798467665910721, -0.01778547465801239
-NNP = NeuralNetworkPredictor(model_file = model_filename,
-                    N1 = 0, N2 = 1, Nu = 1, nd = 2, dd = 2, K = 5, \
-                    Q = np.array([[15, 1e-3, -5e-3],
+NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
+                                      N1 = 0, N2 = 1, Nu = 1, nd = 2, dd = 2, K = 5, \
+                                      Q = np.array([[15, 1e-3, -5e-3],
                                   [1e-3, 7., 5e-3],
                                   [-5e-3, 5e-3, 15.]]),
-                    Lambda = np.array([[1e-1],
+                                      Lambda = np.array([[1e-1],
                                        [6e-5]]), \
-                        y0 = [-0.05693081021308899, -0.03798467665910721, -0.01], \
-                        u0 = [-10.0, -50.0], s = 1e-13, b = 5e-3, r = 4e-2)
+                                      y0 = [-0.05693081021308899, -0.03798467665910721, -0.01], \
+                                      u0 = [-10.0, -50.0], s = 1e-13, b = 5e-3, r = 4e-2)
 
 NR_opt, Block = SolowayNR(cost = NNP.cost, d_model = NNP), \
                         BlockGym(vrpn_ip = "192.168.50.24:3883")

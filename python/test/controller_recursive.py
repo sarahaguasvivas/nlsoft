@@ -1,6 +1,5 @@
 import os, sys
 sys.path.append(os.path.join(os.environ['HOME'], 'gpc_controller/python'))
-
 from controller.soloway_nr import *
 from block_gym.block_gym import *
 import time, os
@@ -13,21 +12,21 @@ import numpy as np
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id.hdf5'
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 2000
+NUM_TIMESTEPS = 500
 
 input_scale = [1., 1.]
 shift = [0., 0.]
 verbose = 1
 
-NNP = NeuralNetworkPredictor(model_file = model_filename,
-                N1 = 0, N2 = 2, Nu = 1, nd = 5, dd = 5, K = 5,
-                    Q = np.array([[1e6, 0.],
-                                  [0., 1e5]]),
-                    Lambda = np.array([[2e-1, 0.],
-                                       [0., 1.]]),
-                    states_to_control = [0, 1, 1],
-                        x0 = [0.0, 0.0, 0.0],
-                        u0 = [0.,  0.])
+NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
+                                      N1 = 0, N2 = 2, Nu = 1, nd = 5,
+                                      dd = 5, K = 2, Q = np.array([[1e3, 0.],
+                                                                   [0., 1e3]]),
+                                      Lambda = np.array([[1., 0.],
+                                                         [0., 1e-2]]),
+                                      states_to_control = [0, 1, 1],
+                                      x0 = [0.0, 0.0, 0.0],
+                                      u0 = [0.,  0.])
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
 log = Logger()
@@ -44,7 +43,6 @@ print("neutral_point: ", neutral_point)
 target = Pringle2(wavelength = 1000, amplitude = 15./1000., center = neutral_point)
 
 Block.calibration_max = np.array([ 48., 1, 23.,   1,   1,   139., 187.,   1,   1,  1,  24.])
-#Block.get_signal_calibration()
 
 u_optimal_old = np.reshape(NNP.u0*NNP.Nu, (-1, 2))
 
@@ -99,7 +97,7 @@ try:
             NNP.ym = NNP.C.dot(Target.T).reshape(NNP.ny, -1).T.tolist()
 
             u_optimal, del_u,  _ = NR_opt.optimize(u = u_optimal_old, delu = del_u,
-                                        maxit = 4, rtol = 1e-4, verbose = True)
+                                        maxit = 1, rtol = 1e-4, verbose = True)
 
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
@@ -109,7 +107,7 @@ try:
 
             #u_action[0] = (1. + np.cos(2. * np.pi / 1000. * n ))/ 2. * 150. - 100.
             #u_action[1] = (1. + np.sin(2. * np.pi / 1000. * n ))/ 2. * 150. - 100.
-            print(u_action)
+
             Block.step(action = u_action)
 
             NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action,

@@ -3,7 +3,7 @@ sys.path.append(os.path.join(os.environ['HOME'], 'gpc_controller'))
 from block_gym.block_gym import *
 from datetime import date
 import numpy as np
-
+import time
 B = BlockGym()
 
 B.reset()
@@ -33,6 +33,7 @@ for exp in range(N):
 
     print("circles")
     for j, i in enumerate(actions7):
+        start = time.time()
         B.step(action = [i, actions8[j]])
         print (i, actions8[j])
         data = B.get_observation() + B.get_real_position()
@@ -40,6 +41,8 @@ for exp in range(N):
         #print >> f, ", ".join(map(str, data))
         f.write(", ".join(map(str, data)))
         f.write("\n")
+        elapsed = time.time() - start
+        print("elapsed: ", elapsed)
     B.reset()
     print("sides")
     for i in actions1:

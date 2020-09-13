@@ -1,4 +1,4 @@
-from controller.dynamic_model import *
+from controller.recursive_model import *
 import controller.constraints as constraints
 import numpy as np
 
