@@ -7,7 +7,7 @@ class DynamixelActor:
         self.baudrate = baudrate
         self.serial_port = port
 
-        self._serial_connection = pydxl.DxlIO(self.serial_port,  baudrate = self.baudrate)
+        self._serial_connection = pydxl.DxlIO(self.serial_port, baudrate = self.baudrate)
 
         self._dynamixel1, self._dynamixel2 =  self._serial_connection.scan([1, 2])
 

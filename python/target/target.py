@@ -1,6 +1,7 @@
 import numpy as np
 from abc import ABCMeta, abstractmethod
 from scipy import signal
+from typing import List
 
 class Target(ABCMeta):
     def __init__(self):
@@ -61,15 +62,15 @@ class Pringle2:
         self.center= current_point
         phase = 0
         for i in range(n1, n2):
-            y = self.amplitude  * np.sin(2.*np.pi*(timestep+ i ) \
-                                            / (self.wavelength) + phase + \
-                                                0.00001*(timestep + i )**2) - 0./1000.
+            y = 0.0 #self.amplitude / 2. * np.sin(2.*np.pi*(timestep+ i ) \
+                #                            / (self.wavelength) + phase + \
+                #                                0.00001*(timestep + i )**2)
 
             z = self.amplitude * np.sin(2*np.pi*(timestep + i  ) / \
                                             (self.wavelength) + phase +\
-                                        0.00001*(timestep + i )**2) + 0./1000.
+                                        0.00001*(timestep + i )**2)
 
-            x = 0.0 #self.amplitude * np.sin(100*z*y) + 0./1000.
+            x =  self.amplitude * np.sin(-1000*z*y)
 
             target[i, :] = [self.center[0] + x, self.center[1] + y, self.center[2] + z]
         return target
@@ -160,7 +161,7 @@ class SingleAxisSquareWave:
         return target
 
 class Square3D:
-    def __init__(self, frequency = 500, amplitude = 0.025, \
+    def __init__(self, frequency = 500, amplitude = 0.025,
                                 center = [0.0, 0.0, 0.0]):
         self.frequency = frequency
         self.amplitude = amplitude
@@ -183,5 +184,27 @@ class Square3D:
                             self.center[2] + self.amplitude*signal.square(2.*np.pi*(timestep + i) \
                                                         / self.frequency + phase + np.pi / 2.0)]
             i+=1
+        return target
+
+
+class FigureEight:
+    def __init__(self, amplitude : float = 20./1000.,
+                 center : List[float] = [0., 0., 0.],
+                 wavelength : float = 1000.):
+        self.amplitude = amplitude
+        self.center = center
+        self.wavelength = wavelength
+
+    def spin(self, timestep, n1, n2, dims, current_point):
+        target = np.empty([n2-n1, dims])
+        i=0
+        for _ in range(n1, n2):
+            z = self.amplitude * np.sin((timestep + i)/self.wavelength)
+            y = self.amplitude * np.sin((timestep + i)/self.wavelength) * \
+                                np.cos((timestep + i)/self.wavelength)
+            x = self.amplitude * np.sin(1000. * z * y)
+            target[i, :] = [self.center[0] + x,
+                            self.center[1] + y,
+                            self.center[2] + z]
         return target
 

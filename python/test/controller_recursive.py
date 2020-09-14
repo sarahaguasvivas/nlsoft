@@ -6,13 +6,13 @@ import time, os
 import copy
 from logger.logger import Logger
 from utilities.util import *
-from target.target import Pringle2
+from target.target import Pringle2, FigureEight
 import numpy as np
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id.hdf5'
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 500
+NUM_TIMESTEPS = 600
 
 input_scale = [1., 1.]
 shift = [0., 0.]
@@ -20,27 +20,30 @@ verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 2, Nu = 1, nd = 5,
-                                      dd = 5, K = 2, Q = np.array([[1e3, 0.],
-                                                                   [0., 1e3]]),
+                                      dd = 5, K = 5, Q = np.array([[1., 0., 0.],
+                                                                   [0., 1e3, 0.],
+                                                                   [0., 0., 1e3]]),
                                       Lambda = np.array([[1., 0.],
                                                          [0., 1e-2]]),
-                                      states_to_control = [0, 1, 1],
+                                      states_to_control = [1, 1, 1],
                                       x0 = [0.0, 0.0, 0.0],
-                                      u0 = [0.,  0.])
+                                      u0 = [np.deg2rad(-50.)]*2)
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
 log = Logger()
 Block.reset()
 
-Block.step([0., 0.])
-
 neutral_point = Block.get_state()
 
 NNP.x0 = neutral_point
+NNP.u0 = [np.deg2rad(Block.motors._zero1),
+                        np.deg2rad(Block.motors._zero2)]
 
 print("neutral_point: ", neutral_point)
 
-target = Pringle2(wavelength = 1000, amplitude = 15./1000., center = neutral_point)
+#target = Pringle2(wavelength = 1000, amplitude = 15./1000., center = neutral_point)
+target = FigureEight(amplitude = 20./1000., wavelength= 100.,
+                     center = neutral_point)
 
 Block.calibration_max = np.array([ 48., 1, 23.,   1,   1,   139., 187.,   1,   1,  1,  24.])
 
@@ -60,7 +63,7 @@ try:
                 'ym' : [], 'elapsed' : [], 'u' : []}})
 
         Block.reset()
-        Block.step([0., 0.])
+
         u_deque.clear()
         y_deque.clear()
 
