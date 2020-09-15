@@ -2,14 +2,12 @@ from .functions import *
 from .cost import NN_Cost
 from .constraints import *
 from typing import List
-
+from test.training_recnn import huber_loss
 import tensorflow as tf
 import tensorflow.keras.backend as K
 import numpy as np
 from collections import deque
-
-def custom_loss(y_true, y_pred):
-    return 1000*K.mean(K.square(y_pred - y_true), axis = 1)
+import theano
 
 class ModelException(Exception):
     pass
@@ -32,14 +30,14 @@ class RecursiveNeuralNetworkPredictor():
                                         s : float = 1e-20, b : float = 1e-10, r : float = 4e-1,
                                         states_to_control : List[bool] = [0, 1, 1]):
 
-        self.N1, self.N2, self.Nu, self.x0, self.u0 = N1, N2, Nu, x0, u0
+        self.n1, self.n2, self.nu, self.x0, self.u0 = N1, N2, Nu, x0, u0
 
         self.ym = None
         self.yn = None
 
         self.nx = len(x0)
         self.ny = sum(states_to_control)
-        self.nu = len(u0)
+        self.m = len(u0)
 
         self.Q = np.array(Q)
         self.Lambda = np.array(Lambda)
@@ -64,12 +62,11 @@ class RecursiveNeuralNetworkPredictor():
                                                             deque(), deque(), deque()
         self.prediction = None
 
-        self.constraints = Constraints(s = s, b = b, r = r)
-
         self.hid = self.model.layers[0].units
 
         self.initialize_deques(self.u0, self.x0)
         self.cost = NN_Cost(self)
+        self.input_vector = None
 
     def __get_hidden_layer_data(self):
         first_layer_index = 0  # first layer may be Gaussian noise
@@ -90,10 +87,10 @@ class RecursiveNeuralNetworkPredictor():
         return C
 
     def initialize_deques(self, u0 : List[float], x0 : List[float]):
-        for _ in range(self.N2 - self.N1):
+        for _ in range(self.n2 - self.n1):
             self.y_deque.appendleft(self.x0)
             self.ym_deque.appendleft(x0)
-        for _ in range(self.Nu):
+        for _ in range(self.nu):
             self.u_deque.appendleft(u0)
             self.delu_deque.appendleft([0, 0])
 
@@ -114,14 +111,11 @@ class RecursiveNeuralNetworkPredictor():
         self.ym_deque.appendleft(ym)
 
     def get_computation_vectors(self):
-        Y = np.array(self.yn)
-        YM = np.array(self.ym)
+        y = np.array(self.yn)
+        ym = np.array(self.ym)
+        return y, ym
 
-        U = np.array(list(self.u_deque))
-        delU = np.array(list(self.delu_deque))
-        return Y, YM, U, delU
-
-    def __Phi_prime(self, x = 0):
+    def __Phi_prime(self):
         if self.model.layers[-1].get_config()['activation'] == 'linear':
             return np.array([1.0]*self.nx) # linear activation on output
         if self.model.layers[-1].get_config()['activation'] == 'tanh':
@@ -132,7 +126,7 @@ class RecursiveNeuralNetworkPredictor():
             sigmoid = 1./(1.+np.exp(-1.*netj))
             return np.array(sigmoid*(1.-sigmoid))
 
-    def __Phi_prime_prime(self, x = 0):
+    def __Phi_prime_prime(self):
         if self.model.layers[-1].get_config()['activation'] == 'linear':
             return np.array([0.0]*self.nx) # linear activation on output
         if self.model.layers[-1].get_config()['activation'] == 'tanh':
@@ -148,11 +142,11 @@ class RecursiveNeuralNetworkPredictor():
              ------------
             Du(n+h)Du(n+m)
         """
-        return self.__Phi_prime().dot( \
-                    self.__partial_2_net_partial_u_nph_partial_npm(h, m, j)) + \
-                        self.__Phi_prime_prime().dot( \
-                            self.__partial_net_partial_u(h, j)).dot( \
-                                self.__partial_net_partial_u(m, j))
+        return self.__Phi_prime() * \
+                    self.__partial_2_net_partial_u_nph_partial_npm(h, m, j) + \
+                        self.__Phi_prime_prime() @ \
+                            self.__partial_net_partial_u(h, j) @ \
+                                self.__partial_net_partial_u(m, j).T
 
     def __partial_2_yn_partial_nph_partial_npm(self, h, m, j):
         """
@@ -160,18 +154,18 @@ class RecursiveNeuralNetworkPredictor():
             ---------------
             Du(n+h) Du(n+m)
         """
+        outputs = self.model.layers[-1].units
         weights = self.model.layers[-1].get_weights()[0]
-        sum_output = 0.0
+        sum_output = np.array([0.0]*outputs)
         for i in range(self.hid):
-            for ii in range(weights.shape[1]):
-                sum_output+= weights[i, ii] * \
-                            self.__partial_2_fnet_partial_nph_partial_npm(h, m, j)
-
+            sum_output += weights[i, :] * \
+                        self.__partial_2_fnet_partial_nph_partial_npm(h, m, j).squeeze()
         self.previous_second_der = sum_output.T
         if len(sum_output) > 0:
-            return self.C.dot(np.array(sum_output).T)
+            return self.C @ np.array(sum_output).T
         else:
-            return self.C.dot(sum_output)
+            return self.C @ sum_output
+
     def __partial_2_net_partial_u_nph_partial_npm(self, h, m, j):
         """
               D^2 net_j
@@ -182,30 +176,30 @@ class RecursiveNeuralNetworkPredictor():
         sum_output = 0.0
         for i in range(min(j, self.dd*self.nx)):
             step_ = []
-
             for ii in range(self.nx):
                 step_ += [step(j - i + ii - 1)]
-            sum_output += np.sum(weights[i*self.nu + self.nd*self.nu: i*self.nu + \
-                                        self.nd*self.nu + \
-                                        self.nx, j] * \
+            sum_output += np.sum(weights[i * self.m + self.nd * self.m: i * self.m + \
+                                                                        self.nd * self.m + \
+                                                                        self.nx, j] * \
                                         self.previous_second_der * np.array(step_))
         return np.array(sum_output)
 
     def __partial_yn_partial_u(self, h, j):
-
         """
                D yn
             -----------
              D u(n+h)
+
+             TODO: This one should be 3x2
         """
         weights = self.model.layers[-1].get_weights()[0]
-        sum_output = np.array([0.0]*weights.shape[1])
-        for i in range(self.hid):
-            sum_output += np.dot(np.array(weights[i, :]) ,
-                            self.__partial_fnet_partial_u(h, j).T)
-        self.previous_first_der = sum_output.tolist()
-        sum_output = self.C.dot(sum_output.T).T
+        sum_output = np.zeros((self.nx, self.m))
 
+        for i in range(self.hid):
+            sum_output += (weights[i, :] * \
+                                 self.__partial_fnet_partial_u(h, j).T).T
+
+        self.previous_first_der = sum_output
         return np.array(sum_output)
 
     def __partial_fnet_partial_u(self, h, j):
@@ -214,35 +208,37 @@ class RecursiveNeuralNetworkPredictor():
             ---------
              D u(u+h)
         """
-        return np.dot(self.__Phi_prime(), self.__partial_net_partial_u(h, j))
+        return (self.__Phi_prime() * \
+                             self.__partial_net_partial_u(h, j).T).T
 
-    def __partial_net_partial_u(self, h, j):
+    def __partial_net_partial_u(self, h : int, j : int):
         """
              D net_j
             ---------
             D u(n+h)
+
+            h-> [0, ..., Nu]
+            j-> [0, ..., hid]
+            k-> [0, ..., m]
         """
         weights = self.model.layers[self.first_layer_index].get_weights()[0]
-        sum_output = 0.0
+        sum_output = [0.0]*self.m
+
         for i in range(self.nd):
-            delta = []
-            if (j - self.Nu) < i:
-                for ii in range(self.nu):
-                    delta += [kronecker_delta(j - i + ii, h)]
-                sum_output += np.dot(weights[i*self.nu:i*self.nu + self.nu, j] ,
-                                                                delta)
+            if (j - self.nu) < i:
+                delta = [kronecker_delta(j - i + ii, h) for ii in range(self.m)]
             else:
-                delta = []
-                for ii in range(self.nu):
-                    delta += [kronecker_delta(self.Nu, h)]
-                sum_output += np.dot(weights[i*self.nu:i*self.nu + self.nu, j] ,
-                                                                delta)
+                delta = [kronecker_delta(self.nu, h)]*self.m
+            index_weights = np.arange(i * self.m, i * self.m + self.m)
+            sum_output += weights[index_weights, j] * delta
+
+        sum_output = np.tile(sum_output, self.nx).reshape(self.nx, -1)
         for i in range(min(j, self.dd)):
             step_ = step(j-i)
-            sum_output += np.dot(weights[i*self.nx + self.nd*self.nu: i*self.nx + \
-                                        self.nd*self.nu + \
-                                        self.nx, j], \
-                                            step_*self.previous_first_der)
+            index_weights = np.arange(i * self.nx + self.nd*self.m,
+                                     i * self.nx + self.nd * self.m + self.nx)
+            sum_output += (weights[index_weights, j] * step_ * \
+                                        np.array(self.previous_first_der).T).T
         return np.array(sum_output)
 
     def __partial_delta_u_partial_u(self, j, h):
@@ -253,18 +249,16 @@ class RecursiveNeuralNetworkPredictor():
         """
         return kronecker_delta(h, j) - kronecker_delta(h, j-1)
 
-    def compute_hessian(self, u, del_u):
-        Y, YM , _, _ = self.get_computation_vectors()
-        delY = YM[self.N1:self.N2, :] - Y[self.N1:self.N2, :]
-
+    def hessian(self, u, del_u):
+        y, ym = self.get_computation_vectors()
+        del_y = ym[self.n1:self.n2, :] - y[self.n1:self.n2, :]
         del_u = del_u.copy()
+        hessian = np.zeros((self.nu, self.nu))
 
-        hessian = np.zeros((self.Nu, self.Nu))
-
-        for h in range(self.Nu):
-            for m in range(self.Nu):
+        for h in range(self.nu):
+            for m in range(self.nu):
                 ynu, ynu1, temp = [], [], []
-                for j in range(self.N1, self.N2):
+                for j in range(self.n1, self.n2):
                     ynu +=[self.__partial_yn_partial_u(j, m)]
                     ynu1+=[self.__partial_yn_partial_u(j, h)]
                     temp+=[self.__partial_2_yn_partial_nph_partial_npm(h, m, j)]
@@ -273,10 +267,10 @@ class RecursiveNeuralNetworkPredictor():
                                           np.array(temp).reshape(-1, self.ny)
 
                 hessian[h, m] += np.sum(2. * self.Q @ np.array(ynu1).T) - \
-                                            np.sum(2.*delY @ self.Q @temp.T)
+                                            np.sum(2.*del_y @ self.Q @temp.T)
 
                 second_y, second_y1, temp = [], [], []
-                for j in range(self.nu):
+                for j in range(self.m):
                     second_y+=[self.__partial_delta_u_partial_u(j, m)]
                     second_y1+=[self.__partial_delta_u_partial_u(j, h)]
 
@@ -284,29 +278,47 @@ class RecursiveNeuralNetworkPredictor():
                                 second_y @ np.array(second_y1).T)
         return hessian
 
-    def compute_jacobian(self, u, del_u):
-        Y, YM, _ , _ = self.get_computation_vectors()
-        del_y = YM[self.N1:self.N2, :] - Y[self.N1:self.N2, :]
+    def keras_gradient(self):
+        print("x: ", self.input_vector)
+        x = tf.cast(self.input_vector, tf.float32)
+        ynu = np.zeros((self.nx, self.m))
+        j = K.gradients(self.model.output[0, 0], self.model.input)
+        sess = tf.InteractiveSession()
+        sess.run(tf.global_variables_initializer())
+        evaluated_gradients = sess.run(j, feed_dict={self.model.input:self.input_vector})
+        print(type(K.get_value(evaluated_gradients)))
+        return
+
+    def jacobian(self, u, del_u):
+        y, ym = self.get_computation_vectors()
+        del_y = ym[self.n1:self.n2, :] - y[self.n1:self.n2, :]
         del_u = del_u.copy()
+
         sub_sum = del_y @ self.Q
+        ynu = self.keras_gradient()
 
-        for h in range(self.Nu):
-            ynu, ynu1 = [], []
+        return
+
+    def jacobian_hand(self, u, del_u):
+        y, ym = self.get_computation_vectors()
+        del_y = ym[self.n1:self.n2, :] - y[self.n1:self.n2, :]
+        del_u = del_u.copy()
+
+        sub_sum = del_y @ self.Q
+        sum_output = 0.0
+        for h in range(self.nu):
+            for j in range(self.n1, self.n2):
+                ynu = self.__partial_yn_partial_u(h, j)
+                sum_output += sub_sum[j, :] @ ynu
+
             for j in range(self.nu):
-                ynu += [self.__partial_yn_partial_u(j, h).tolist()]
-                ynu1 += [self.__partial_delta_u_partial_u(j, h)]
+                ynu1 = self.__partial_delta_u_partial_u(h, j)
+                ynu1 = np.array(ynu1)
+                sum_output += 2. * np.squeeze(np.array(del_u) @ self.Lambda) * ynu1
+        jacobian = np.array(sum_output).reshape(self.nu, self.m)
 
-        ynu1 = np.array(ynu1).reshape(self.Nu, -1)
-        ynu = np.array(ynu)
-        sum_output = np.sum(sub_sum @ ynu.T, axis = 0).reshape(self.Nu, -1)
-        sum_output += 2. * np.multiply(np.array(del_u) @ self.Lambda , ynu1)
-        return sum_output
+        return jacobian
 
-    def Fu(self, u, del_u):
-        return self.compute_jacobian(u, del_u)
-
-    def Ju(self, u, del_u):
-        return self.compute_hessian(u, del_u)
 
     def compute_cost(self):
         return self.cost.compute_cost()
@@ -315,6 +327,7 @@ class RecursiveNeuralNetworkPredictor():
         pass
 
     def predict(self, x):
+        self.input_vector = x
         self.prediction = self.model.predict(x, batch_size=1)
         return self.prediction
 

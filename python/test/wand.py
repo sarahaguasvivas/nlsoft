@@ -42,7 +42,7 @@ target = Pringle(wavelength = 100, amplitude = 15./1000., center = neutral_point
 #Block.get_signal_calibration() # calibrate signal of the block
 Block.calibration_max = np.array([ 6, 377, 116,   1,   1,   1, 137,   1,   1,  41,   1 ])
 
-u_optimal_old = np.reshape(NNP.u0*NNP.Nu, (-1, 2))
+u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
 new_state_new = copy.copy(neutral_point)
 del_u = np.zeros(u_optimal_old.shape)
 
@@ -107,7 +107,7 @@ try:
                             'u' : [u_action], \
                             'signal' : signal}})
             #'cost : ': NNP.cost.compute_cost(),
-        u_optimal_old = np.reshape(NNP.u0*NNP.Nu, (-1, 2))
+        u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
         Block.reset()
     log.plot_log()
     log.save_log()

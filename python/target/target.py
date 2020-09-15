@@ -188,21 +188,23 @@ class Square3D:
 
 
 class FigureEight:
-    def __init__(self, amplitude : float = 20./1000.,
+    def __init__(self, a : float = 20. / 1000.,
+                 b : float = 10./1000.,
                  center : List[float] = [0., 0., 0.],
                  wavelength : float = 1000.):
-        self.amplitude = amplitude
+        self.a = a
+        self.b = b
         self.center = center
         self.wavelength = wavelength
 
-    def spin(self, timestep, n1, n2, dims, current_point):
+    def spin(self, timestep, n1, n2, dims):
         target = np.empty([n2-n1, dims])
-        i=0
+        i = 0
         for _ in range(n1, n2):
-            z = self.amplitude * np.sin((timestep + i)/self.wavelength)
-            y = self.amplitude * np.sin((timestep + i)/self.wavelength) * \
-                                np.cos((timestep + i)/self.wavelength)
-            x = self.amplitude * np.sin(1000. * z * y)
+            z = self.a * np.sin((timestep + i) / self.wavelength)
+            y = self.b * np.sin((timestep + i) / self.wavelength) * \
+                np.cos((timestep + i)/self.wavelength)
+            x = 0.0 #self.a * np.cos(-1000. * z * y)
             target[i, :] = [self.center[0] + x,
                             self.center[1] + y,
                             self.center[2] + z]
