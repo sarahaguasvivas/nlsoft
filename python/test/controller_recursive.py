@@ -12,7 +12,7 @@ import numpy as np
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id.hdf5'
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 600
+NUM_TIMESTEPS = 500
 
 input_scale = [1., 1.]
 shift = [0., 0.]
@@ -20,11 +20,11 @@ verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 2, Nu = 1, nd = 5,
-                                      dd = 5, K = 5, Q = np.array([[1., 0., 0.],
-                                                                   [0., 1e3, 0.],
-                                                                   [0., 0., 1e3]]),
+                                      dd = 5, K = 2, Q = np.array([[1., 0., 0.],
+                                                                   [0., 1e-3, 0.],
+                                                                   [0., 0., 1e-3]]),
                                       Lambda = np.array([[1., 0.],
-                                                         [0., 1e-2]]),
+                                                         [0., 1.]]),
                                       states_to_control = [1, 1, 1],
                                       x0 = [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-50.)]*2)
@@ -39,15 +39,13 @@ NNP.x0 = neutral_point
 NNP.u0 = [np.deg2rad(Block.motors._zero1),
                         np.deg2rad(Block.motors._zero2)]
 
-print("neutral_point: ", neutral_point)
-
-#target = Pringle2(wavelength = 1000, amplitude = 15./1000., center = neutral_point)
-target = FigureEight(amplitude = 20./1000., wavelength= 100.,
+target = FigureEight(a=20. / 1000., wavelength= 100.,
                      center = neutral_point)
 
-Block.calibration_max = np.array([ 48., 1, 23.,   1,   1,   139., 187.,   1,   1,  1,  24.])
+#Block.get_signal_calibration()
+Block.calibration_max = np.array([ 45., 1, 90.,   1,   1,   122., 173.,   1,   1,  1,  17.])
 
-u_optimal_old = np.reshape(NNP.u0*NNP.Nu, (-1, 2))
+u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
 
 del_u = np.zeros(u_optimal_old.shape)
 
@@ -57,6 +55,7 @@ log.log({'metadata' : {'neutral_point' : neutral_point,
 
 u_deque = deque()
 y_deque = deque()
+
 try:
     for e in range(NUM_EXPERIMENTS):
         log.log({str(e) : {'predicted' : [], 'actual' : [], 'yn' : [], \
@@ -85,7 +84,6 @@ try:
                                                         ).flatten().tolist() + \
                                                         signal).reshape(1, -1)
 
-
                 predicted_states = NNP.predict(neural_network_input).flatten()
 
                 NNP.yn += [NNP.C.dot(predicted_states).tolist()]
@@ -95,7 +93,7 @@ try:
 
             NNP.last_model_input = neural_network_input
 
-            Target = target.spin(n, 0, NNP.K, 3, neutral_point)
+            Target = target.spin(n, 0, NNP.K, 3)
 
             NNP.ym = NNP.C.dot(Target.T).reshape(NNP.ny, -1).T.tolist()
 
@@ -107,9 +105,6 @@ try:
 
             u_action[0] = np.clip(input_scale[0]*(np.rad2deg(u_action[0]) + shift[0]),-100, 50)
             u_action[1] = np.clip(input_scale[1]*(np.rad2deg(u_action[1] + shift[1])),-100, 50)
-
-            #u_action[0] = (1. + np.cos(2. * np.pi / 1000. * n ))/ 2. * 150. - 100.
-            #u_action[1] = (1. + np.sin(2. * np.pi / 1000. * n ))/ 2. * 150. - 100.
 
             Block.step(action = u_action)
 
@@ -123,7 +118,7 @@ try:
                 log.verbose(actual = np.array(Block.get_state()).tolist(),
                         yn = predicted_states, ym = Target[0, :],
                             elapsed = time.time()-seconds, u = u_action,
-                            cost = NNP.cost.compute_cost())
+                            cost = NNP.cost.compute_cost(del_u))
             if verbose == 1:
                 log.verbose(u_action = u_action, elapsed = time.time() - seconds)
 
@@ -131,11 +126,11 @@ try:
                             'yn' : predicted_states.tolist(),
                             'ym' : Target[0, :].tolist(),
                             'elapsed' : time.time() - seconds,
-                            'cost' : NNP.cost.compute_cost(),
+                            'cost' : NNP.cost.compute_cost(del_u),
                             'u' : [u_action],
                             'signal' : signal}})
 
-        u_optimal_old = np.reshape(NNP.u0*NNP.Nu, (-1, 2))
+        u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
         Block.reset()
     log.plot_log()
     log.save_log()
