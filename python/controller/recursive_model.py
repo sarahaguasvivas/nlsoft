@@ -279,15 +279,18 @@ class RecursiveNeuralNetworkPredictor():
         return hessian
 
     def keras_gradient(self):
-        print("x: ", self.input_vector)
         x = tf.cast(self.input_vector, tf.float32)
         ynu = np.zeros((self.nx, self.m))
-        j = K.gradients(self.model.output[0, 0], self.model.input)
+
+        j = [K.gradients(self.model.output[0, i], self.model.input) for i in range(self.nx)]
         sess = tf.InteractiveSession()
         sess.run(tf.global_variables_initializer())
-        evaluated_gradients = sess.run(j, feed_dict={self.model.input:self.input_vector})
-        print(type(K.get_value(evaluated_gradients)))
-        return
+
+        for ii ,f  in enumerate(j):
+            evaluated_gradients = sess.run(f, feed_dict={self.model.input:self.input_vector})
+            gradients = evaluated_gradients[0].flatten()
+            ynu[ii, :] += np.sum(gradients[:self.m*self.nd].reshape(-1, self.m), axis = 0)
+        return ynu
 
     def jacobian(self, u, del_u):
         y, ym = self.get_computation_vectors()
@@ -296,8 +299,16 @@ class RecursiveNeuralNetworkPredictor():
 
         sub_sum = del_y @ self.Q
         ynu = self.keras_gradient()
+        sum_output = np.sum(sub_sum @ ynu, axis = 0)
 
-        return
+        for h in range(self.nu):
+            for j in range(self.nu):
+                ynu1 = self.__partial_delta_u_partial_u(h, j)
+                ynu1 = np.array(ynu1)
+        sum_output += 2. * np.squeeze(np.array(del_u) @ self.Lambda) * ynu1
+        jacobian = np.array(sum_output)
+        print(jacobian)
+        return jacobian
 
     def jacobian_hand(self, u, del_u):
         y, ym = self.get_computation_vectors()
