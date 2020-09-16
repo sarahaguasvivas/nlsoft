@@ -19,7 +19,7 @@ shift = [0., 0.]
 verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
-                                      N1 = 0, N2 = 2, Nu = 1, nd = 5,
+                                      N1 = 0, N2 = 3, Nu = 1, nd = 5,
                                       dd = 5, K = 2, Q = np.array([[1., 0., 0.],
                                                                    [0., 10., 0.],
                                                                    [0., 0., 10.]]),
@@ -118,7 +118,8 @@ try:
                 log.verbose(actual = np.array(Block.get_state()).tolist(),
                         yn = predicted_states, ym = Target[0, :],
                             elapsed = time.time()-seconds, u = u_action,
-                            cost = NNP.cost.compute_cost(del_u))
+                           # cost = NNP.cost.compute_cost(del_u)
+                            )
             if verbose == 1:
                 log.verbose(u_action = u_action, elapsed = time.time() - seconds)
 
@@ -126,7 +127,7 @@ try:
                             'yn' : predicted_states.tolist(),
                             'ym' : Target[0, :].tolist(),
                             'elapsed' : time.time() - seconds,
-                            'cost' : NNP.cost.compute_cost(del_u),
+                       #     'cost' : NNP.cost.compute_cost(del_u),
                             'u' : [u_action],
                             'signal' : signal}})
 

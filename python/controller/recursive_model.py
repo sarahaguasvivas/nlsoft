@@ -282,27 +282,23 @@ class RecursiveNeuralNetworkPredictor():
     @tf.function
     def grads(self, x):
         with tf.GradientTape(persistent=True) as tape:
-           xx = self.model(x, training = False)[0, 0]
-           yy = self.model(x, training= False)[0, 1]
-           zz = self.model(x, training = False)[0, 2]
-        return [tape.gradient(xx, x),
-                tape.gradient(yy,x),
-                tape.gradient(zz,x)]
+            tape.watch(x)
+            y = self.model(x, training=False)
+        return tape.jacobian(y, x)
 
     def keras_gradient(self):
         """
             Gradient tapes: https://www.tensorflow.org/api_docs/python/tf/GradientTape
         """
         ynu = np.zeros((self.nx, self.m))
-
         tf.global_variables_initializer()
-
         x = tf.Variable(self.input_vector)
-
-        gradient_list = self.grads(x)
-        for i, grad in enumerate(gradient_list):
-            gradients = grad[0].numpy()
-            ynu[i, :] += np.sum(gradients[:self.m * self.nd].reshape(-1, self.m), axis=0)
+        gradient = self.grads(x).numpy().reshape(self.nx, -1)
+        ynu = gradient[:, :self.m * self.nd]
+        ynu = ynu.reshape(self.nx, -1, self.m)
+        print(ynu)
+        ynu = np.sum(ynu, axis = 1)
+        print(ynu)
         return ynu
 
     def jacobian(self, u, del_u):

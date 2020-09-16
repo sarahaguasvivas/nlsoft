@@ -152,9 +152,6 @@ class Logger:
         ax.plot3D(m_ym[:, 0], m_ym[:, 1], m_ym[:, 2], color = color_palette[-1],linestyle = 'dashed',  linewidth = 1, alpha = 1, label = 'target')
         ax.plot3D(m_actual_[:, 0], m_actual_[:, 1], m_actual_[:, 2], \
                             linewidth = 1, color = color_palette[1], alpha = 1, label = 'actual position')
-        #ax.set_xlim(-20., 5.)
-        #ax.set_ylim(-20., 5.)
-        #ax.set_zlim(-20., 5.)
         plt.legend(prop = {"family": "Times New Roman", "size": 14}, loc = 'right', frameon = True)
         plt.xticks(fontsize=14, **font)
         plt.yticks(fontsize=14, **font)
