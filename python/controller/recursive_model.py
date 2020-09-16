@@ -282,6 +282,7 @@ class RecursiveNeuralNetworkPredictor():
     @tf.function
     def grads(self, x):
         with tf.GradientTape(persistent=True) as tape:
+            tape.reset()
             tape.watch(x)
             y = self.model(x, training=False)
         return tape.jacobian(y, x)
@@ -296,9 +297,7 @@ class RecursiveNeuralNetworkPredictor():
         gradient = self.grads(x).numpy().reshape(self.nx, -1)
         ynu = gradient[:, :self.m * self.nd]
         ynu = ynu.reshape(self.nx, -1, self.m)
-        print(ynu)
         ynu = np.sum(ynu, axis = 1)
-        print(ynu)
         return ynu
 
     def jacobian(self, u, del_u):
