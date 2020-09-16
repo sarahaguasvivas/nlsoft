@@ -12,7 +12,7 @@ import numpy as np
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id.hdf5'
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 500
+NUM_TIMESTEPS = 10
 
 input_scale = [1., 1.]
 shift = [0., 0.]
@@ -21,8 +21,8 @@ verbose = 1
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 2, Nu = 1, nd = 5,
                                       dd = 5, K = 2, Q = np.array([[1., 0., 0.],
-                                                                   [0., 100., 0.],
-                                                                   [0., 0., 100.]]),
+                                                                   [0., 1000., 0.],
+                                                                   [0., 0., 1000.]]),
                                       Lambda = np.array([[1e-1, 0.],
                                                          [0., 1e-1]]),
                                       states_to_control = [1, 1, 1],

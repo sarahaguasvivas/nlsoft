@@ -92,8 +92,8 @@ class Logger:
         plt.figure()
         AXIS = 0
         timesteps = range(max(yn.shape))
-        for i in range(1, 3, 1):
-            plt.subplot(2, 1, i)
+        for i in range(3):
+            plt.subplot(3, 1, i+1)
             plt.plot(np.mean(ym, axis = AXIS)[:, i] - shift[i], color = color_palette[-1], linestyle = 'dashed', label =r"$" + labels[i] + "_{target}$")
             plt.plot(np.mean(yn, axis = AXIS)[:, i] - shift[i], color_palette[0], label = r"$\hat{" + labels[i] + "}$" )
             plt.fill_between(timesteps, np.mean(yn, axis = AXIS)[:, i] - np.std(yn, axis = AXIS)[:, i] - shift[i],
@@ -121,8 +121,8 @@ class Logger:
         color_palette1= ['#272838', '#F3DE8A', '#F3DE8A', '#F3DE8A']
 
         plt.figure()
-        for i in range(2):
-            plt.subplot(2, 1, i+1)
+        for i in range(3):
+            plt.subplot(3, 1, i+1)
             plt.plot(np.mean(u_optimal_list, axis =AXIS)[:, i], color = color_palette1[0], label = r'$u_{' + str(i) + "}$" )
             plt.fill_between(timesteps, np.mean(u_optimal_list, axis = AXIS)[:, i] -  np.std(u_optimal_list, axis = AXIS)[:, i],\
                                             np.mean(u_optimal_list, axis = AXIS)[:, i] + np.std(u_optimal_list, axis = AXIS)[:, i],\
