@@ -7,7 +7,8 @@ import tensorflow as tf
 import tensorflow.keras.backend as K
 import numpy as np
 from collections import deque
-import theano
+
+tf.enable_eager_execution()
 
 class ModelException(Exception):
     pass
@@ -279,17 +280,27 @@ class RecursiveNeuralNetworkPredictor():
         return hessian
 
     def keras_gradient(self):
-        x = tf.cast(self.input_vector, tf.float32)
+        """
+            Gradient tapes: https://www.tensorflow.org/api_docs/python/tf/GradientTape
+        """
         ynu = np.zeros((self.nx, self.m))
 
-        j = [K.gradients(self.model.output[0, i], self.model.input) for i in range(self.nx)]
-        sess = tf.InteractiveSession()
-        sess.run(tf.global_variables_initializer())
+        tf.global_variables_initializer()
 
-        for ii ,f  in enumerate(j):
-            evaluated_gradients = sess.run(f, feed_dict={self.model.input:self.input_vector})
-            gradients = evaluated_gradients[0].flatten()
-            ynu[ii, :] += np.sum(gradients[:self.m*self.nd].reshape(-1, self.m), axis = 0)
+        x = tf.Variable(self.input_vector)
+        with tf.GradientTape(persistent=True) as tape:
+            tape.reset()
+            xx = self.model(x, training = False)[0, 0]
+            yy = self.model(x, training= False)[0, 1]
+            zz = self.model(x, training = False)[0, 2]
+
+        gradient_list = [xx, yy, zz]
+        for i, grad in enumerate(gradient_list):
+            evaluated_gradients = tape.gradient(grad, x)
+            gradients = evaluated_gradients[0].numpy()
+            ynu[i, :] += np.sum(gradients[:self.m * self.nd].reshape(-1, self.m), axis=0)
+
+        print(ynu)
         return ynu
 
     def jacobian(self, u, del_u):
@@ -306,8 +317,7 @@ class RecursiveNeuralNetworkPredictor():
                 ynu1 = self.__partial_delta_u_partial_u(h, j)
                 ynu1 = np.array(ynu1)
         sum_output += 2. * np.squeeze(np.array(del_u) @ self.Lambda) * ynu1
-        jacobian = np.array(sum_output)
-        print(jacobian)
+        jacobian = np.array(sum_output).reshape(self.nu, -1)
         return jacobian
 
     def jacobian_hand(self, u, del_u):
