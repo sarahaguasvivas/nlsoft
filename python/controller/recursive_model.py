@@ -279,6 +279,16 @@ class RecursiveNeuralNetworkPredictor():
                                 second_y @ np.array(second_y1).T)
         return hessian
 
+    @tf.function
+    def grads(self, x):
+        with tf.GradientTape(persistent=True) as tape:
+           xx = self.model(x, training = False)[0, 0]
+           yy = self.model(x, training= False)[0, 1]
+           zz = self.model(x, training = False)[0, 2]
+        return [tape.gradient(xx, x),
+                tape.gradient(yy,x),
+                tape.gradient(zz,x)]
+
     def keras_gradient(self):
         """
             Gradient tapes: https://www.tensorflow.org/api_docs/python/tf/GradientTape
@@ -288,19 +298,11 @@ class RecursiveNeuralNetworkPredictor():
         tf.global_variables_initializer()
 
         x = tf.Variable(self.input_vector)
-        with tf.GradientTape(persistent=True) as tape:
-            tape.reset()
-            xx = self.model(x, training = False)[0, 0]
-            yy = self.model(x, training= False)[0, 1]
-            zz = self.model(x, training = False)[0, 2]
 
-        gradient_list = [xx, yy, zz]
+        gradient_list = self.grads(x)
         for i, grad in enumerate(gradient_list):
-            evaluated_gradients = tape.gradient(grad, x)
-            gradients = evaluated_gradients[0].numpy()
+            gradients = grad[0].numpy()
             ynu[i, :] += np.sum(gradients[:self.m * self.nd].reshape(-1, self.m), axis=0)
-
-        print(ynu)
         return ynu
 
     def jacobian(self, u, del_u):
