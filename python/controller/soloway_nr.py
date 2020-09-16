@@ -8,6 +8,7 @@ class SolowayNR:
 
     def __init__(self, d_model):
         self.d_model = d_model
+        self.previous_norm = 1e2
 
     def fsolve_newtonkrylov(self, F, u0, epsilon=1e-8, rtol=1e-10, maxit=50, verbose=False):
         u = u0.copy()
@@ -33,14 +34,15 @@ class SolowayNR:
     def __fsolve_newton(self, u0, del_u, rtol=1e-10, maxit=50, verbose=False):
         u = np.array(u0).copy()
         del_u = np.zeros(u.shape)
-        Fu = -self.d_model.jacobian(u, del_u)
-        norm0 = np.linalg.norm(Fu)
+        #Fu = -self.d_model.jacobian(u, del_u)
+        norm0 = self.previous_norm #np.linalg.norm(Fu)
         enorm_last = np.linalg.norm(u - np.array([1,1]))
         for i in range(maxit):
+            Fu = -self.d_model.jacobian(u, del_u)
             du = np.linalg.solve(self.d_model.hessian(u, del_u), Fu)
             u -= du
             del_u = du
-            Fu = -self.d_model.jacobian(u, del_u)
+
             norm = np.linalg.norm(Fu)
             if verbose:
                 enorm = np.linalg.norm(u[0, :] - np.array([1, 1]))
@@ -49,6 +51,7 @@ class SolowayNR:
                 enorm_last = enorm
             if norm < rtol * norm0:
                 break
+        self.previous_norm = norm
         return u, del_u, i
 
 
