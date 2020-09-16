@@ -19,12 +19,12 @@ shift = [0., 0.]
 verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
-                                      N1 = 0, N2 = 3, Nu = 1, nd = 5,
+                                      N1 = 0, N2 = 2, Nu = 1, nd = 5,
                                       dd = 5, K = 2, Q = np.array([[1., 0., 0.],
-                                                                   [0., 10., 0.],
-                                                                   [0., 0., 10.]]),
-                                      Lambda = np.array([[1., 0.],
-                                                         [0., 1.]]),
+                                                                   [0., 100., 0.],
+                                                                   [0., 0., 100.]]),
+                                      Lambda = np.array([[1e-1, 0.],
+                                                         [0., 1e-1]]),
                                       states_to_control = [1, 1, 1],
                                       x0 = [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-50.)]*2)
