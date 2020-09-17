@@ -168,8 +168,8 @@ class Logger:
 
         AXIS = 0
         timesteps = range(max(yn.shape))
-        for i in range(1, 3, 1):
-            plt.subplot(2, 1, i)
+        for i in range(3):
+            plt.subplot(3, 1, i+1)
             plt.plot(np.mean(error_mm, axis = AXIS)[:, i], color = 'k', label = 'control RMS  ' + labels[i])
             plt.fill_between(timesteps, np.mean(error_mm, axis = AXIS)[:, i] - np.std(error_mm, axis = AXIS)[:, i] ,\
                                 np.mean(error_mm, axis = AXIS)[:, i] + np.std(error_mm, axis = AXIS)[:, i], \
