@@ -11,7 +11,7 @@ import numpy as np
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id.hdf5'
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 300
+NUM_TIMESTEPS = 2000
 
 verbose = 1
 
