@@ -33,8 +33,8 @@ class VRPNclient:
         while not self.tracked:
             self.sample_data()
         self.info = []
-        #print(self.data_read[self.tracker_name]['position'])
-        self.info+= list(self.data_read[self.tracker_name]['position'])
+
+        self.info += list(self.data_read[self.tracker_name]['position'])
         q = list(self.data_read[self.tracker_name]['quaternion'])
         self.info += q
         self.tracked = False
@@ -59,7 +59,7 @@ class BlockState():
         v = (np.array(head_o) - np.array(base_o))
         shift = np.array([0.0, 0.0, 0.0])
         Rot = R.from_rotvec(np.array([-0.75, 0., 0.6]))
-        ob= Rot.apply(v).tolist() - np.array(shift)
+        ob = Rot.apply(v).tolist() - np.array(shift)
         return ob.tolist()
 
     def get_target(self):
@@ -73,7 +73,7 @@ if __name__=='__main__':
     import time
     C = VRPNclient("DHead", "tcp://192.168.50.24:3883")
     B = VRPNclient("DBase", "tcp://192.168.50.24:3883")
-    #A = BlockState()
+
     while True:
         start = time.time()
         print("head: ", C.get_observation()) # collect a single observation

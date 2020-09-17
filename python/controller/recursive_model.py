@@ -195,8 +195,6 @@ class RecursiveNeuralNetworkPredictor():
                D yn
             -----------
              D u(n+h)
-
-             TODO: This one should be 3x2
         """
         weights = self.model.layers[-1].get_weights()[0]
         sum_output = np.zeros((self.nx, self.m))
@@ -206,7 +204,7 @@ class RecursiveNeuralNetworkPredictor():
                                  self.__partial_fnet_partial_u(h, j).T).T
 
         self.previous_first_der = sum_output
-        return np.array(sum_output)
+        return np.array(self.C @ sum_output)
 
     def __partial_fnet_partial_u(self, h, j):
         """
@@ -239,6 +237,7 @@ class RecursiveNeuralNetworkPredictor():
             sum_output += weights[index_weights, j] * delta
 
         sum_output = np.tile(sum_output, self.nx).reshape(self.nx, -1)
+
         for i in range(min(j, self.dd)):
             step_ = step(j-i)
             index_weights = np.arange(i * self.nx + self.nd*self.m,
@@ -294,71 +293,56 @@ class RecursiveNeuralNetworkPredictor():
 
     @tf.function
     def grads(self, x):
-        with tf.GradientTape(persistent=True) as tape:
-            tape.reset()
+        with tf.GradientTape(persistent=True, watch_accessed_variables=False) as tape:
             tape.watch(x)
             y = self.model(x, training=False)
-        return tape.jacobian(y, x)
+            with tape.stop_recording():
+                jacobian = tape.jacobian(y, x)
+            tape.reset()
+        del tape
+        return jacobian
 
     def keras_gradient(self):
         """
             Gradient tapes: https://www.tensorflow.org/api_docs/python/tf/GradientTape
         """
-        ynu = np.zeros((self.nx, self.m))
         tf.global_variables_initializer()
         x = tf.Variable(self.input_vector)
         gradient = self.grads(x).numpy().reshape(self.nx, -1)
         ynu = gradient[:, :self.m * self.nd]
         ynu = ynu.reshape(self.nx, -1, self.m)
         ynu = np.sum(ynu, axis = 1)
-        return ynu
+        return self.C @ ynu
 
     def jacobian(self, u, del_u):
         y, ym = self.get_computation_vectors()
         del_y = ym[self.n1:self.n2, :] - y[self.n1:self.n2, :]
         del_u = del_u.copy()
+        jacobian = np.zeros((self.nu, self.m))
 
         sub_sum = del_y @ self.Q
         ynu = self.keras_gradient()
-        sum_output = np.sum(sub_sum @ ynu, axis = 0)
+
+        sum_output = np.sum(sub_sum @ ynu, axis=0)
 
         for h in range(self.nu):
             for j in range(self.nu):
                 ynu1 = self.__partial_delta_u_partial_u(h, j)
                 ynu1 = np.array(ynu1)
-        sum_output += 2. * np.squeeze(np.array(del_u) @ self.Lambda) * ynu1
-        jacobian = np.array(sum_output).reshape(self.nu, -1)
 
-        for j in range(self.nu):
-            sub_sum = np.array([0.0, 0.0])
-            for i in range(self.m):
-                sub_sum[i] += kronecker_delta(h, j) * (-self.s / np.power(u[j, i] + \
-                                      self.r / 2.0 - self.b, 2) + \
-                            self.s / np.power(self.r / 2.0 + \
-                                         self.b - u[j, i], 2.0))
+            for j in range(self.nu):
+                sub_sum = np.array([0.0, 0.0])
+                for i in range(self.m):
+                    sub_sum[i] += kronecker_delta(h, j) * (-self.s / np.power(u[j, i] + \
+                                          self.r / 2.0 - self.b, 2) + \
+                                self.s / np.power(self.r / 2.0 + \
+                                             self.b - u[j, i], 2.0))
             jacobian[j, :] += sub_sum
-        return jacobian
 
-    def jacobian_hand(self, u, del_u):
-        y, ym = self.get_computation_vectors()
-        del_y = ym[self.n1:self.n2, :] - y[self.n1:self.n2, :]
-        del_u = del_u.copy()
-
-        sub_sum = del_y @ self.Q
-        sum_output = 0.0
-        for h in range(self.nu):
-            for j in range(self.n1, self.n2):
-                ynu = self.__partial_yn_partial_u(h, j)
-                sum_output += sub_sum[j, :] @ ynu
-
-            for j in range(self.nu):
-                ynu1 = self.__partial_delta_u_partial_u(h, j)
-                ynu1 = np.array(ynu1)
-                sum_output += 2. * np.squeeze(np.array(del_u) @ self.Lambda) * ynu1
-        jacobian = np.array(sum_output).reshape(self.nu, self.m)
+        sum_output += 2. * np.squeeze(np.array(del_u) @ self.Lambda) * ynu1
+        jacobian += np.array(sum_output).reshape(self.nu, -1)
 
         return jacobian
-
 
     def compute_cost(self):
         return self.cost.compute_cost()
