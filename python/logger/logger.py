@@ -121,8 +121,8 @@ class Logger:
         color_palette1= ['#272838', '#F3DE8A', '#F3DE8A', '#F3DE8A']
 
         plt.figure()
-        for i in range(3):
-            plt.subplot(3, 1, i+1)
+        for i in range(2):
+            plt.subplot(2, 1, i+1)
             plt.plot(np.mean(u_optimal_list, axis =AXIS)[:, i], color = color_palette1[0], label = r'$u_{' + str(i) + "}$" )
             plt.fill_between(timesteps, np.mean(u_optimal_list, axis = AXIS)[:, i] -  np.std(u_optimal_list, axis = AXIS)[:, i],\
                                             np.mean(u_optimal_list, axis = AXIS)[:, i] + np.std(u_optimal_list, axis = AXIS)[:, i],\

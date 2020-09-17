@@ -27,7 +27,8 @@ class RecursiveNeuralNetworkPredictor():
     def __init__(self, model_file : str, N1 : int = 0 , N2 : int = 3 ,  Nu : int = 2 ,
                             K : int = 3 , Q : List[List[float]] = [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
                             Lambda : List[List[float]] = [[0.3, 0.0], [0., 0.2]] , nd : int = 3,
-                                    dd : int = 3, x0 : List[float] = [0, 0], u0 : List[float] = [0., 0.],
+                                    dd : int = 3, x0 : List[float] = [0, 0],
+                                    u0 : List[float] = [0., 0.],
                                         s : float = 1e-20, b : float = 1e-10, r : float = 4e-1,
                                         states_to_control : List[bool] = [0, 1, 1]):
 
@@ -64,6 +65,10 @@ class RecursiveNeuralNetworkPredictor():
         self.prediction = None
 
         self.hid = self.model.layers[0].units
+
+        self.s = s
+        self.b = b
+        self.r = r
 
         self.initialize_deques(self.u0, self.x0)
         self.cost = NN_Cost(self)
@@ -277,6 +282,14 @@ class RecursiveNeuralNetworkPredictor():
 
                 hessian[h, m] += np.sum(2.* self.Lambda @
                                 second_y @ np.array(second_y1).T)
+
+                for j in range(self.nu):
+                   for i in range(self.m):
+                       hessian[h, m] += kronecker_delta(h, j)*kronecker_delta(m, j) * \
+                               (2.0*self.s / np.power((u[j, i] + self.r / 2. - \
+                               self.b), 3.0) + \
+                               2.0 * self.s / np.power(self.r/2. +\
+                               self.b - u[j, i], 3.0))
         return hessian
 
     @tf.function
@@ -315,6 +328,15 @@ class RecursiveNeuralNetworkPredictor():
                 ynu1 = np.array(ynu1)
         sum_output += 2. * np.squeeze(np.array(del_u) @ self.Lambda) * ynu1
         jacobian = np.array(sum_output).reshape(self.nu, -1)
+
+        for j in range(self.nu):
+            sub_sum = np.array([0.0, 0.0])
+            for i in range(self.m):
+                sub_sum[i] += kronecker_delta(h, j) * (-self.s / np.power(u[j, i] + \
+                                      self.r / 2.0 - self.b, 2) + \
+                            self.s / np.power(self.r / 2.0 + \
+                                         self.b - u[j, i], 2.0))
+            jacobian[j, :] += sub_sum
         return jacobian
 
     def jacobian_hand(self, u, del_u):
