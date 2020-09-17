@@ -297,7 +297,7 @@ class RecursiveNeuralNetworkPredictor():
             tape.watch(x)
             y = self.model(x, training=False)
         jacobian = tape.jacobian(y, x)
-        del tape
+        del tape # just in case
         return jacobian
 
     def keras_gradient(self):
@@ -308,7 +308,6 @@ class RecursiveNeuralNetworkPredictor():
         ynu = gradient[:, :self.m * self.nd]
         ynu = ynu.reshape(self.nx, -1, self.m)
         ynu = np.sum(ynu, axis = 1)
-        print(ynu)
         return self.C @ ynu
 
     def jacobian(self, u, del_u):
@@ -327,17 +326,15 @@ class RecursiveNeuralNetworkPredictor():
             for j in range(self.nu):
                 ynu1 = self.__partial_delta_u_partial_u(h, j)
                 ynu1 = np.array(ynu1)
+                sum_output += 2. * np.squeeze(np.array(del_u) @ self.Lambda) * ynu1
 
-            for j in range(self.nu):
                 sub_sum = np.array([0.0, 0.0])
                 for i in range(self.m):
                     sub_sum[i] += kronecker_delta(h, j) * (-self.s / np.power(u[j, i] + \
                                           self.r / 2.0 - self.b, 2) + \
                                 self.s / np.power(self.r / 2.0 + \
                                              self.b - u[j, i], 2.0))
-            jacobian[j, :] += sub_sum
-
-        sum_output += 2. * np.squeeze(np.array(del_u) @ self.Lambda) * ynu1
+                jacobian[j, :] += sub_sum
         jacobian += np.array(sum_output).reshape(self.nu, -1)
         return jacobian
 
