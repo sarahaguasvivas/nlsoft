@@ -7,7 +7,7 @@ import tensorflow as tf
 import tensorflow.keras.backend as K
 import numpy as np
 from collections import deque
-
+import time
 tf.enable_eager_execution()
 
 class ModelException(Exception):
@@ -296,9 +296,7 @@ class RecursiveNeuralNetworkPredictor():
         with tf.GradientTape(persistent=True, watch_accessed_variables=False) as tape:
             tape.watch(x)
             y = self.model(x, training=False)
-            with tape.stop_recording():
-                jacobian = tape.jacobian(y, x)
-            tape.reset()
+        jacobian = tape.jacobian(y, x)
         del tape
         return jacobian
 
@@ -306,12 +304,11 @@ class RecursiveNeuralNetworkPredictor():
         """
             Gradient tapes: https://www.tensorflow.org/api_docs/python/tf/GradientTape
         """
-        tf.global_variables_initializer()
-        x = tf.Variable(self.input_vector)
-        gradient = self.grads(x).numpy().reshape(self.nx, -1)
+        gradient = self.grads(self.input_vector).numpy().reshape(self.nx, -1)
         ynu = gradient[:, :self.m * self.nd]
         ynu = ynu.reshape(self.nx, -1, self.m)
         ynu = np.sum(ynu, axis = 1)
+        print(ynu)
         return self.C @ ynu
 
     def jacobian(self, u, del_u):
@@ -321,6 +318,7 @@ class RecursiveNeuralNetworkPredictor():
         jacobian = np.zeros((self.nu, self.m))
 
         sub_sum = del_y @ self.Q
+
         ynu = self.keras_gradient()
 
         sum_output = np.sum(sub_sum @ ynu, axis=0)
@@ -341,7 +339,6 @@ class RecursiveNeuralNetworkPredictor():
 
         sum_output += 2. * np.squeeze(np.array(del_u) @ self.Lambda) * ynu1
         jacobian += np.array(sum_output).reshape(self.nu, -1)
-
         return jacobian
 
     def compute_cost(self):
