@@ -12,7 +12,7 @@ import numpy as np
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id.hdf5'
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 10
+NUM_TIMESTEPS = 50
 
 input_scale = [1., 1.]
 shift = [0., 0.]
@@ -21,10 +21,10 @@ verbose = 1
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 2, Nu = 1, nd = 5,
                                       dd = 5, K = 2, Q = np.array([[1., 0., 0.],
-                                                                   [0., 1000., 0.],
-                                                                   [0., 0., 1000.]]),
-                                      Lambda = np.array([[1e-1, 0.],
-                                                         [0., 1e-1]]),
+                                                                   [0., 100., 0.],
+                                                                   [0., 0., 100.]]),
+                                      Lambda = np.array([[5e-1, 0.],
+                                                         [0., 5e-1]]),
                                       states_to_control = [1, 1, 1],
                                       x0 = [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-50.)]*2)
@@ -43,7 +43,7 @@ target = FigureEight(a=20. / 1000., wavelength= 100.,
                      center = neutral_point)
 
 #Block.get_signal_calibration()
-Block.calibration_max = np.array([ 45., 1, 90.,   1,   1,   122., 173.,   1,   1,  1,  17.])
+Block.calibration_max = np.array([ 133., 1, 13.,   1,   1,   124., 171.,   1,   1,  1,  15.])
 
 u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
 
@@ -62,6 +62,7 @@ try:
                 'ym' : [], 'elapsed' : [], 'u' : []}})
 
         Block.reset()
+        NNP.x0 = Block.get_state()
 
         u_deque.clear()
         y_deque.clear()
@@ -86,7 +87,7 @@ try:
 
                 predicted_states = NNP.predict(neural_network_input).flatten()
 
-                NNP.yn += [NNP.C.dot(predicted_states).tolist()]
+                NNP.yn += [(NNP.C @ predicted_states).tolist()]
                 ydeq = roll_deque(ydeq, predicted_states.tolist())
 
             y_deque = roll_deque(y_deque, predicted_states.tolist())
@@ -95,7 +96,7 @@ try:
 
             Target = target.spin(n, 0, NNP.K, 3)
 
-            NNP.ym = NNP.C.dot(Target.T).reshape(NNP.ny, -1).T.tolist()
+            NNP.ym = (NNP.C @ Target.T).reshape(NNP.ny, -1).T.tolist()
 
             u_optimal, del_u,  _ = NR_opt.optimize(u = u_optimal_old, delu = del_u,
                                         maxit = 1, rtol = 1e-4, verbose = True)
