@@ -263,8 +263,8 @@ class RecursiveNeuralNetworkPredictor():
         ynu = self.keras_gradient()
         dynu_du = self.keras_second_ders()
 
-        #hessian[h, m] += np.sum(2. * self.Q @ np.array(ynu).T) - \
-        #                                np.sum(2.*del_y @ self.Q @ dynu_du.T)
+        hessian += np.sum(2. * self.Q @ ynu - \
+                                        2.*(del_y @ self.Q).T @ dynu_du.T)
 
         for h in range(self.nu):
             for m in range(self.nu):
