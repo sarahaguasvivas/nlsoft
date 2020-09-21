@@ -143,7 +143,6 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
     for i in range(len(max_signals)):
         if max_signals[i] == 0:
             max_signals[i] = 1
-
         signals[:, i]/= max_signals[i]
 
     position = data_array[:, 11:14] # not using Euler angles
@@ -160,7 +159,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
         U = np.concatenate((U, inputs[nd - i - 1 + (N-nd):L-i, :]), axis = 1)
 
     for i in range(dd):
-        Y = np.concatenate((Y, position[dd - i - 1 + (N - dd) : L-i, :]), axis = 1)
+        Y = np.concatenate((Y, position[dd - i - 1  : L-i, :]), axis = 1)
 
     U = np.deg2rad(U[:, 2:])
     S = signals[N - 1:, :]
