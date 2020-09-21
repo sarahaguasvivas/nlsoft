@@ -156,7 +156,15 @@ def prepare_data_file(filename = '../data/model_data.csv', look_back_window : in
     Y_past = np.array(position[:-look_back_window, :])
     S = np.array(signals[:-look_back_window])
 
+    L = S.shape[0]
     U = np.deg2rad(U)
+    S = signals[look_back_window - 1:, :]
+
+    for i in range(look_back_window):
+        U = np.concatenate((U, inputs[look_back_window - i - 1 : L - i, :]), axis=1)
+
+    for i in range(look_back_window):
+        Y = np.concatenate((Y, position[look_back_window - i - 1  : L-i, :]), axis = 1)
 
     X = np.concatenate((U, Y_past), axis = 1)
     X = np.concatenate((X, S), axis = 1)
