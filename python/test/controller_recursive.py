@@ -42,8 +42,8 @@ NNP.u0 = [np.deg2rad(Block.motors._zero1),
 target = FigureEight(a = 20. / 1000., b = 5./1000., wavelength= 100.,
                      center = neutral_point)
 
-#Block.get_signal_calibration()
-Block.calibration_max = np.array([ 78., 1, 14.,   1,   1,   120., 163.,   1,   1,  1,  17.])
+Block.get_signal_calibration()
+#Block.calibration_max = np.array([ 78., 1, 14.,   1,   1,   120., 163.,   1,   1,  1,  17.])
 
 u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
 del_u = np.zeros(u_optimal_old.shape)
