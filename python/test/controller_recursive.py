@@ -16,14 +16,14 @@ NUM_TIMESTEPS = 2000
 verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
-                                      N1 = 0, N2 = 2, Nu = 1,
+                                      N1 = 0, N2 = 3, Nu = 1,
                                       nd = 5, dd = 5, K = 5,
                                       Q = np.array([[1., 0., 0],
                                                     [0., 1000., 0],
                                                     [0., 0., 100.]]),
                                       Lambda = np.array([[1., 0.],
-                                                         [0., 1.5]]),
-                                      s = 1e-20, b = 1e-3, r = 4.,
+                                                         [0., 6e-1]]),
+                                      s = 1e-20, b = 1., r = 4.,
                                       states_to_control = [1, 1, 1],
                                       x0 = [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-50.)]*2)
@@ -43,7 +43,7 @@ target = FigureEight(a = 20. / 1000., b = 8./1000., wavelength= 200.,
                      center = neutral_point)
 
 #Block.get_signal_calibration()
-Block.calibration_max = np.array([ 45., 1, 14.,   1,   2,   153., 169.,   1,   1,  1,  16.])
+Block.calibration_max = np.array([ 70., 1, 15.,   1,   1,   154., 171.,   1,   1,  1,  17.])
 
 u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
 del_u = np.zeros(u_optimal_old.shape)
@@ -68,6 +68,7 @@ try:
         u_deque, y_deque = first_load_deques(NNP.x0, NNP.u0, NNP.nd, NNP.dd)
         u_action, predicted_states = np.array(NNP.u0), np.array(NNP.x0)
 
+        target.center = NNP.x0
         for n in range(NUM_TIMESTEPS):
             seconds = time.time()
             signal = np.divide(Block.get_observation(), Block.calibration_max,
