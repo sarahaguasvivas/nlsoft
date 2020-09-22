@@ -10,7 +10,7 @@ import numpy as np
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id.hdf5'
 
-NUM_EXPERIMENTS = 1
+NUM_EXPERIMENTS = 10
 NUM_TIMESTEPS = 2000
 
 verbose = 1
@@ -61,6 +61,7 @@ try:
                 'ym' : [], 'elapsed' : [], 'u' : []}})
 
         Block.reset()
+        time.sleep(1)
         NNP.x0 = Block.get_state()
         u_deque.clear()
         y_deque.clear()
@@ -110,19 +111,19 @@ try:
 
             u_optimal_old = u_optimal
             u_deque = roll_deque(u_deque, u_optimal[0, :].tolist())
-
+            elapsed = time.time()-seconds
             actual_ = np.array(Block.get_state()).tolist()
             if verbose == 0:
-                log.verbose(actual = actual_,
+                log.verbose( actual = actual_,
                             yn = predicted_states, ym =target_path[0, :],
-                            elapsed = time.time()-seconds, u = u_action)
+                            elapsed = elapsed, u = u_action)
             if verbose == 1:
                 log.verbose(u_action = u_action, elapsed = time.time() - seconds)
 
             log.log({str(e) : {'actual' : actual_,
                             'yn' : predicted_states.tolist(),
                             'ym' : target_path[0, :].tolist(),
-                            'elapsed' : time.time() - seconds,
+                            'elapsed' : elapsed,
                             'u' : [u_action],
                             'signal' : signal}})
 
