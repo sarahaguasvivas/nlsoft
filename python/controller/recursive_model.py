@@ -257,24 +257,20 @@ class RecursiveNeuralNetworkPredictor():
     def hessian(self, u, del_u):
         y, ym = self.get_computation_vectors()
         del_y = ym[self.n1:self.n2, :] - y[self.n1:self.n2, :]
-        del_u = del_u.copy()
-        hessian = np.zeros((self.nu, self.nu))
 
+        hessian = np.zeros((self.nu, self.nu))
         ynu = self.keras_gradient()
         dynu_du = self.keras_second_ders()
-
-        #hessian[h, m] += np.sum(2. * self.Q @ np.array(ynu).T) - \
-        #                                np.sum(2.*del_y @ self.Q @ dynu_du.T)
+        hessian += np.sum(2. * self.Q @ (ynu * ynu)) - np.sum(2. * (self.Q @ dynu_du).T @ del_y.T)
 
         for h in range(self.nu):
             for m in range(self.nu):
                 second_y, second_y1, temp = [], [], []
                 for j in range(self.m):
-                    second_y+=[self.__partial_delta_u_partial_u(j, m)]
-                    second_y1+=[self.__partial_delta_u_partial_u(j, h)]
-
+                    second_y += [self.__partial_delta_u_partial_u(j, m)]
+                    second_y1 += [self.__partial_delta_u_partial_u(j, h)]
                 hessian[h, m] += np.sum(2.* self.Lambda @
-                                second_y @ np.array(second_y1).T)
+                                np.array(second_y) @ np.array(second_y1).T)
 
                 for j in range(self.nu):
                    for i in range(self.m):
@@ -322,12 +318,10 @@ class RecursiveNeuralNetworkPredictor():
             Using Keras gradient tapes
         """
         second_gradient = self.grad_grad(self.input_vector).numpy()
-
         second_gradient = second_gradient.reshape(self.nx, self.input_vector.shape[1], -1)
         second_gradient = second_gradient[:, :self.nd * self.m, :self.nd*self.m]
-        second_gradient = second_gradient.sum(axis = 0)
-        second_gradient = second_gradient.reshape(self.nd, self.nd, self.m, self.m)
-        second_gradient = second_gradient.sum(axis = 0).sum(axis = 0)
+        second_gradient = second_gradient.reshape(self.nx, self.nd, self.nd, self.m, self.m)
+        second_gradient = second_gradient.sum(axis = 1).sum(axis = 1).sum(axis = 1)
         return second_gradient
 
     def jacobian(self, u, del_u):
@@ -337,9 +331,7 @@ class RecursiveNeuralNetworkPredictor():
         jacobian = np.zeros((self.nu, self.m))
 
         sub_sum = del_y @ self.Q
-
         ynu = self.keras_gradient()
-
         sum_output = np.sum(sub_sum @ ynu, axis=0)
 
         for h in range(self.nu):
