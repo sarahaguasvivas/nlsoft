@@ -279,7 +279,6 @@ class RecursiveNeuralNetworkPredictor():
                                self.b), 3.0) + \
                                2.0 * self.s / np.power(self.r/2. +\
                                self.b - u[j, i], 3.0))
-        print(hessian)
         return hessian
 
     @tf.function
