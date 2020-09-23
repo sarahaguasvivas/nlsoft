@@ -10,8 +10,8 @@ import numpy as np
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id.hdf5'
 
-NUM_EXPERIMENTS = 10
-NUM_TIMESTEPS = 2000
+NUM_EXPERIMENTS = 1
+NUM_TIMESTEPS = 5000
 
 verbose = 1
 
@@ -22,7 +22,7 @@ NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                                     [0., 1000., 0],
                                                     [0., 0., 100.]]),
                                       Lambda = np.array([[1., 0.],
-                                                         [0., 6e-1]]),
+                                                         [0., 1e-1]]),
                                       s = 1e-20, b = 1., r = 4.,
                                       states_to_control = [1, 1, 1],
                                       x0 = [0.0, 0.0, 0.0],
@@ -39,11 +39,11 @@ NNP.x0 = neutral_point
 NNP.u0 = [np.deg2rad(Block.motors._zero1),
                         np.deg2rad(Block.motors._zero2)]
 
-target = FigureEight(a = 20. / 1000., b = 8./1000., wavelength= 200.,
+target = FigureEight(a = 20. / 1000., b = 10./1000., wavelength= 300.,
                      center = neutral_point)
 
 #Block.get_signal_calibration()
-Block.calibration_max = np.array([ 70., 1, 15.,   1,   1,   154., 171.,   1,   1,  1,  17.])
+Block.calibration_max = np.array([ 42., 1, 15.,   1,   1,   140., 167.,   1,   1,  1,  14.])
 
 u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
 del_u = np.zeros(u_optimal_old.shape)
