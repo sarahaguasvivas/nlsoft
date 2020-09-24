@@ -125,7 +125,6 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
     plt.show()
 
     # Testing set loss
-
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.5)
     y_pred= 1000.*model.predict(X_test)
 
