@@ -7,7 +7,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 from tensorflow.keras import regularizers
 import keras
 from keras.models import Sequential, load_model
-from keras.layers import Dense, LSTM, BatchNormalization, Dropout, Flatten
+from keras.layers import Dense, LSTM, BatchNormalization, Dropout, Flatten, GRU
 from tensorflow.keras.losses import Huber
 from sklearn.model_selection import train_test_split, KFold
 import keras.backend as K
@@ -43,8 +43,7 @@ keras.losses.custom_loss = custom_loss
 
 def create_network(x_train_shape : Tuple[int]):
     model = Sequential()
-    model.add(LSTM(units = 15, return_sequences = True, input_shape = (x_train_shape[1],
-                                                                    1)))
+    model.add(GRU(units = 15, return_sequences = True, input_shape = (x_train_shape[1], 1)))
     model.add(Dropout(0.2))
     model.add(Flatten())
     model.add(Dense(3, activation='tanh', kernel_initializer='random_normal'))
@@ -64,8 +63,8 @@ def neural_network_training(X, y):
     model = create_network(X_train.shape)
     model.fit(X_train, y_train, epochs = 100, batch_size = 1000)
 
-    model.save('sys_id_LSTM.hdf5')
-    return 'sys_id_LSTM.hdf5'
+    model.save('sys_id_GRU.hdf5')
+    return 'sys_id_GRU.hdf5'
 
 def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
     color_palette1 = ['#272838', '#F3DE8A', '#F3DE8A', '#F3DE8A']
@@ -134,49 +133,53 @@ def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
     diff = np.linalg.norm(y_test-y_pred, axis = 1)
     print("Testing set avg l2 norm:", np.mean(diff))
 
-
-def prepare_data_file(filename = '../data/model_data.csv', look_back_window : int = 5):
+def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
     data_array = np.genfromtxt(filename[0], delimiter=',')
     for i in range(1, len(filename)):
         data_array = np.concatenate((data_array, np.genfromtxt(filename[i], delimiter = ',')), axis = 0)
-
     signals = data_array[:, :11]
     max_signals = np.max(signals, axis = 0)
     for i in range(len(max_signals)):
         if max_signals[i] == 0:
             max_signals[i] = 1
-
         signals[:, i]/= max_signals[i]
 
     position = data_array[:, 11:14] # not using Euler angles
     inputs = data_array[:, 14:]
 
-    U = np.array(inputs[:-look_back_window, :])
-    Y_pred = np.array(position[look_back_window:, :])
-    Y_past = np.array(position[:-look_back_window, :])
-    S = np.array(signals[:-look_back_window])
+    N = max(nd, dd) # data sample where we will start first
 
-    L = S.shape[0]
-    U = np.deg2rad(U)
-    S = signals[look_back_window - 1:, :]
+    U = np.empty((signals.shape[0] - N + 1, 2))
+    Y = np.empty((signals.shape[0] - N + 1, 3))
+    L = signals.shape[0]
 
-    for i in range(look_back_window):
-        U = np.concatenate((U, inputs[look_back_window - i - 1 : L - i, :]), axis=1)
+    # TODO: Test for when nd neq dd
+    for i in range(nd):
+        U = np.concatenate((U, inputs[nd - i - 1 + (N-nd):L-i, :]), axis = 1)
 
-    for i in range(look_back_window):
-        Y = np.concatenate((Y, position[look_back_window - i - 1  : L-i, :]), axis = 1)
+    for i in range(dd):
+        Y = np.concatenate((Y, position[dd - i - 1  : L-i, :]), axis = 1)
 
-    X = np.concatenate((U, Y_past), axis = 1)
+    U = np.deg2rad(U[:, 2:])
+    S = signals[N - 1:, :]
+
+    print("Y", Y)
+    Y = Y[:, 3:-3] # Y
+
+    X = np.concatenate((U, Y[:, 3:]), axis = 1)
     X = np.concatenate((X, S), axis = 1)
-    y = Y_pred
+    y = Y[:, :3] # we are using all of this to estimate current
 
+    print(np.cov(y.T, bias = True))
     return X, y
 
 if __name__ == "__main__":
+    # dd is dd+2
     # nd is nd
-    X, y = prepare_data_file([filename], look_back_window = 1)
+    X, y = prepare_data_file([filename], nd=5, dd=5+2)
     if TRAIN:
         modelfile, k_fold_summary = neural_network_training(X, y)
         print(k_fold_summary)
     plot_sys_id(X, y)
+
 

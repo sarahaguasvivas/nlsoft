@@ -23,7 +23,7 @@ class ModelException(Exception):
             Calculating m'th and h'th element of the Hessian
         ---------------------------------------------------------------------
 """
-class LSTMNeuralNetworkPredictor():
+class GRUPredictor():
     def __init__(self, model_file : str, N1 : int = 0 , N2 : int = 3 ,  Nu : int = 2 ,
                             K : int = 3 , Q : List[List[float]] = [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
                             Lambda : List[List[float]] = [[0.3, 0.0], [0., 0.2]] , nd : int = 3,
@@ -53,6 +53,8 @@ class LSTMNeuralNetworkPredictor():
         self.states_to_control = states_to_control
 
         self.first_layer_index, self.layertype = self.__get_hidden_layer_data()
+
+        self.h = 1e-8 # for finite difference
 
         self.nd = nd # associated with u( . ) not counting u(n)
         self.dd = dd # associated with y( . )
@@ -142,6 +144,110 @@ class LSTMNeuralNetworkPredictor():
             x = np.ln(self.prediction / (1.-self.prediction))
             return np.array((2.*np.exp(-2.*x))/(np.exp(-1.*x)+ 1.)**3. - (np.exp(-1.*x))/(np.exp(-1.*x)+1.)**2.)
 
+    def __partial_2_fnet_partial_nph_partial_npm(self, h, m, j):
+        """
+             D2^2f_j(net)
+             ------------
+            Du(n+h)Du(n+m)
+        """
+        return self.__Phi_prime() * \
+                    self.__partial_2_net_partial_u_nph_partial_npm(h, m, j) + \
+                        self.__Phi_prime_prime() @ \
+                            self.__partial_net_partial_u(h, j) @ \
+                                self.__partial_net_partial_u(m, j).T
+
+    def __partial_2_yn_partial_nph_partial_npm(self, h, m, j):
+        """
+                 D^2yn
+            ---------------
+            Du(n+h) Du(n+m)
+        """
+        outputs = self.model.layers[-1].units
+        weights = self.model.layers[-1].get_weights()[0]
+        sum_output = np.array([0.0]*outputs)
+        for i in range(self.hid):
+            sum_output += weights[i, :] * \
+                        self.__partial_2_fnet_partial_nph_partial_npm(h, m, j).squeeze()
+        self.previous_second_der = sum_output.T
+        if len(sum_output) > 0:
+            return self.C @ np.array(sum_output).T
+        else:
+            return self.C @ sum_output
+
+    def __partial_2_net_partial_u_nph_partial_npm(self, h, m, j):
+        """
+              D^2 net_j
+            -------------
+            Du(n+h)Du(n+m)
+        """
+        weights = self.model.layers[self.first_layer_index].get_weights()[0]
+        sum_output = 0.0
+        for i in range(min(j, self.dd*self.nx)):
+            step_ = []
+            for ii in range(self.nx):
+                step_ += [step(j - i + ii - 1)]
+            sum_output += np.sum(weights[i * self.m + self.nd * self.m: i * self.m + \
+                                                                        self.nd * self.m + \
+                                                                        self.nx, j] * \
+                                        self.previous_second_der * np.array(step_))
+        return np.array(sum_output)
+
+    def __partial_yn_partial_u(self, h, j):
+        """
+               D yn
+            -----------
+             D u(n+h)
+        """
+        weights = self.model.layers[-1].get_weights()[0]
+        sum_output = np.zeros((self.nx, self.m))
+
+        for i in range(self.hid):
+            sum_output += (weights[i, :] * \
+                                 self.__partial_fnet_partial_u(h, j).T).T
+
+        self.previous_first_der = sum_output
+        return np.array(self.C @ sum_output)
+
+    def __partial_fnet_partial_u(self, h, j):
+        """
+            D f_j(net)
+            ---------
+             D u(u+h)
+        """
+        return (self.__Phi_prime() * \
+                             self.__partial_net_partial_u(h, j).T).T
+
+    def __partial_net_partial_u(self, h : int, j : int):
+        """
+             D net_j
+            ---------
+            D u(n+h)
+
+            h-> [0, ..., Nu]
+            j-> [0, ..., hid]
+            k-> [0, ..., m]
+        """
+        weights = self.model.layers[self.first_layer_index].get_weights()[0]
+        sum_output = [0.0]*self.m
+
+        for i in range(self.nd):
+            if (j - self.nu) < i:
+                delta = [kronecker_delta(j - i + ii, h) for ii in range(self.m)]
+            else:
+                delta = [kronecker_delta(self.nu, h)]*self.m
+            index_weights = np.arange(i * self.m, i * self.m + self.m)
+            sum_output += weights[index_weights, j] * delta
+
+        sum_output = np.tile(sum_output, self.nx).reshape(self.nx, -1)
+
+        for i in range(min(j, self.dd)):
+            step_ = step(j-i)
+            index_weights = np.arange(i * self.nx + self.nd*self.m,
+                                     i * self.nx + self.nd * self.m + self.nx)
+            sum_output += (weights[index_weights, j] * step_ * \
+                                        np.array(self.previous_first_der).T).T
+        return np.array(sum_output)
+
     def __partial_delta_u_partial_u(self, j, h):
         """
             D delta u
@@ -153,30 +259,20 @@ class LSTMNeuralNetworkPredictor():
     def hessian(self, u, del_u):
         y, ym = self.get_computation_vectors()
         del_y = ym[self.n1:self.n2, :] - y[self.n1:self.n2, :]
-        del_u = del_u.copy()
+
         hessian = np.zeros((self.nu, self.nu))
+        ynu = self.keras_gradient()
+        dynu_du = self.keras_second_ders()
+        hessian += np.sum(2. * self.Q @ (ynu * ynu)) - np.sum(2. * (self.Q @ dynu_du).T @ del_y.T)
 
         for h in range(self.nu):
             for m in range(self.nu):
-                ynu, ynu1, temp = [], [], []
-                for j in range(self.n1, self.n2):
-                    ynu +=[self.__partial_yn_partial_u(j, m)]
-                    ynu1+=[self.__partial_yn_partial_u(j, h)]
-                    temp+=[self.__partial_2_yn_partial_nph_partial_npm(h, m, j)]
-
-                ynu, ynu1, temp = np.array(ynu), np.array(ynu1), \
-                                          np.array(temp).reshape(-1, self.ny)
-
-                hessian[h, m] += np.sum(2. * self.Q @ np.array(ynu1).T) - \
-                                            np.sum(2.*del_y @ self.Q @temp.T)
-
                 second_y, second_y1, temp = [], [], []
                 for j in range(self.m):
-                    second_y+=[self.__partial_delta_u_partial_u(j, m)]
-                    second_y1+=[self.__partial_delta_u_partial_u(j, h)]
-
+                    second_y += [self.__partial_delta_u_partial_u(j, m)]
+                    second_y1 += [self.__partial_delta_u_partial_u(j, h)]
                 hessian[h, m] += np.sum(2.* self.Lambda @
-                                second_y @ np.array(second_y1).T)
+                                np.array(second_y) @ np.array(second_y1).T)
 
                 for j in range(self.nu):
                    for i in range(self.m):
@@ -187,25 +283,45 @@ class LSTMNeuralNetworkPredictor():
                                self.b - u[j, i], 3.0))
         return hessian
 
-    @tf.function
+    def grad_grad(self, x):
+        second_der = np.zeros((self.nx, self.nx))
+
+        return second_der
+
     def grads(self, x):
-        with tf.GradientTape(persistent=True, watch_accessed_variables=False) as tape:
-            tape.watch(x)
-            y = self.model(x, training=False)
-        jacobian = tape.jacobian(y, x)
-        del tape # just in case
+        h = 1e-4
+        n = max(x.shape)
+        jacobian = np.zeros((self.nx, n))
+        for i in range(n):
+            x_p = x.copy()
+            x_m = x.copy()
+            x_p[:, i, :] += h
+            x_m[:, i, :] -= h
+            jacobian[:, i] = np.array((self.model.predict(x_p).flatten() - \
+                              self.model.predict(x_m).flatten())) / (2.* h)
+        print(jacobian)
         return jacobian
 
     def keras_gradient(self):
         """
             Gradient tapes: https://www.tensorflow.org/api_docs/python/tf/GradientTape
         """
-        gradient = self.grads(self.input_vector).numpy().reshape(self.nx, -1)
+        gradient = self.grads(self.input_vector).reshape(self.nx, -1)
         ynu = gradient[:, :self.m * self.nd]
-        print(ynu)
         ynu = ynu.reshape(self.nx, -1, self.m)
         ynu = np.sum(ynu, axis = 1)
         return self.C @ ynu
+
+    def keras_second_ders(self):
+        """
+            Using Keras gradient tapes
+        """
+        second_gradient = self.grad_grad(self.input_vector).numpy()
+        second_gradient = second_gradient.reshape(self.nx, self.input_vector.shape[1], -1)
+        second_gradient = second_gradient[:, :self.nd * self.m, :self.nd*self.m]
+        second_gradient = second_gradient.reshape(self.nx, self.nd, self.nd, self.m, self.m)
+        second_gradient = second_gradient.sum(axis = 1).sum(axis = 1).sum(axis = 1)
+        return second_gradient
 
     def jacobian(self, u, del_u):
         y, ym = self.get_computation_vectors()
@@ -214,9 +330,7 @@ class LSTMNeuralNetworkPredictor():
         jacobian = np.zeros((self.nu, self.m))
 
         sub_sum = del_y @ self.Q
-
         ynu = self.keras_gradient()
-
         sum_output = np.sum(sub_sum @ ynu, axis=0)
 
         for h in range(self.nu):
