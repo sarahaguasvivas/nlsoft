@@ -54,6 +54,8 @@ class GRUPredictor():
 
         self.first_layer_index, self.layertype = self.__get_hidden_layer_data()
 
+        self.h = 1e-8 # for finite difference
+
         self.nd = nd # associated with u( . ) not counting u(n)
         self.dd = dd # associated with y( . )
 
@@ -281,35 +283,30 @@ class GRUPredictor():
                                self.b - u[j, i], 3.0))
         return hessian
 
-    #@tf.function
     def grad_grad(self, x):
-        x = tf.cast(x, tf.float32)
-        with tf.GradientTape(persistent = True) as tape:
-            tape.watch(x)
-            with tf.GradientTape(persistent=True) as ttape:
-                ttape.watch(x)
-                y = self.model(x, training=False)
-            grad = ttape.jacobian(y, x)
-        second_der = tape.jacobian(grad, x)
-        del tape
-        del ttape
+        second_der = np.zeros((self.nx, self.nx))
+
         return second_der
-    #@tf.function
+
     def grads(self, x):
-        x = tf.cast(x, tf.float32)
-        with tf.GradientTape(persistent=True, watch_accessed_variables=False) as tape:
-            tape.watch(x)
-            y = self.model(x, training=False)
-        jacobian = tape.jacobian(y, x)
-        del tape  # just in case
+        h = 1e-4
+        n = max(x.shape)
+        jacobian = np.zeros((self.nx, n))
+        for i in range(n):
+            x_p = x.copy()
+            x_m = x.copy()
+            x_p[:, i, :] += h
+            x_m[:, i, :] -= h
+            jacobian[:, i] = np.array((self.model.predict(x_p).flatten() - \
+                              self.model.predict(x_m).flatten())) / (2.* h)
+        print(jacobian)
         return jacobian
 
     def keras_gradient(self):
         """
             Gradient tapes: https://www.tensorflow.org/api_docs/python/tf/GradientTape
         """
-        gradient = self.grads(self.input_vector).numpy().reshape(self.nx, -1)
-        print(gradient)
+        gradient = self.grads(self.input_vector).reshape(self.nx, -1)
         ynu = gradient[:, :self.m * self.nd]
         ynu = ynu.reshape(self.nx, -1, self.m)
         ynu = np.sum(ynu, axis = 1)
