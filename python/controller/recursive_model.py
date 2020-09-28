@@ -283,17 +283,7 @@ class RecursiveNeuralNetworkPredictor():
 
     @tf.function
     def grad_grad(self, x):
-        #with tf.GradientTape(persistent = True) as tape:
-        #    tape.watch(x)
-        #    with tf.GradientTape(persistent=True) as ttape:
-        #        ttape.watch(x)
-        #        y = self.model(x, training=False)
-        #    grad = ttape.jacobian(y, x)
-        #second_der = tape.jacobian(grad, x)
-        #del tape
-        #del ttape
-        second_der = tf.hessians(self.model(x, training = False), x)[0]
-        return second_der
+        return tf.hessians(self.model(x, training = False), x)[0]
 
     def num_grads(self, x):
         shape = list(x.shape)
