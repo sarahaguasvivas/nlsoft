@@ -294,6 +294,19 @@ class RecursiveNeuralNetworkPredictor():
         del ttape
         return second_der
 
+    def num_grads(self, x):
+        shape = list(x.shape)
+        h = 1.
+        x = x.flatten()
+        x_p = x + np.eye(len(x))*h
+        x_m = x - np.eye(len(x))*h
+        shape[0] = len(x)
+        shape = tuple(shape)
+        jacobian = np.array((self.model.predict(x_p.reshape(shape), batch_size = len(x)).flatten() - \
+                              self.model.predict(x_m.reshape(shape), batch_size = len(x)).flatten()))\
+                   / (2.*h)
+        return jacobian
+
     @tf.function
     def grads(self, x):
         with tf.GradientTape(persistent=True, watch_accessed_variables=False) as tape:
@@ -307,7 +320,7 @@ class RecursiveNeuralNetworkPredictor():
         """
             Gradient tapes: https://www.tensorflow.org/api_docs/python/tf/GradientTape
         """
-        gradient = self.grads(self.input_vector).numpy().reshape(self.nx, -1)
+        gradient = self.num_grads(self.input_vector).reshape(-1, self.nx).T
         ynu = gradient[:, :self.m * self.nd]
         ynu = ynu.reshape(self.nx, -1, self.m)
         ynu = np.sum(ynu, axis = 1)
