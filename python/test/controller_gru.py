@@ -16,7 +16,7 @@ NUM_TIMESTEPS = 5000
 
 verbose = 1
 
-NNP = GRUPredictor(model_file = model_filename,
+NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 3, Nu = 1,
                                       nd = 5, dd = 5, K = 5,
                                       Q = np.array([[1., 0., 0],
@@ -77,14 +77,11 @@ for e in range(NUM_EXPERIMENTS):
                             dtype = np.float64).tolist()
 
         NNP.yn = []
-
         ydeq = y_deque.copy()
         for k in range(NNP.K):
             neural_network_input = np.array((np.array(list(u_deque))).flatten().tolist() + \
-                            np.array(list(ydeq)).flatten().tolist() + signal).reshape(1, -1)
-            neural_network_input = neural_network_input.reshape(neural_network_input.shape[0],
-                                                                neural_network_input.shape[1],
-                                                                1)
+                            np.array(list(ydeq)).flatten().tolist() + signal).reshape(1, -1, 1)
+
             predicted_states = NNP.predict(neural_network_input).flatten()
 
             NNP.yn += [(NNP.C @ predicted_states).tolist()]
