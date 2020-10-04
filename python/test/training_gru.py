@@ -43,7 +43,7 @@ keras.losses.custom_loss = custom_loss
 
 def create_network(x_train_shape : Tuple[int]):
     model = Sequential()
-    model.add(GRU(units = 15, return_sequences = True, input_shape = (x_train_shape[1], 1)))
+    model.add(GRU(units = 10, return_sequences = True, input_shape = (x_train_shape[1], 1)))
     model.add(Dropout(0.2))
     model.add(Flatten())
     model.add(Dense(3, activation='tanh', kernel_initializer='random_normal'))
@@ -51,20 +51,28 @@ def create_network(x_train_shape : Tuple[int]):
     return model
 
 def neural_network_training(X, y):
-    percentage = 0.60
+    #percentage = 0.60
     X = X.reshape(X.shape[0], X.shape[1], 1)
 
-    train = range(int((X.shape[0]) * percentage))
-    test = range(int((X.shape[0]) * percentage), X.shape[0])
+    #train = range(int((X.shape[0]) * percentage))
+    #test = range(int((X.shape[0]) * percentage), X.shape[0])
 
-    X_train = X[train]
-    y_train = y[train]
+    #X_train = X[train]
+    #y_train = y[train]
 
-    model = create_network(X_train.shape)
-    model.fit(X_train, y_train, epochs = 100, batch_size = 1000)
+    #model = create_network(X_train.shape)
+    #model.fit(X_train, y_train, epochs = 100, batch_size = 1000)
+    kfold = KFold(n_splits = 5, shuffle=True)
+    k_fold_results = []
+    for train, test in kfold.split(X, y):
+        X_train = X[train]
+        y_train = y[train]
+        model = create_network(x_train_shape=X_train.shape)
+        model.fit(X_train, y_train, epochs = 100, batch_size = 1000)
+        k_fold_results += [np.mean(np.linalg.norm(1000.*model.predict(X[test])- 1000.*y[test], axis = 1))]
 
     model.save('sys_id_GRU.hdf5')
-    return 'sys_id_GRU.hdf5'
+    return 'sys_id_GRU.hdf5', k_fold_results
 
 def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
     color_palette1 = ['#272838', '#F3DE8A', '#F3DE8A', '#F3DE8A']
@@ -176,7 +184,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
 if __name__ == "__main__":
     # dd is dd+2
     # nd is nd
-    X, y = prepare_data_file([filename], nd=5, dd=5+2)
+    X, y = prepare_data_file([filename], nd = 2, dd = 2+2)
     if TRAIN:
         modelfile, k_fold_summary = neural_network_training(X, y)
         print(k_fold_summary)

@@ -17,8 +17,8 @@ NUM_TIMESTEPS = 5000
 verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
-                                      N1 = 0, N2 = 3, Nu = 1,
-                                      nd = 5, dd = 5, K = 5,
+                                      N1 = 0, N2 = 2, Nu = 1,
+                                      nd = 2, dd = 2, K = 5,
                                       Q = np.array([[1., 0., 0],
                                                     [0., 1000., 0],
                                                     [0., 0., 100.]]),
