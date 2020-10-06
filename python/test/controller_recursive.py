@@ -16,16 +16,16 @@ NUM_TIMESTEPS = 5000
 verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
-                                      N1 = 0, N2 = 3, Nu = 1,
+                                      N1 = 0, N2 = 2, Nu = 1,
                                       nd = 5, dd = 5, K = 5,
-                                      Q = np.array([[1., 0., 0],
+                                      Q = np.array([[100., 0., 0],
                                                     [0., 1000., 0],
-                                                    [0., 0., 100.]]),
+                                                    [0., 0., 500.]]),
                                       Lambda = np.array([[1., 0.],
                                                          [0., 1e-1]]),
                                       s = 1e-20, b = 1., r = 4.,
                                       states_to_control = [1, 1, 1],
-                                      x0 = [0.0, 0.0, 0.0],
+                                      y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-50.)]*2)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
@@ -35,7 +35,7 @@ Block.reset()
 
 neutral_point = Block.get_state()
 
-NNP.x0 = neutral_point
+NNP.y0 = neutral_point
 NNP.u0 = [np.deg2rad(Block.motors._zero1),
                         np.deg2rad(Block.motors._zero2)]
 
@@ -51,7 +51,6 @@ del_u = np.zeros(u_optimal_old.shape)
 log.log({'metadata' : {'neutral_point' : neutral_point,
          'num_experiments' : NUM_EXPERIMENTS,
          'num_timesteps': NUM_TIMESTEPS}})
-
 u_deque = deque()
 y_deque = deque()
 
@@ -62,28 +61,28 @@ try:
 
         Block.reset()
         time.sleep(1)
-        NNP.x0 = Block.get_state()
+        NNP.y0 = Block.get_state()
+
+        log.log_dictionary['metadata']['neutral_point'] = NNP.y0
+
         u_deque.clear()
         y_deque.clear()
 
-        u_deque, y_deque = first_load_deques(NNP.x0, NNP.u0, NNP.nd, NNP.dd)
-        u_action, predicted_states = np.array(NNP.u0), np.array(NNP.x0)
+        u_deque, y_deque = first_load_deques(NNP.y0, NNP.u0, NNP.nd, NNP.dd)
+        u_action, predicted_states = np.array(NNP.u0), np.array(NNP.y0)
 
-        target.center = NNP.x0
+        target.center = NNP.y0
         for n in range(NUM_TIMESTEPS):
             seconds = time.time()
             signal = np.divide(Block.get_observation(), Block.calibration_max,
                                 dtype = np.float64).tolist()
 
             NNP.yn = []
-
             ydeq = y_deque.copy()
             for k in range(NNP.K):
                 neural_network_input = np.array((np.array(list(u_deque))).flatten().tolist() + \
                                 np.array(list(ydeq)).flatten().tolist() + signal).reshape(1, -1)
-
                 predicted_states = NNP.predict(neural_network_input).flatten()
-
                 NNP.yn += [(NNP.C @ predicted_states).tolist()]
                 ydeq = roll_deque(ydeq, predicted_states.tolist())
 

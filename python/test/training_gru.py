@@ -43,7 +43,7 @@ keras.losses.custom_loss = custom_loss
 
 def create_network(x_train_shape : Tuple[int]):
     model = Sequential()
-    model.add(GRU(units = 10, return_sequences = True, input_shape = (x_train_shape[1], 1)))
+    model.add(GRU(units = 15, return_sequences = True, input_shape = (1, x_train_shape[2])))
     model.add(Dropout(0.2))
     model.add(Flatten())
     model.add(Dense(3, activation='tanh', kernel_initializer='random_normal'))
@@ -52,7 +52,7 @@ def create_network(x_train_shape : Tuple[int]):
 
 def neural_network_training(X, y):
     #percentage = 0.60
-    X = X.reshape(X.shape[0], X.shape[1], 1)
+    X = X.reshape(X.shape[0], 1, X.shape[1])
 
     #train = range(int((X.shape[0]) * percentage))
     #test = range(int((X.shape[0]) * percentage), X.shape[0])

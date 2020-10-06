@@ -24,20 +24,20 @@ class ModelException(Exception):
         ---------------------------------------------------------------------
 """
 class RecursiveNeuralNetworkPredictor():
-    def __init__(self, model_file : str, N1 : int = 0 , N2 : int = 3 ,  Nu : int = 2 ,
-                            K : int = 3 , Q : List[List[float]] = [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
-                            Lambda : List[List[float]] = [[0.3, 0.0], [0., 0.2]] , nd : int = 3,
-                                    dd : int = 3, x0 : List[float] = [0, 0],
-                                    u0 : List[float] = [0., 0.],
-                                        s : float = 1e-20, b : float = 1e-10, r : float = 4e-1,
-                                        states_to_control : List[bool] = [0, 1, 1]):
+    def __init__(self, model_file : str, N1 : int = 0, N2 : int = 3, Nu : int = 2,
+                 K : int = 3, Q : List[List[float]] = [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+                 Lambda : List[List[float]] = [[0.3, 0.0], [0., 0.2]], nd : int = 3,
+                 dd : int = 3, y0 : List[float] = [0, 0],
+                 u0 : List[float] = [0., 0.],
+                 s : float = 1e-20, b : float = 1e-10, r : float = 4e-1,
+                 states_to_control : List[bool] = [0, 1, 1]):
 
-        self.n1, self.n2, self.nu, self.x0, self.u0 = N1, N2, Nu, x0, u0
+        self.n1, self.n2, self.nu, self.y0, self.u0 = N1, N2, Nu, y0, u0
 
         self.ym = None
         self.yn = None
 
-        self.nx = len(x0)
+        self.nx = len(y0)
         self.ny = sum(states_to_control)
         self.m = len(u0)
 
@@ -70,7 +70,7 @@ class RecursiveNeuralNetworkPredictor():
         self.b = b
         self.r = r
 
-        self.initialize_deques(self.u0, self.x0)
+        self.initialize_deques(self.u0, self.y0)
         self.cost = NN_Cost(self)
         self.input_vector = None
 
@@ -94,7 +94,7 @@ class RecursiveNeuralNetworkPredictor():
 
     def initialize_deques(self, u0 : List[float], x0 : List[float]):
         for _ in range(self.n2 - self.n1):
-            self.y_deque.appendleft(self.x0)
+            self.y_deque.appendleft(self.y0)
             self.ym_deque.appendleft(x0)
         for _ in range(self.nu):
             self.u_deque.appendleft(u0)

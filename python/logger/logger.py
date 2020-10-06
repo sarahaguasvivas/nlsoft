@@ -109,7 +109,7 @@ class Logger:
             plt.ylabel(str(labels[i]) + ' [mm]', **font)
             plt.xticks(fontsize=14, **font)
             plt.yticks(fontsize=14, **font)
-            plt.plot(1000*neutral_point[i]- shift[i], marker = 'h')
+            plt.plot(1000*neutral_point[i] - shift[i], marker = 'h')
             if i==2:
                 plt.xlabel('timesteps', **font)
             if i==0:
