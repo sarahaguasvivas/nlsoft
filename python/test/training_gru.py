@@ -43,7 +43,9 @@ keras.losses.custom_loss = custom_loss
 
 def create_network(x_train_shape : Tuple[int]):
     model = Sequential()
-    model.add(GRU(units = 15, return_sequences = True, input_shape = (1, x_train_shape[2])))
+    model.add(GRU(units = 10, return_sequences = True, input_shape = (1, x_train_shape[2])))
+    model.add(Dropout(0.2))
+    model.add(GRU(units=3, return_sequences=True, input_shape=(1, x_train_shape[2])))
     model.add(Dropout(0.2))
     model.add(Flatten())
     model.add(Dense(3, activation='tanh', kernel_initializer='random_normal'))
@@ -184,7 +186,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
 if __name__ == "__main__":
     # dd is dd+2
     # nd is nd
-    X, y = prepare_data_file([filename], nd = 2, dd = 2+2)
+    X, y = prepare_data_file([filename], nd = 3, dd = 3+2)
     if TRAIN:
         modelfile, k_fold_summary = neural_network_training(X, y)
         print(k_fold_summary)
