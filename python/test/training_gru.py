@@ -49,7 +49,7 @@ def create_network(x_train_shape : Tuple[int]):
     model.add(Dropout(0.2))
     model.add(Flatten())
     model.add(Dense(3, activation='tanh', kernel_initializer='random_normal'))
-    model.compile(optimizer="adam", loss=huber_loss, metrics=['mse'])
+    model.compile(optimizer="adam", loss='mse', metrics=['mse'])
     return model
 
 def neural_network_training(X, y):
@@ -64,13 +64,13 @@ def neural_network_training(X, y):
 
     #model = create_network(X_train.shape)
     #model.fit(X_train, y_train, epochs = 100, batch_size = 1000)
-    kfold = KFold(n_splits = 5, shuffle=True)
+    kfold = KFold(n_splits = 5, shuffle=False)
     k_fold_results = []
     for train, test in kfold.split(X, y):
         X_train = X[train]
         y_train = y[train]
         model = create_network(x_train_shape=X_train.shape)
-        model.fit(X_train, y_train, epochs = 100, batch_size = 1000)
+        model.fit(X_train, y_train, epochs = 500, batch_size = 100)
         k_fold_results += [np.mean(np.linalg.norm(1000.*model.predict(X[test])- 1000.*y[test], axis = 1))]
 
     model.save('sys_id_GRU.hdf5')

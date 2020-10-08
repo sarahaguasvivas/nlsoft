@@ -202,7 +202,7 @@ class FigureEight:
         target = np.empty([n2-n1, dims])
         i = 0
         for _ in range(n1, n2):
-            z = self.a * np.sin((timestep + i) / self.wavelength)
+            z = self.a * np.sin((timestep + i) / self.wavelength) + 15./1000.
             y = self.b * np.sin((timestep + i) / self.wavelength) * \
                 np.cos((timestep + i)/self.wavelength) + 3./1000.
             x = 5./1000.*np.sin((timestep + i)/self.wavelength) - 3./1000.
