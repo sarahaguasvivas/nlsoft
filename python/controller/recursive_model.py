@@ -2,13 +2,15 @@ from .functions import *
 from .cost import NN_Cost
 from .constraints import *
 from typing import List
-from test.training_recnn import huber_loss
+from test.training_recnn import thousand_mse
 import tensorflow as tf
 import tensorflow.keras.backend as K
+import keras.losses as klosses
 import numpy as np
 from collections import deque
 import time
 tf.enable_eager_execution()
+klosses.custom_loss = thousand_mse
 
 class ModelException(Exception):
     pass
@@ -47,7 +49,7 @@ class RecursiveNeuralNetworkPredictor():
         self.Lambda = 0.5*(self.Lambda + self.Lambda.T)
 
         self.K = K
-        self.model = tf.keras.models.load_model(model_file)
+        self.model = tf.keras.models.load_model(model_file, compile=False)
 
         self.C = self.__make_C_matrix(states_to_control)
         self.states_to_control = states_to_control
