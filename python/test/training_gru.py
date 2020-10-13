@@ -44,12 +44,9 @@ keras.losses.custom_loss = custom_loss
 def create_network(x_train_shape : Tuple[int]):
     model = Sequential()
     model.add(GRU(units = 10, return_sequences = True, input_shape = (1, x_train_shape[2])))
-    model.add(Dropout(0.2))
-    model.add(GRU(units=3, return_sequences=True, input_shape=(1, x_train_shape[2])))
-    model.add(Dropout(0.2))
     model.add(Flatten())
     model.add(Dense(3, activation='tanh', kernel_initializer='random_normal'))
-    model.compile(optimizer="adam", loss='mse', metrics=['mse'])
+    model.compile(optimizer="adam", loss=huber_loss, metrics=['mse'])
     return model
 
 def neural_network_training(X, y):

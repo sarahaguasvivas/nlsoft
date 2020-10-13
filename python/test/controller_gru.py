@@ -12,18 +12,18 @@ import numpy as np
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_GRU.hdf5'
 logfile_name = 'log_output.json' # how the log file be named in this experiment
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 2000
+NUM_TIMESTEPS = 500
 
 verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 3, Nu = 1,
-                                      nd = 2, dd = 2, K = 3,
-                                      Q = np.array([[1., 0., 0],
+                                      nd = 3, dd = 3, K = 5,
+                                      Q = np.array([[1e-3, 0., 0],
                                                     [0., 1000., 0],
-                                                    [0., 0., 100.]]),
+                                                    [0., 0., 1000.]]),
                                       Lambda = np.array([[1., 0.],
-                                                         [0., 1e-1]]),
+                                                         [0., 1.]]),
                                       s = 1e-20, b = 1., r = 4.,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
@@ -85,7 +85,6 @@ try:
                                 np.array(list(ydeq)).flatten().tolist() + signal)
 
                 neural_network_input = neural_network_input.reshape(1, 1, -1)
-
                 predicted_states = NNP.predict(neural_network_input).flatten()
 
                 NNP.yn += [(NNP.C @ predicted_states).tolist()]

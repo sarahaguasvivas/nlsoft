@@ -5,6 +5,7 @@ from block_gym.block_gym import *
 import time, os
 from logger.logger import Logger
 from utilities.util import *
+from test.training_recnn import thousand_mse
 from target.target import FigureEight
 import numpy as np
 
@@ -17,12 +18,12 @@ verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 2, Nu = 1,
-                                      nd = 5, dd = 5, K = 5,
-                                      Q = np.array([[100., 0., 0],
-                                                    [0., 1000., 0],
-                                                    [0., 0., 500.]]),
-                                      Lambda = np.array([[1., 0.],
-                                                         [0., 1e-1]]),
+                                      nd = 3, dd = 5, K = 5,
+                                      Q = np.array([[1., 0., 0],
+                                                    [0., 1e3, 0],
+                                                    [0., 0., 1e3]]),
+                                      Lambda = np.array([[1e-1, 0.],
+                                                         [0., 1.]]),
                                       s = 1e-20, b = 1., r = 4.,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
@@ -43,7 +44,7 @@ target = FigureEight(a = 20. / 1000., b = 10./1000., wavelength= 300.,
                      center = neutral_point)
 
 #Block.get_signal_calibration()
-Block.calibration_max = np.array([ 42., 1, 15.,   1,   1,   140., 167.,   1,   1,  1,  14.])
+Block.calibration_max = np.array([ 37., 1, 18.,   1,   1,   141., 175.,   1,   1,  1,  13.])
 
 u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
 del_u = np.zeros(u_optimal_old.shape)

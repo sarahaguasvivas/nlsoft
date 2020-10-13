@@ -38,15 +38,20 @@ h = Huber()
 def huber_loss(y_true, y_pred):
     return 1000.*h(y_true, y_pred)
 
-keras.losses.custom_loss = custom_loss
+def thousand_mse(y_true, y_pred):
+    loss = K.square(y_pred - y_true)
+    loss = loss*[0.1, 0.5, 0.4]
+    loss = 1000.*K.sum(loss, axis = 1)
+    return loss
+
+keras.losses.custom_loss = thousand_mse
 
 def create_network():
     model = Sequential()
-    model.add(Dense(10, activation='relu', kernel_initializer='random_normal',
+    model.add(Dense(10, activation='relu',
                     kernel_regularizer=regularizers.l1(0.01),
-                    activity_regularizer=regularizers.l2(0.02), input_shape= (36,)))
-    model.add(Dense(3, activation='linear', kernel_initializer='random_normal'))
-
+                    activity_regularizer=regularizers.l2(0.01), input_shape= (32,)))
+    model.add(Dense(3, activation='linear'))
     model.compile(optimizer="adam", loss=huber_loss, metrics=['mse'])
     return model
 
@@ -55,7 +60,7 @@ def neural_network_training(X, y):
     k_fold_results = []
     for train, test in kfold.split(X, y):
         model = create_network()
-        model.fit(X[train], y[train], epochs = 500, batch_size = 100)
+        model.fit(X[train], y[train], epochs = 100, batch_size = 1000)
 
         k_fold_results += [np.mean(np.linalg.norm(1000.*model.predict(X[test])- 1000.*y[test], axis = 1))]
 
@@ -176,7 +181,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
 if __name__ == "__main__":
     # dd is dd+2
     # nd is nd
-    X, y = prepare_data_file([filename], nd=5, dd=5+2)
+    X, y = prepare_data_file([filename], nd=3, dd=5+2)
     if TRAIN:
         modelfile, k_fold_summary = neural_network_training(X, y)
         print(k_fold_summary)
