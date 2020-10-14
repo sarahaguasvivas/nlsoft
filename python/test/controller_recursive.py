@@ -17,12 +17,12 @@ NUM_TIMESTEPS = 5000
 verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
-                                      N1 = 0, N2 = 2, Nu = 1,
-                                      nd = 3, dd = 5, K = 5,
+                                      N1 = 0, N2 = 3, Nu = 1,
+                                      nd = 5, dd = 5, K = 5,
                                       Q = np.array([[1., 0., 0],
-                                                    [0., 1e3, 0],
-                                                    [0., 0., 1e3]]),
-                                      Lambda = np.array([[1e-1, 0.],
+                                                    [0., 5e2, 0],
+                                                    [0., 0., 9e2]]),
+                                      Lambda = np.array([[9e-1, 0.],
                                                          [0., 1.]]),
                                       s = 1e-20, b = 1., r = 4.,
                                       states_to_control = [1, 1, 1],
@@ -44,7 +44,8 @@ target = FigureEight(a = 20. / 1000., b = 10./1000., wavelength= 300.,
                      center = neutral_point)
 
 #Block.get_signal_calibration()
-Block.calibration_max = np.array([ 37., 1, 18.,   1,   1,   141., 175.,   1,   1,  1,  13.])
+
+Block.calibration_max = np.array([ 33., 1, 19.,   1,   1,   120., 183.,   1,   1,  1,  17.])
 
 u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
 del_u = np.zeros(u_optimal_old.shape)
@@ -101,7 +102,7 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(np.rad2deg(u_action[0]), -100., 50.)
+            u_action[0] = np.clip(np.rad2deg(u_action[0])-15., -100., 50.)
             u_action[1] = np.clip(np.rad2deg(u_action[1]), -100., 50.)
 
             Block.step(action = u_action)

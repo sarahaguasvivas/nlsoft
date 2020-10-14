@@ -50,9 +50,9 @@ def create_network():
     model = Sequential()
     model.add(Dense(10, activation='relu',
                     kernel_regularizer=regularizers.l1(0.01),
-                    activity_regularizer=regularizers.l2(0.01), input_shape= (32,)))
-    model.add(Dense(3, activation='linear'))
-    model.compile(optimizer="adam", loss=huber_loss, metrics=['mse'])
+                    activity_regularizer=regularizers.l2(0.01), input_shape= (36,)))
+    model.add(Dense(3, activation='tanh'))
+    model.compile(optimizer="adam", loss=thousand_mse, metrics=['mse'])
     return model
 
 def neural_network_training(X, y):
@@ -181,7 +181,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
 if __name__ == "__main__":
     # dd is dd+2
     # nd is nd
-    X, y = prepare_data_file([filename], nd=3, dd=5+2)
+    X, y = prepare_data_file([filename], nd=5, dd=5+2)
     if TRAIN:
         modelfile, k_fold_summary = neural_network_training(X, y)
         print(k_fold_summary)

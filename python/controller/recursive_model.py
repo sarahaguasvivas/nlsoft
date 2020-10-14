@@ -298,7 +298,7 @@ class RecursiveNeuralNetworkPredictor():
 
     def num_grads(self, x):
         shape = list(x.shape)
-        h = 1.
+        h = 5e-2
         x = x.flatten()
         x_p = x + np.eye(len(x))*h
         x_m = x - np.eye(len(x))*h
@@ -307,6 +307,9 @@ class RecursiveNeuralNetworkPredictor():
         jacobian = np.array((self.model.predict(x_p.reshape(shape), batch_size = len(x)).flatten() - \
                               self.model.predict(x_m.reshape(shape), batch_size = len(x)).flatten()))\
                    / (2.*h)
+        #jacobian = np.array((self.model.predict(x_p.reshape(shape), batch_size = len(x)).flatten() - \
+        #                    self.model.predict(np.tile(x, reps = len(x)).reshape(shape),
+        #                                       batch_size = len(x)).flatten())) / h
         return jacobian
 
     def num_grad_grad(self, x):
