@@ -17,12 +17,12 @@ NUM_TIMESTEPS = 5000
 verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
-                                      N1 = 0, N2 = 3, Nu = 1,
+                                      N1 = 0, N2 = 1, Nu = 1,
                                       nd = 5, dd = 5, K = 5,
                                       Q = np.array([[1., 0., 0],
-                                                    [0., 5e2, 0],
-                                                    [0., 0., 9e2]]),
-                                      Lambda = np.array([[9e-1, 0.],
+                                                    [0., 1e3, 0],
+                                                    [0., 0., 1e3]]),
+                                      Lambda = np.array([[1., 0.],
                                                          [0., 1.]]),
                                       s = 1e-20, b = 1., r = 4.,
                                       states_to_control = [1, 1, 1],
@@ -44,8 +44,7 @@ target = FigureEight(a = 20. / 1000., b = 10./1000., wavelength= 300.,
                      center = neutral_point)
 
 #Block.get_signal_calibration()
-
-Block.calibration_max = np.array([ 33., 1, 19.,   1,   1,   120., 183.,   1,   1,  1,  17.])
+Block.calibration_max = np.array([ 33., 1, 55.,   1,   1,   117., 182.,   1,   1,  1,  15.])
 
 u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
 del_u = np.zeros(u_optimal_old.shape)
@@ -53,6 +52,7 @@ del_u = np.zeros(u_optimal_old.shape)
 log.log({'metadata' : {'neutral_point' : neutral_point,
          'num_experiments' : NUM_EXPERIMENTS,
          'num_timesteps': NUM_TIMESTEPS}})
+
 u_deque = deque()
 y_deque = deque()
 
@@ -81,6 +81,7 @@ try:
 
             NNP.yn = []
             ydeq = y_deque.copy()
+
             for k in range(NNP.K):
                 neural_network_input = np.array((np.array(list(u_deque))).flatten().tolist() + \
                                 np.array(list(ydeq)).flatten().tolist() + signal).reshape(1, -1)
@@ -102,7 +103,7 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(np.rad2deg(u_action[0])-15., -100., 50.)
+            u_action[0] = np.clip(np.rad2deg(u_action[0]), -100., 50.)
             u_action[1] = np.clip(np.rad2deg(u_action[1]), -100., 50.)
 
             Block.step(action = u_action)
@@ -116,7 +117,7 @@ try:
             actual_ = np.array(Block.get_state()).tolist()
             if verbose == 0:
                 log.verbose( actual = actual_,
-                            yn = predicted_states, ym =target_path[0, :],
+                            yn = predicted_states, ym = target_path[0, :],
                             elapsed = elapsed, u = u_action)
             if verbose == 1:
                 log.verbose(u_action = u_action, elapsed = time.time() - seconds)

@@ -48,11 +48,11 @@ keras.losses.custom_loss = thousand_mse
 
 def create_network():
     model = Sequential()
-    model.add(Dense(10, activation='relu',
+    model.add(Dense(5, activation='relu', kernel_initializer='random_normal',
                     kernel_regularizer=regularizers.l1(0.01),
-                    activity_regularizer=regularizers.l2(0.01), input_shape= (36,)))
-    model.add(Dense(3, activation='tanh'))
-    model.compile(optimizer="adam", loss=thousand_mse, metrics=['mse'])
+                    activity_regularizer=regularizers.l2(0.02), input_shape= (36,)))
+    model.add(Dense(3, activation='tanh', kernel_initializer='random_normal'))
+    model.compile(optimizer="adam", loss=huber_loss, metrics=['mse'])
     return model
 
 def neural_network_training(X, y):
@@ -60,7 +60,7 @@ def neural_network_training(X, y):
     k_fold_results = []
     for train, test in kfold.split(X, y):
         model = create_network()
-        model.fit(X[train], y[train], epochs = 100, batch_size = 1000)
+        model.fit(X[train], y[train], epochs = 200, batch_size = 1000)
 
         k_fold_results += [np.mean(np.linalg.norm(1000.*model.predict(X[test])- 1000.*y[test], axis = 1))]
 
@@ -158,12 +158,11 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
     Y = np.empty((signals.shape[0] - N + 1, 3))
     L = signals.shape[0]
 
-    # TODO: Test for when nd neq dd
     for i in range(nd):
         U = np.concatenate((U, inputs[nd - i - 1 + (N-nd):L-i, :]), axis = 1)
 
     for i in range(dd):
-        Y = np.concatenate((Y, position[dd - i - 1  : L-i, :]), axis = 1)
+        Y = np.concatenate((Y, position[dd - i - 1: L-i, :]), axis = 1)
 
     U = np.deg2rad(U[:, 2:])
     S = signals[N - 1:, :]
