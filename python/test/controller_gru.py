@@ -5,26 +5,26 @@ from block_gym.block_gym import *
 import time, os
 from logger.logger import Logger
 from utilities.util import *
+from test.training_recnn import thousand_mse
 from target.target import FigureEight
-from controller.gru_model import GRUPredictor
 import numpy as np
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_GRU.hdf5'
-logfile_name = 'log_output.json' # how the log file be named in this experiment
+
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 2000
+NUM_TIMESTEPS = 5000
 
 verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
-                                      nd = 3, dd = 3, K = 1,
+                                      nd = 5, dd = 5, K = 5,
                                       Q = np.array([[1., 0., 0],
-                                                    [0., 1e1, 0],
-                                                    [0., 0., 1e1]]),
+                                                    [0., 1., 0],
+                                                    [0., 0., 1.]]),
                                       Lambda = np.array([[1., 0.],
                                                          [0., 1.]]),
-                                      s = 1e-20, b = 1., r = 4.,
+                                      s = 1e-20, b = 1., r = 4e1,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-50.)]*2)
@@ -44,7 +44,7 @@ target = FigureEight(a = 20. / 1000., b = 10./1000., wavelength= 300.,
                      center = neutral_point)
 
 #Block.get_signal_calibration()
-Block.calibration_max = np.array([ 35., 1, 18.,   1,   1,   124., 178.,   1,   1,  1,  15.])
+Block.calibration_max = np.array([656., 10., 91., 188., 12., 120., 195., 70., 1., 1., 600.])
 
 u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
 del_u = np.zeros(u_optimal_old.shape)
@@ -77,19 +77,17 @@ try:
         for n in range(NUM_TIMESTEPS):
             seconds = time.time()
             signal = np.divide(Block.get_observation(), Block.calibration_max,
-                                dtype = np.float32).tolist()
+                                dtype = np.float64).tolist()
+
             NNP.yn = []
             ydeq = y_deque.copy()
+
             for k in range(NNP.K):
                 neural_network_input = np.array((np.array(list(u_deque))).flatten().tolist() + \
-                                np.array(list(ydeq)).flatten().tolist() + signal)
-
-                neural_network_input = neural_network_input.reshape(1, 1, -1)
+                                np.array(list(ydeq)).flatten().tolist() + signal).reshape(1, 1, -1)
                 predicted_states = NNP.predict(neural_network_input).flatten()
-
                 NNP.yn += [(NNP.C @ predicted_states).tolist()]
                 ydeq = roll_deque(ydeq, predicted_states.tolist())
-
             y_deque = roll_deque(y_deque, predicted_states.tolist())
 
             NNP.last_model_input = neural_network_input
@@ -107,7 +105,7 @@ try:
             u_action[0] = np.clip(np.rad2deg(u_action[0]), -100., 50.)
             u_action[1] = np.clip(np.rad2deg(u_action[1]), -100., 50.)
 
-            Block.step(action = u_action)
+            #Block.step(action = u_action)
 
             NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action,
                         predicted_states.tolist(), target_path[0, :].tolist())
@@ -118,7 +116,7 @@ try:
             actual_ = np.array(Block.get_state()).tolist()
             if verbose == 0:
                 log.verbose( actual = actual_,
-                            yn = predicted_states, ym =target_path[0, :],
+                            yn = predicted_states, ym = target_path[0, :],
                             elapsed = elapsed, u = u_action)
             if verbose == 1:
                 log.verbose(u_action = u_action, elapsed = time.time() - seconds)
@@ -133,7 +131,7 @@ try:
         u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
         Block.reset()
     log.plot_log()
-    log.save_log(filename = logfile_name)
+    log.save_log()
 
 except Exception as e:
     print(str(e))

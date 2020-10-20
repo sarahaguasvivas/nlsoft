@@ -19,12 +19,12 @@ verbose = 1
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
                                       nd = 5, dd = 5, K = 5,
-                                      Q = np.array([[1., 0., 0],
+                                      Q = np.array([[1e-6, 0., 0],
                                                     [0., 1e3, 0],
                                                     [0., 0., 1e3]]),
                                       Lambda = np.array([[1., 0.],
                                                          [0., 1.]]),
-                                      s = 1e-20, b = 1., r = 4.,
+                                      s = 1e-25, b = 1., r = 4.,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-50.)]*2)
@@ -44,7 +44,8 @@ target = FigureEight(a = 20. / 1000., b = 10./1000., wavelength= 300.,
                      center = neutral_point)
 
 #Block.get_signal_calibration()
-Block.calibration_max = np.array([ 33., 1, 55.,   1,   1,   117., 182.,   1,   1,  1,  15.])
+#Block.calibration_max = np.array([42., 1, 15.,   1,   1,   140., 172.,   1,   1,  1,  14.])
+Block.calibration_max = np.array([656., 10., 91., 188., 12., 120., 195., 70., 1., 1., 600.])
 
 u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
 del_u = np.zeros(u_optimal_old.shape)
