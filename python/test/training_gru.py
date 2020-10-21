@@ -43,7 +43,7 @@ keras.losses.custom_loss = custom_loss
 
 def create_network(x_train_shape : Tuple[int]):
     model = Sequential()
-    model.add(GRU(units = 5, return_sequences = True, input_shape = (1, x_train_shape[2],)))
+    model.add(GRU(units = 7, return_sequences = True, input_shape = (1, x_train_shape[2],)))
     model.add(Flatten())
     model.add(Dense(3, activation='tanh', kernel_initializer='random_normal'))
     model.compile(optimizer="adam", loss=huber_loss, metrics=['mse'])
@@ -58,7 +58,7 @@ def neural_network_training(X, y):
         X_train = X[train]
         y_train = y[train]
         model = create_network(x_train_shape=X_train.shape)
-        model.fit(X_train, y_train, epochs = 50, batch_size = 100)
+        model.fit(X_train, y_train, epochs = 100, batch_size = 1000)
         k_fold_results += [np.mean(np.linalg.norm(1000.*model.predict(X[test])- 1000.*y[test], axis = 1))]
 
     model.save('sys_id_GRU.hdf5')
@@ -174,7 +174,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
 if __name__ == "__main__":
     # dd is dd+2
     # nd is nd
-    X, y = prepare_data_file([filename], nd = 5, dd = 5+2)
+    X, y = prepare_data_file([filename], nd = 3, dd = 3+2)
     if TRAIN:
         modelfile, k_fold_summary = neural_network_training(X, y)
         print(k_fold_summary)
