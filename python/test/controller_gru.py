@@ -20,8 +20,8 @@ NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
                                       nd = 3, dd = 3, K = 1,
                                       Q = np.array([[1e-3, 0., 0],
-                                                    [0., 1e4, 0],
-                                                    [0., 0., 1e4]]),
+                                                    [0., 1e3, 0],
+                                                    [0., 0., 1e3]]),
                                       Lambda = np.array([[1., 0.],
                                                          [0., 1.]]),
                                       s = 1e-20, b = 1., r = 4.,
@@ -40,10 +40,9 @@ NNP.y0 = neutral_point
 NNP.u0 = [np.deg2rad(Block.motors._zero1),
                         np.deg2rad(Block.motors._zero2)]
 
-target = FigureEight(a = 20. / 1000., b = 10./1000., wavelength= 300.,
+target = FigureEight(a = 10. / 1000., b = 20./1000., wavelength= 400.,
                      center = neutral_point)
 
-#Block.get_signal_calibration()
 Block.calibration_max = np.array([656., 10., 91., 188., 12., 120., 195., 70., 1., 1., 600.])
 
 u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
@@ -83,7 +82,7 @@ try:
             ydeq = y_deque.copy()
 
             for k in range(NNP.K):
-                neural_network_input = np.array((np.array(list(u_deque))).flatten().tolist() + \
+                neural_network_input = np.array((np.array(list(u_deque))/np.pi).flatten().tolist() + \
                                 np.array(list(ydeq)).flatten().tolist() + signal).reshape(1, 1, -1)
                 predicted_states = NNP.predict(neural_network_input).flatten()
                 NNP.yn += [(NNP.C @ predicted_states).tolist()]

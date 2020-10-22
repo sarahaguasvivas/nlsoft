@@ -43,8 +43,9 @@ keras.losses.custom_loss = custom_loss
 
 def create_network(x_train_shape : Tuple[int]):
     model = Sequential()
-    model.add(GRU(units = 7, return_sequences = True, input_shape = (1, x_train_shape[2],)))
+    model.add(GRU(units = 5, return_sequences = True, input_shape = (1, x_train_shape[2],)))
     model.add(Flatten())
+    model.add(Dense(3, activation='relu'))
     model.add(Dense(3, activation='tanh', kernel_initializer='random_normal'))
     model.compile(optimizer="adam", loss=huber_loss, metrics=['mse'])
     return model
@@ -58,7 +59,7 @@ def neural_network_training(X, y):
         X_train = X[train]
         y_train = y[train]
         model = create_network(x_train_shape=X_train.shape)
-        model.fit(X_train, y_train, epochs = 100, batch_size = 1000)
+        model.fit(X_train, y_train, epochs = 500, batch_size = 1000)
         k_fold_results += [np.mean(np.linalg.norm(1000.*model.predict(X[test])- 1000.*y[test], axis = 1))]
 
     model.save('sys_id_GRU.hdf5')
@@ -158,7 +159,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
     for i in range(dd):
         Y = np.concatenate((Y, position[dd - i - 1 + (N-dd) : L-i, :]), axis = 1)
 
-    U = np.deg2rad(U[:, 2:])
+    U = np.deg2rad(U[:, 2:]) / np.pi
     S = signals[N - 1:, :]
 
     print("Y", Y)

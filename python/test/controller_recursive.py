@@ -11,18 +11,18 @@ import numpy as np
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id.hdf5'
 
-NUM_EXPERIMENTS = 100
-NUM_TIMESTEPS = 2000
+NUM_EXPERIMENTS = 1
+NUM_TIMESTEPS = 5000
 
 verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
-                                      nd = 5, dd = 5, K = 5,
-                                      Q = np.array([[1e3, 0., 0],
-                                                    [0., 5e3, 0],
-                                                    [0., 0., 5e3]]),
-                                      Lambda = np.array([[1e-2, 0.],
+                                      nd = 3, dd = 3, K = 5,
+                                      Q = np.array([[1., 0., 0],
+                                                    [0., 1e3, 0],
+                                                    [0., 0., 1e3]]),
+                                      Lambda = np.array([[1., 0.],
                                                          [0., 1.]]),
                                       s = 1e-20, b = 1., r = 4.,
                                       states_to_control = [1, 1, 1],
@@ -43,8 +43,6 @@ NNP.u0 = [np.deg2rad(Block.motors._zero1),
 target = FigureEight(a = 20. / 1000., b = 10./1000., wavelength= 300.,
                      center = neutral_point)
 
-#Block.get_signal_calibration()
-#Block.calibration_max = np.array([42., 1, 15.,   1,   1,   140., 172.,   1,   1,  1,  14.])
 Block.calibration_max = np.array([656., 10., 91., 188., 12., 120., 195., 70., 1., 1., 600.])
 
 u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
@@ -84,7 +82,7 @@ try:
             ydeq = y_deque.copy()
 
             for k in range(NNP.K):
-                neural_network_input = np.array((np.array(list(u_deque))).flatten().tolist() + \
+                neural_network_input = np.array((np.array(list(u_deque))/np.pi).flatten().tolist() + \
                                 np.array(list(ydeq)).flatten().tolist() + signal).reshape(1, -1)
                 predicted_states = NNP.predict(neural_network_input).flatten()
                 NNP.yn += [(NNP.C @ predicted_states).tolist()]
@@ -104,7 +102,7 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(np.rad2deg(u_action[0]), -100., 50.) - 20.
+            u_action[0] = np.clip(np.rad2deg(u_action[0])-20., -100., 50.)
             u_action[1] = np.clip(np.rad2deg(u_action[1]), -100., 50.)
 
             Block.step(action = u_action)
