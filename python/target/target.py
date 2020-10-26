@@ -204,8 +204,8 @@ class FigureEight:
             y = self.a * np.sin((timestep + i) / self.wavelength) + 0./1000.
             z = self.b * np.sin((timestep + i) / self.wavelength) * \
                 np.cos((timestep + i)/self.wavelength) + 0./1000.
-            x = 0.01 * np.sin((timestep + i) / self.wavelength) * \
-                np.cos((timestep + i)/self.wavelength) + 0./1000.
+            x = 0.01 * np.cos((timestep + i) / self.wavelength) * \
+                np.cos((timestep + i)/(self.wavelength)) - 10./1000.
             target[i, :] = [x + self.center[0],
                             y + self.center[1],
                             z + self.center[2]]

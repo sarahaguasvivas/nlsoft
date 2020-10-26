@@ -24,7 +24,7 @@ NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                                     [0., 0., 1e4]]),
                                       Lambda = np.array([[10., 0.],
                                                          [0., 1.]]),
-                                      s = 1e-10, b = 1., r = 1.,
+                                      s = 1e-20, b = 1., r = 1.,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(0.), np.deg2rad(0.)])
