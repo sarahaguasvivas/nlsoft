@@ -64,7 +64,7 @@ def neural_network_training(X, y):
     model.save('sys_id_GRU.hdf5')
     return 'sys_id_GRU.hdf5', k_fold_results
 
-def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
+def plot_sys_id(X, y, modelfile= 'sys_id_oct_23.hdf5'):
     color_palette1 = ['#272838', '#F3DE8A', '#F3DE8A', '#F3DE8A']
     color_palette = ['#1446A0', '#DB3069', '#F5D547', '#F5D547', '#3C3C3B']
     model = load_model(modelfile)

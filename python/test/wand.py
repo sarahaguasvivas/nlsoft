@@ -10,7 +10,7 @@ from logger.logger import Logger
 from utilities.util import *
 from target.target import Circle, Pringle, SingleAxisSineWave, SingleAxisSquareWave, Square3D
 
-model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id.hdf5'
+model_filename = str(os.environ['HOME']) + '/gpc_controller/test/sys_id_oct_23.hdf5'
 
 NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 1000

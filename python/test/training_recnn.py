@@ -48,10 +48,10 @@ keras.losses.custom_loss = custom_loss
 
 def create_network():
     model = Sequential()
-    model.add(Dense(10, activation='relu', kernel_initializer='random_normal',
+    model.add(Dense(8, activation='relu', kernel_initializer='random_normal',
                     kernel_regularizer=regularizers.l1(0.01),
                     activity_regularizer=regularizers.l2(0.02), input_shape= (26,)))
-    model.add(Dense(10, activation='relu'))
+    model.add(Dense(5, activation='relu'))
     model.add(Dense(3, activation='tanh', kernel_initializer='random_normal'))
     model.compile(optimizer="adam", loss=huber_loss, metrics=['mse'])
     return model
@@ -66,7 +66,7 @@ def neural_network_training(X, y):
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5', k_fold_results
 
-def plot_sys_id(X, y, modelfile= 'sys_id.hdf5'):
+def plot_sys_id(X, y, modelfile= 'sys_id_oct_23.hdf5'):
     color_palette1 = ['#272838', '#F3DE8A', '#F3DE8A', '#F3DE8A']
     color_palette = ['#1446A0', '#DB3069', '#F5D547', '#F5D547', '#3C3C3B']
     model = load_model(modelfile)

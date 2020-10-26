@@ -9,9 +9,9 @@ from test.training_recnn import thousand_mse
 from target.target import FigureEight
 import numpy as np
 
-model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id.hdf5'
+model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_oct_23.hdf5'
 
-NUM_EXPERIMENTS = 100
+NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 3000
 
 verbose = 1
@@ -19,15 +19,15 @@ verbose = 1
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
                                       nd = 3, dd = 3, K = 5,
-                                      Q = np.array([[1e-1, 0., 0],
+                                      Q = np.array([[1e-10, 0., 0],
                                                     [0., 5e3, 0],
-                                                    [0., 0., 5e3]]),
-                                      Lambda = np.array([[1., 0.],
+                                                    [0., 0., 1e4]]),
+                                      Lambda = np.array([[10., 0.],
                                                          [0., 1.]]),
                                       s = 1e-10, b = 1., r = 1.,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
-                                      u0 = [np.deg2rad(-46.), np.deg2rad(-50.)])
+                                      u0 = [np.deg2rad(0.), np.deg2rad(0.)])
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -37,8 +37,8 @@ time.sleep(1)
 neutral_point = Block.get_state()
 
 NNP.y0 = neutral_point
-NNP.u0 = [np.deg2rad(-46.),
-                        np.deg2rad(-50.)]
+NNP.u0 = [np.deg2rad(0.),
+                        np.deg2rad(0.)]
 
 target = FigureEight(a = 10. / 1000., b = 20./1000., wavelength= 300.,
                      center = neutral_point)
@@ -102,7 +102,7 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(np.rad2deg(u_action[0]) - 45., -100., 50.)
+            u_action[0] = np.clip(np.rad2deg(u_action[0]) - 50., -100., 50.)
             u_action[1] = np.clip(np.rad2deg(u_action[1]) + 9., -100., 50.)
 
             Block.step(action = u_action)
