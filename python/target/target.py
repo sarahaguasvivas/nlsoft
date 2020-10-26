@@ -3,6 +3,7 @@ from abc import ABCMeta, abstractmethod
 from scipy import signal
 from typing import List
 from scipy import signal
+from scipy.spatial.transform import Rotation as R
 
 class Target(ABCMeta):
     def __init__(self):
@@ -30,11 +31,9 @@ class Circle(Target):
 
     def spin(self, timestep, n1, n2, dims, current_point):
         target = np.empty([n2 - n1, dims])
-
         #phase = self.find_projection_along_path(current_point)
         phase = 0
         i = 0
-
         for _ in range(n1, n2):
             y = self.center[1] + self.amplitude * np.sin(2.*np.pi*(timestep + i) \
                                                         / self.wavelength + phase) - 10./1000.
@@ -202,13 +201,13 @@ class FigureEight:
         target = np.empty([n2-n1, dims])
         i = 0
         for _ in range(n1, n2):
-            z = self.a * np.sin((timestep + i) / self.wavelength) + 0./1000.
-            y = self.b * np.sin((timestep + i) / self.wavelength) * \
-                np.cos((timestep + i)/self.wavelength) - 0./1000.
-            x = 10./1000.*np.sin((timestep + i)/self.wavelength) - 0./1000.
-
+            y = self.a * np.sin((timestep + i) / self.wavelength) + 0./1000.
+            z = self.b * np.sin((timestep + i) / self.wavelength) * \
+                np.cos((timestep + i)/self.wavelength) + 0./1000.
+            x = 0.005*np.sin((timestep+i)/(self.wavelength/2.)) - 2./1000.
             target[i, :] = [x + self.center[0],
                             y + self.center[1],
                             z + self.center[2]]
+            i+=1
         return target
 
