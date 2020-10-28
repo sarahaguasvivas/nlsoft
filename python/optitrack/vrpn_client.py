@@ -4,7 +4,7 @@ from scipy.spatial.transform import Rotation as R
 
 class VRPNclient:
     """
-        This client has only been tested in <= Python2.7
+        This client has only been tested in Python3.5, 2.7
     """
     def callback(self, userdata, data):
         self.tracked = True
@@ -13,9 +13,9 @@ class VRPNclient:
     def __init__(self, tracker_name, hostID):
         self.tracker_name = tracker_name
         self.hostID= hostID
-
         self.tracked = False
         self.data_read = None
+
         self.tracker = vrpn.receiver.Tracker(tracker_name + "@" + hostID)
         self.tracker.register_change_handler(self.tracker_name, self.callback, "position")
         self.analog = vrpn.receiver.Analog(tracker_name+"@"+hostID)
@@ -55,12 +55,10 @@ class BlockState():
 
         head_o = head[:3]
         base_o = base[:3]
-
-        v = (np.array(head_o) - np.array(base_o))
-        shift = np.array([0.0, 0.0, 0.0])
-        Rot = R.from_rotvec(np.array([-0.75, 0., 0.6]))
-        ob = Rot.apply(v).tolist() - np.array(shift)
-        return ob.tolist()
+        base_orientation = np.array([-0.6, 0., 0.])
+        Rot = R.from_rotvec(base_orientation)
+        v = Rot.apply(np.array(head_o) - np.array(base_o))
+        return v.tolist()
 
     def get_target(self):
         wand_o = self.wand.get_observation()
@@ -73,7 +71,6 @@ if __name__=='__main__':
     import time
     C = VRPNclient("DHead", "tcp://192.168.50.24:3883")
     B = VRPNclient("DBase", "tcp://192.168.50.24:3883")
-
     while True:
         start = time.time()
         print("head: ", C.get_observation()) # collect a single observation

@@ -16,10 +16,10 @@ from matplotlib.font_manager import FontProperties
 from mpl_toolkits.mplot3d import axes3d, Axes3D
 import random
 NUM_DATA_RUNS = 200
-TRAIN = True
+TRAIN = False #True
 
 plt.style.use('seaborn')
-filename = str(os.environ["HOME"]) + "/gpc_controller/python/data/data_Sep_08_2020.csv"
+filename = str(os.environ["HOME"]) + "/gpc_controller/python/data/data_Oct_27_2020.csv"
 
 font = FontProperties()
 font.set_family('serif')
@@ -51,7 +51,7 @@ def create_network():
     model.add(Dense(8, activation='relu', kernel_initializer='random_normal',
                     kernel_regularizer=regularizers.l1(0.01),
                     activity_regularizer=regularizers.l2(0.02), input_shape= (26,)))
-    model.add(Dense(5, activation='relu'))
+    model.add(Dense(5, activation='tanh'))
     model.add(Dense(3, activation='tanh', kernel_initializer='random_normal'))
     model.compile(optimizer="adam", loss=huber_loss, metrics=['mse'])
     return model
@@ -61,7 +61,7 @@ def neural_network_training(X, y):
     k_fold_results = []
     for train, test in kfold.split(X, y):
         model = create_network()
-        model.fit(X[train], y[train], epochs = 200, batch_size = 500)
+        model.fit(X[train], y[train], epochs = 100, batch_size = 500)
         k_fold_results += [np.mean(np.linalg.norm(1000.*model.predict(X[test])- 1000.*y[test], axis = 1))]
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5', k_fold_results
@@ -143,6 +143,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
         data_array = np.concatenate((data_array, np.genfromtxt(filename[i], delimiter = ',')), axis = 0)
     signals = data_array[:, :11]
     max_signals = np.max(signals, axis = 0)
+    print(max_signals)
     for i in range(len(max_signals)):
         if max_signals[i] == 0:
             max_signals[i] = 1

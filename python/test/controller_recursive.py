@@ -9,7 +9,7 @@ from test.training_recnn import thousand_mse
 from target.target import FigureEight
 import numpy as np
 
-model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_oct_23.hdf5'
+model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id.hdf5'
 
 NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 3000
@@ -18,16 +18,16 @@ verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
-                                      nd = 3, dd = 3, K = 5,
-                                      Q = np.array([[1e-10, 0., 0],
-                                                    [0., 5e3, 0],
-                                                    [0., 0., 1e4]]),
-                                      Lambda = np.array([[10., 0.],
+                                      nd = 3, dd = 3, K = 3,
+                                      Q = np.array([[1e-3, 0., 0],
+                                                    [0., 1e3, 0],
+                                                    [0., 0., 1e3]]),
+                                      Lambda = np.array([[1., 0.],
                                                          [0., 1.]]),
                                       s = 1e-20, b = 1., r = 1.,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
-                                      u0 = [np.deg2rad(0.), np.deg2rad(0.)])
+                                      u0 = [np.deg2rad(-50.), np.deg2rad(-50.)])
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -37,14 +37,13 @@ time.sleep(1)
 neutral_point = Block.get_state()
 
 NNP.y0 = neutral_point
-NNP.u0 = [np.deg2rad(0.),
-                        np.deg2rad(0.)]
+NNP.u0 = [np.deg2rad(-50.), np.deg2rad(-50.)]
 
 target = FigureEight(a = 10. / 1000., b = 20./1000., wavelength= 300.,
                      center = neutral_point)
 
 #Block.get_signal_calibration()
-Block.calibration_max = np.array([656., 10., 91., 188., 12., 120., 195., 70., 1., 1., 600.])
+Block.calibration_max = np.array([613., 134., 104., 174, 86., 146., 183., 1., 2., 1., 60.])
 
 u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
 del_u = np.zeros(u_optimal_old.shape)
@@ -102,8 +101,11 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(np.rad2deg(u_action[0]) - 50., -100., 50.)
-            u_action[1] = np.clip(np.rad2deg(u_action[1]) + 9., -100., 50.)
+            u_action[0] = np.clip(np.rad2deg(u_action[0]), -100., 50.)
+            u_action[1] = np.clip(np.rad2deg(u_action[1]), -100., 50.)
+
+            #u_action[0] = (1.+np.cos(2.* np.pi / 1000. * n))/2. * 150. - 100.
+            #u_action[1] = (1.+np.sin(2.* np.pi / 1000. * n))/2. * 150. - 100.
 
             Block.step(action = u_action)
 

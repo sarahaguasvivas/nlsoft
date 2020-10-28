@@ -123,10 +123,7 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
-<<<<<<< HEAD
-log_output.json
-=======
->>>>>>> d8ece2936db359cfd2598c15060a9cf7a321124f
+*.json
 
 # Pyre type checker
 .pyre/app
