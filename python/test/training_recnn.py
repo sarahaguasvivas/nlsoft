@@ -16,7 +16,7 @@ from matplotlib.font_manager import FontProperties
 from mpl_toolkits.mplot3d import axes3d, Axes3D
 import random
 NUM_DATA_RUNS = 200
-TRAIN = False #True
+TRAIN = True
 
 plt.style.use('seaborn')
 filename = str(os.environ["HOME"]) + "/gpc_controller/python/data/data_Oct_27_2020.csv"
@@ -48,10 +48,10 @@ keras.losses.custom_loss = custom_loss
 
 def create_network():
     model = Sequential()
-    model.add(Dense(8, activation='relu', kernel_initializer='random_normal',
+    model.add(Dense(3, activation='relu', kernel_initializer='random_normal',
                     kernel_regularizer=regularizers.l1(0.01),
                     activity_regularizer=regularizers.l2(0.02), input_shape= (26,)))
-    model.add(Dense(5, activation='tanh'))
+    model.add(Dense(3, activation='tanh'))
     model.add(Dense(3, activation='tanh', kernel_initializer='random_normal'))
     model.compile(optimizer="adam", loss=huber_loss, metrics=['mse'])
     return model

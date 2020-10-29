@@ -32,7 +32,7 @@ class RecursiveNeuralNetworkPredictor():
                  dd : int = 3, y0 : List[float] = [0, 0],
                  u0 : List[float] = [0., 0.],
                  s : float = 1e-20, b : float = 1e-10, r : float = 4e-1,
-                 states_to_control : List[bool] = [0, 1, 1]):
+                 states_to_control : List[bool] = [0, 1, 1], step_size : float = 5e-2):
 
         self.n1, self.n2, self.nu, self.y0, self.u0 = N1, N2, Nu, y0, u0
 
@@ -47,7 +47,7 @@ class RecursiveNeuralNetworkPredictor():
         self.Lambda = np.array(Lambda)
         self.Q = 0.5*(self.Q + self.Q.T)
         self.Lambda = 0.5*(self.Lambda + self.Lambda.T)
-
+        self.step_size = step_size
         self.K = K
         self.model = tf.keras.models.load_model(model_file, compile=False)
 
@@ -298,7 +298,7 @@ class RecursiveNeuralNetworkPredictor():
 
     def num_grads(self, x):
         shape = list(x.shape)
-        h = 5e-2
+        h = self.step_size
         x = x.flatten()
         x_p = x + np.eye(len(x))*h
         x_m = x - np.eye(len(x))*h
@@ -314,7 +314,7 @@ class RecursiveNeuralNetworkPredictor():
 
     def num_grad_grad(self, x):
         shape = list(x.shape)
-        h = 1.
+        h = self.step_size
         x = x.flatten()
 
         x_p = x + np.eye(len(x)) * h

@@ -20,7 +20,7 @@ TRAIN = True
 from typing import List, Tuple
 
 plt.style.use('seaborn')
-filename = str(os.environ["HOME"]) + "/gpc_controller/python/data/data_Sep_08_2020.csv"
+filename = str(os.environ["HOME"]) + "/gpc_controller/python/data/data_Oct_27_2020.csv"
 
 font = FontProperties()
 font.set_family('serif')
