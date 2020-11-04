@@ -11,18 +11,18 @@ import numpy as np
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id.hdf5'
 
-NUM_EXPERIMENTS = 1
+NUM_EXPERIMENTS = 100
 NUM_TIMESTEPS = 3000
 
 verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
-                                      N1 = 0, N2 = 1, Nu = 1,
-                                      nd = 3, dd = 3, K = 3,
-                                      Q = np.array([[1e2, 0., 0],
+                                      N1 = 0, N2 = 2, Nu = 1,
+                                      nd = 3, dd = 3, K = 5,
+                                      Q = np.array([[1e-2, 0., 0],
                                                     [0., 1e3, 0],
-                                                    [0., 0., 1e3]]),
-                                      Lambda = np.array([[1e-1, 0.],
+                                                    [0., 0., 8e2]]),
+                                      Lambda = np.array([[1., 0.],
                                                          [0., 1.]]),
                                       s = 1e-20, b = 1., r = 4.,
                                       states_to_control = [1, 1, 1],

@@ -355,10 +355,10 @@ class RecursiveNeuralNetworkPredictor():
             TODO: Fixme
         """
         second_gradient = self.num_grad_grad(self.input_vector)
-        second_gradient = second_gradient.reshape(self.nx, self.input_vector.shape[1], -1)
-        second_gradient = second_gradient[:, :self.nd * self.m, :self.nd*self.m]
-        second_gradient = second_gradient.reshape(self.nx, self.nd, self.m)
-        second_gradient = second_gradient.sum(axis = -1).sum(axis = -1)
+        second_gradient = second_gradient.reshape(-1, self.input_vector.shape[1], self.nx)
+        second_gradient = second_gradient[:self.nd * self.m, :self.nd*self.m, :]
+        second_gradient = second_gradient.reshape(self.m, self.nx, self.nd)
+        second_gradient = second_gradient.sum(axis = 0).sum(axis = 0)
         return second_gradient
 
     def jacobian(self, u, del_u):

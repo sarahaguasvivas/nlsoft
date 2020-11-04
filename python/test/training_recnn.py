@@ -48,7 +48,7 @@ keras.losses.custom_loss = custom_loss
 
 def create_network():
     model = Sequential()
-    model.add(Dense(5, activation='relu', kernel_initializer='random_normal',
+    model.add(Dense(8, activation='relu', kernel_initializer='random_normal',
                     kernel_regularizer=regularizers.l1(0.01),
                     activity_regularizer=regularizers.l2(0.02), input_shape= (26,)))
     model.add(Dense(3, activation='tanh', kernel_initializer='random_normal'))
@@ -56,11 +56,11 @@ def create_network():
     return model
 
 def neural_network_training(X, y):
-    kfold = KFold(n_splits = 10, shuffle=True)
+    kfold = KFold(n_splits = 50, shuffle=True)
     k_fold_results = []
     for train, test in kfold.split(X, y):
         model = create_network()
-        model.fit(X[train], y[train], epochs = 150, batch_size = 500)
+        model.fit(X[train], y[train], epochs = 150, batch_size = 300)
         k_fold_results += [np.mean(np.linalg.norm(1000.*model.predict(X[test])- 1000.*y[test], axis = 1))]
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5', k_fold_results

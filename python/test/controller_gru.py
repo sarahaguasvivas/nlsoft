@@ -12,36 +12,36 @@ import numpy as np
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_GRU.hdf5'
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 3000
+NUM_TIMESTEPS = 1000
 
 verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
-                                      nd = 3, dd = 3, K = 1,
-                                      Q = np.array([[1e-3, 0., 0],
-                                                    [0., 5e4, 0],
-                                                    [0., 0., 1e3]]),
+                                      nd = 3, dd = 3, K = 3,
+                                      Q = np.array([[1e-10, 0.,0],
+                                                    [0., 1e-3, 0.],
+                                                    [0., 0., 1e-3]]),
                                       Lambda = np.array([[1., 0.],
                                                          [0., 1.]]),
-                                      s = 1e-20, b = 1e1, r = 5e3,
+                                      s = 1e-20, b = 1e-2, r = 4e3,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-50.)]*2,
-                                      step_size = 3e-2)
+                                      step_size = 2e-2)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
 log = Logger()
 Block.reset()
-
+time.sleep(1)
 neutral_point = Block.get_state()
 
 NNP.y0 = neutral_point
 NNP.u0 = [np.deg2rad(Block.motors._zero1),
                         np.deg2rad(Block.motors._zero2)]
 
-target = FigureEight(a = 20. / 1000., b = 10./1000., wavelength= 400.,
+target = FigureEight(a = 10. / 1000., b = 20./1000., wavelength= 300.,
                      center = neutral_point)
 
 Block.calibration_max = np.array([613., 134., 104., 174, 86., 146., 183., 1., 2., 1., 60.])
@@ -81,19 +81,16 @@ try:
 
             NNP.yn = []
             ydeq = y_deque.copy()
-
             for k in range(NNP.K):
                 neural_network_input = np.array((np.array(list(u_deque))/np.pi).flatten().tolist() + \
                                 np.array(list(ydeq)).flatten().tolist() + signal).reshape(1, 1, -1)
                 predicted_states = NNP.predict(neural_network_input).flatten()
                 NNP.yn += [(NNP.C @ predicted_states).tolist()]
                 ydeq = roll_deque(ydeq, predicted_states.tolist())
+
             y_deque = roll_deque(y_deque, predicted_states.tolist())
-
             NNP.last_model_input = neural_network_input
-
             target_path = target.spin(n, 0, NNP.K, 3)
-
             NNP.ym = (NNP.C @ target_path.T).reshape(NNP.ny, -1).T.tolist()
 
             u_optimal, del_u,  _ = NR_opt.optimize(u = u_optimal_old, delu = del_u,
@@ -105,7 +102,7 @@ try:
             u_action[0] = np.clip(np.rad2deg(u_action[0]), -100., 50.)
             u_action[1] = np.clip(np.rad2deg(u_action[1]), -100., 50.)
 
-            Block.step(action = u_action)
+            #Block.step(action = u_action)
 
             NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action,
                         predicted_states.tolist(), target_path[0, :].tolist())
