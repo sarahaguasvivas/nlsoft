@@ -12,23 +12,23 @@ import numpy as np
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_GRU.hdf5'
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 1000
+NUM_TIMESTEPS = 10000
 
 verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
-                                      nd = 3, dd = 3, K = 3,
-                                      Q = np.array([[1e-10, 0.,0],
-                                                    [0., 1e-3, 0.],
-                                                    [0., 0., 1e-3]]),
+                                      nd = 3, dd = 3, K = 1,
+                                      Q = np.array([[1e-1, 0.,0],
+                                                    [0., 1e4, 0.],
+                                                    [0., 0., 1e4]]),
                                       Lambda = np.array([[1., 0.],
                                                          [0., 1.]]),
-                                      s = 1e-20, b = 1e-2, r = 4e3,
+                                      s = 1e-20, b = 1., r = 4.,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-50.)]*2,
-                                      step_size = 2e-2)
+                                      step_size = 5e-2)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -102,7 +102,7 @@ try:
             u_action[0] = np.clip(np.rad2deg(u_action[0]), -100., 50.)
             u_action[1] = np.clip(np.rad2deg(u_action[1]), -100., 50.)
 
-            #Block.step(action = u_action)
+            Block.step(action = u_action)
 
             NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action,
                         predicted_states.tolist(), target_path[0, :].tolist())
