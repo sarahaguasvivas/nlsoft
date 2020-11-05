@@ -40,7 +40,6 @@ class Logger:
 
         plt.style.use('seaborn')
 
-        ym = []
         yn = []
         predicted_ = []
         actual_ = []
