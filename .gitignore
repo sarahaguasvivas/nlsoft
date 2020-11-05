@@ -3,7 +3,7 @@
 *.pyc
 *.txt
 *.csv
-
+*.json
 # Distribution / packaging
 .Python
 build/

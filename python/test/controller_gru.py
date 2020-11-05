@@ -12,7 +12,7 @@ import numpy as np
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_GRU.hdf5'
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 30
+NUM_TIMESTEPS = 3000
 
 verbose = 1
 
@@ -28,7 +28,7 @@ NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-50.)]*2,
-                                      step_size = 7e-3)
+                                      step_size = 7e-2)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -100,8 +100,8 @@ for e in range(NUM_EXPERIMENTS):
         u_action = u_optimal[0, :].tolist()
         del_u_action = del_u[0, :].tolist()
 
-        u_action[0] = np.clip(np.rad2deg(u_action[0])-15., -100., 50.)
-        u_action[1] = np.clip(np.rad2deg(u_action[1])+40., -100., 50.)
+        u_action[0] = np.clip(np.rad2deg(u_action[0]), -100., 50.)
+        u_action[1] = np.clip(np.rad2deg(u_action[1]), -100., 50.)
 
         Block.step(action = u_action)
 
