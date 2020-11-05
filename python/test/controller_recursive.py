@@ -51,7 +51,8 @@ del_u = np.zeros(u_optimal_old.shape)
 
 log.log({'metadata' : {'neutral_point' : neutral_point,
          'num_experiments' : NUM_EXPERIMENTS,
-         'num_timesteps': NUM_TIMESTEPS}})
+         'num_timesteps': NUM_TIMESTEPS,
+                       'ym' : []}})
 
 u_deque = deque()
 y_deque = deque()
@@ -59,7 +60,7 @@ y_deque = deque()
 try:
     for e in range(NUM_EXPERIMENTS):
         log.log({str(e) : {'predicted' : [], 'actual' : [], 'yn' : [],
-                'ym' : [], 'elapsed' : [], 'u' : []}})
+                'elapsed' : [], 'u' : []}})
 
         Block.reset()
         time.sleep(1)
@@ -126,10 +127,11 @@ try:
 
             log.log({str(e) : {'actual' : actual_,
                             'yn' : predicted_states.tolist(),
-                            'ym' : target_path[0, :].tolist(),
                             'elapsed' : elapsed,
                             'u' : [u_action],
                             'signal' : signal}})
+        if e == 0:
+            log.log({'metadata' : {'ym': target_path[0, :].tolist()}})
 
         u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
         Block.reset()

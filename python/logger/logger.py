@@ -51,15 +51,17 @@ class Logger:
         # for all experiments:
         for key in self.log_dictionary.keys():
             if key != "metadata":
-                ym += [self.log_dictionary[key]['ym']]
+                #ym += [self.log_dictionary[key]['ym']]
                 yn += [self.log_dictionary[key]['yn']]
                 actual_ += [self.log_dictionary[key]['actual']]
                 u_optimal_list += [self.log_dictionary[key]['u']]
                 elapsed+= [self.log_dictionary[key]['elapsed']]
                 signal += [self.log_dictionary[key]['signal']]
-        NUM_EXPERIMENTS=self.log_dictionary['metadata']['num_experiments']
-        NUM_TIMESTEPS = self.log_dictionary['metadata']['num_timesteps']
+
+        NUM_EXPERIMENTS = self.log_dictionary['metadata']['num_experiments']
+        #NUM_TIMESTEPS = self.log_dictionary['metadata']['num_timesteps']
         neutral_point = self.log_dictionary['metadata']['neutral_point']
+        ym = self.log_dictionary['metadata']['ym']
 
         print("Average control loop time in seconds:  ", np.mean(np.abs(elapsed)))
 
@@ -94,7 +96,7 @@ class Logger:
         timesteps = range(max(yn.shape))
         for i in range(3):
             plt.subplot(3, 1, i+1)
-            plt.plot(np.mean(ym, axis = AXIS)[:, i] - shift[i], color = color_palette[-1], linestyle = 'dashed', label =r"$" + labels[i] + "_{target}$")
+            plt.plot(ym[:, i] - shift[i], color = color_palette[-1], linestyle = 'dashed', label =r"$" + labels[i] + "_{target}$")
             plt.plot(np.mean(yn, axis = AXIS)[:, i] - shift[i], color_palette[0], label = r"$\hat{" + labels[i] + "}$" )
             plt.fill_between(timesteps, np.mean(yn, axis = AXIS)[:, i] - np.std(yn, axis = AXIS)[:, i] - shift[i],
                                 np.mean(yn, axis = AXIS)[:, i] + np.std(yn, axis = AXIS)[:, i] - shift[i],
@@ -144,7 +146,7 @@ class Logger:
         fig = plt.figure()
 
         m_predicted_ = np.mean(yn, axis = AXIS)
-        m_ym = np.mean(ym, axis = AXIS)
+        m_ym = ym
         m_actual_ = np.mean(actual_, axis = AXIS)
 
         ax = Axes3D(fig)
