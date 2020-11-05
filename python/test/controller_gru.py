@@ -11,7 +11,7 @@ import numpy as np
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_GRU.hdf5'
 
-NUM_EXPERIMENTS = 100
+NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 3000
 
 verbose = 1
@@ -19,16 +19,16 @@ verbose = 1
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
                                       nd = 3, dd = 3, K = 1,
-                                      Q = np.array([[1., 0., 0],
-                                                    [0., 1e4, 0.],
-                                                    [0., 0., 1e4]]),
+                                      Q = np.array([[5., 0., 0],
+                                                    [0., 2e4, 0.],
+                                                    [0., 0., 7e3]]),
                                       Lambda = np.array([[1., 0.],
                                                          [0., 1.]]),
-                                      s = 1e-15, b = 1., r = 1.,
+                                      s = 1e-20, b = 1e-1, r = 4e1,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-50.)]*2,
-                                      step_size = 7e-2)
+                                      step_size = 7e-3)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -51,7 +51,8 @@ del_u = np.zeros(u_optimal_old.shape)
 
 log.log({'metadata' : {'neutral_point' : neutral_point,
          'num_experiments' : NUM_EXPERIMENTS,
-         'num_timesteps': NUM_TIMESTEPS}})
+         'num_timesteps': NUM_TIMESTEPS},
+         'ym' : []})
 
 u_deque = deque()
 y_deque = deque()
@@ -120,10 +121,11 @@ try:
 
             log.log({str(e) : {'actual' : actual_,
                             'yn' : predicted_states.tolist(),
-                            'ym' : target_path[0, :].tolist(),
                             'elapsed' : elapsed,
                             'u' : [u_action],
                             'signal' : signal}})
+            if n==0 and e==0:
+                log.log({'metadata' : {'ym' : target_path[0, :].tolist()}})
 
         u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
         Block.reset()
