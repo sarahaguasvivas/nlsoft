@@ -65,7 +65,7 @@ class Logger:
 
         print("Average control loop time in seconds:  ", np.mean(np.abs(elapsed)))
 
-        ym = 1000*np.reshape(ym, (NUM_EXPERIMENTS,-1, 3))
+        ym = 1000*np.reshape(ym, (-1, 3))
         yn = 1000*np.reshape(yn, (NUM_EXPERIMENTS, -1, 3))
         actual_ = 1000*np.reshape(actual_, (NUM_EXPERIMENTS,-1, 3))
         elapsed_ = np.reshape(elapsed, (NUM_EXPERIMENTS, -1, 1))
@@ -85,8 +85,8 @@ class Logger:
         signal = np.reshape(signal, (NUM_EXPERIMENTS, -1, 11))
 
         # Zeroing each state:
-        max_target = np.max(ym, axis = (0, 1))
-        min_target = np.min(ym, axis = (0, 1))
+        max_target = np.max(ym, axis = 0)
+        min_target = np.min(ym, axis = 0)
         shift = (max_target + min_target) / 2.
 
         color_palette = ['#1446A0', '#DB3069', '#F5D547', '#F5D547', '#3C3C3B']
