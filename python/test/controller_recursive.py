@@ -19,7 +19,7 @@ verbose = 1
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
                                       nd = 3, dd = 3, K = 5,
-                                      Q = np.array([[1e-2, 0., 0],
+                                      Q = np.array([[1., 0., 0],
                                                     [0., 5e3, 0],
                                                     [0., 0., 1e3]]),
                                       Lambda = np.array([[1., 0.],
@@ -103,8 +103,8 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(np.rad2deg(u_action[0]), -100., 50.)
-            u_action[1] = np.clip(np.rad2deg(u_action[1]), -100., 50.)
+            u_action[0] = np.clip(np.rad2deg(u_action[0])-5., -100., 50.)
+            u_action[1] = np.clip(np.rad2deg(u_action[1])+10., -100., 50.)
 
             #u_action[0] = (1.+np.cos(2.* np.pi / 1000. * n))/2. * 150. - 100.
             #u_action[1] = (1.+np.sin(2.* np.pi / 1000. * n))/2. * 150. - 100.
@@ -136,7 +136,7 @@ try:
         u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
         Block.reset()
     log.plot_log()
-    log.save_log()
+    log.save_log(filename = 'rnn_log_output.json')
 
 except Exception as e:
     print(str(e))

@@ -9,7 +9,7 @@ from test.training_recnn import thousand_mse
 from target.target import FigureEight
 import numpy as np
 
-model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_GRU.hdf5'
+model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_LSTM.hdf5'
 
 NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 3000
@@ -19,12 +19,12 @@ verbose = 1
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
                                       nd = 3, dd = 3, K = 1,
-                                      Q = np.array([[1e3, 0., 0],
-                                                    [0., 3e4, 0.],
-                                                    [0., 0., 7e3]]),
+                                      Q = np.array([[1., 0., 0],
+                                                    [0., 1e3, 0.],
+                                                    [0., 0., 1e3]]),
                                       Lambda = np.array([[1., 0.],
                                                          [0., 1.]]),
-                                      s = 1e-20, b = 1e-10, r = 4e5,
+                                      s = 1e-20, b = 1., r = 1.,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-50.)]*2,
@@ -101,9 +101,9 @@ try:
             del_u_action = del_u[0, :].tolist()
 
             u_action[0] = np.clip(np.rad2deg(u_action[0])+5., -100., 50.)
-            u_action[1] = np.clip(np.rad2deg(u_action[1])+5., -100., 50.)
+            u_action[1] = np.clip(np.rad2deg(u_action[1]), -100., 50.)
 
-            Block.step(action = u_action)
+            #Block.step(action = u_action)
 
             NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action,
                         predicted_states.tolist(), target_path[0, :].tolist())
@@ -130,7 +130,7 @@ try:
         u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
         Block.reset()
     log.plot_log()
-    log.save_log(filename = 'gru_log_output.json')
+    log.save_log(filename = 'lstm_log_output.json')
 
 except Exception as e1:
     print(str(e1))
