@@ -62,8 +62,8 @@ def neural_network_training(X, y):
         model.fit(X_train, y_train, epochs = 100, batch_size = 500)
         k_fold_results += [np.mean(np.linalg.norm(1000.*model.predict(X[test])- 1000.*y[test], axis = 1))]
 
-    model.save('sys_id_LSTM.hdf5')
-    return 'sys_id_LSTM.hdf5', k_fold_results
+    model.save('sys_id_GRU.hdf5')
+    return 'sys_id_GRU.hdf5', k_fold_results
 
 def plot_sys_id(X, y, modelfile= 'sys_id_oct_23.hdf5'):
     color_palette1 = ['#272838', '#F3DE8A', '#F3DE8A', '#F3DE8A']

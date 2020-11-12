@@ -6,22 +6,22 @@ import time, os
 from logger.logger import Logger
 from utilities.util import *
 from test.training_recnn import thousand_mse
-from target.target import FigureEight
+from target.target import FigureEight, FixedTarget
 import numpy as np
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_GRU.hdf5'
 
 NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 3000
-
+FILENAME = 'gru_log_output.json'
 verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
                                       nd = 3, dd = 3, K = 1,
-                                      Q = np.array([[1e3, 0., 0],
+                                      Q = np.array([[1e-6, 0., 0],
                                                     [0., 3e4, 0.],
-                                                    [0., 0., 7e3]]),
+                                                    [0., 0., 1e4]]),
                                       Lambda = np.array([[1., 0.],
                                                          [0., 1.]]),
                                       s = 1e-20, b = 1e-10, r = 4e5,
@@ -41,7 +41,7 @@ NNP.y0 = neutral_point
 NNP.u0 = [np.deg2rad(Block.motors._zero1),
                         np.deg2rad(Block.motors._zero2)]
 
-target = FigureEight(a = 10. / 1000., b = 20./1000., wavelength= 300.,
+target = FixedTarget(a = 0. / 1000., b = 0./1000.,
                      center = neutral_point)
 
 Block.calibration_max = np.array([613., 134., 104., 174, 86., 146., 183., 1., 2., 1., 60.])
@@ -94,14 +94,14 @@ try:
             target_path = target.spin(n, 0, NNP.K, 3)
             NNP.ym = (NNP.C @ target_path.T).reshape(NNP.ny, -1).T.tolist()
 
-            u_optimal, del_u,  _ = NR_opt.optimize(u = u_optimal_old, delu = del_u,
+            u_optimal, del_u, _ = NR_opt.optimize(u = u_optimal_old, delu = del_u,
                                         maxit = 1, rtol = 1e-4, verbose = True)
 
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
             u_action[0] = np.clip(np.rad2deg(u_action[0])+5., -100., 50.)
-            u_action[1] = np.clip(np.rad2deg(u_action[1])+5., -100., 50.)
+            u_action[1] = np.clip(np.rad2deg(u_action[1]), -100., 50.)
 
             Block.step(action = u_action)
 
@@ -130,7 +130,7 @@ try:
         u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
         Block.reset()
     log.plot_log()
-    log.save_log(filename = 'gru_log_output.json')
+    log.save_log(filename = FILENAME)
 
 except Exception as e1:
     print(str(e1))

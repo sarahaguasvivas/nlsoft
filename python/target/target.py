@@ -45,7 +45,7 @@ class Circle(Target):
             i+=1
         return target
 
-class Pringle2:
+class Diagonal:
     def __init__(self, wavelength = 500, amplitude = 0.025, \
                                 center = [0.0, 0.0, 0.0]):
         self.wavelength = wavelength
@@ -62,9 +62,9 @@ class Pringle2:
         self.center= current_point
         phase = 0
         for i in range(n1, n2):
-            y = 0.0 #self.amplitude / 2. * np.sin(2.*np.pi*(timestep+ i ) \
-                #                            / (self.wavelength) + phase + \
-                #                                0.00001*(timestep + i )**2)
+            y = self.amplitude / 2. * np.sin(2.*np.pi*(timestep+ i ) \
+                                            / (self.wavelength) + phase + \
+                                                0.00001*(timestep + i )**2)
 
             z = self.amplitude * np.sin(2*np.pi*(timestep + i  ) / \
                                             (self.wavelength) + phase +\
@@ -97,8 +97,8 @@ class Pringle:
         for _ in range(n1, n2):
             z = self.amplitude * np.sin(2.*np.pi*(timestep + i) \
                                                         / self.wavelength + phase) + 0./1000.
-            y = 0.0 #self.amplitude * np.sin(2*np.pi*(timestep + i)/ \
-                #                                        self.wavelength + phase) + 0./1000.
+            y = self.amplitude * np.cos(2*np.pi*(timestep + i)/ \
+                                                        self.wavelength + phase) + 0./1000.
 
             x = self.amplitude * np.sin(1000.*z*y) + 0./1000.
 
@@ -205,10 +205,34 @@ class FigureEight:
             y = self.b * np.sin((timestep + i) / self.wavelength) * \
                 np.cos((timestep + i)/self.wavelength) + 0./1000.
             x = -0.003 * np.cos(2.*(timestep + i) / self.wavelength) * \
-                np.cos(2.*(timestep + i)/(self.wavelength)) + 3./1000.
+                np.sin(2.*(timestep + i)/(self.wavelength)) + 0./1000.
             target[i, :] = [x + self.center[0],
                             y + self.center[1],
                             z + self.center[2]]
             i+=1
         return target
 
+class FixedTarget:
+    def __init__(self, a : float = 20. / 1000.,
+                 b : float = 10./1000.,
+                 center : List[float] = [0., 0., 0.],
+                 wavelength : float = 1000.):
+        self.a = a
+        self.b = b
+        self.center = center
+        self.wavelength = wavelength
+
+    def spin(self, timestep, n1, n2, dims):
+        target = np.empty([n2-n1, dims])
+        i = 0
+        for _ in range(n1, n2):
+            z = self.a #self.a * np.sin((timestep + i) / self.wavelength) + 0./1000.
+            y = self.b #self.b * np.sin((timestep + i) / self.wavelength) * \
+                #np.cos((timestep + i)/self.wavelength) + 0./1000.
+            x = 0.0 #-0.003 * np.cos(2.*(timestep + i) / self.wavelength) * \
+                #np.sin(2.*(timestep + i)/(self.wavelength)) + 0./1000.
+            target[i, :] = [x + self.center[0],
+                            y + self.center[1],
+                            z + self.center[2]]
+            i+=1
+        return target

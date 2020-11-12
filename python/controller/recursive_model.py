@@ -66,7 +66,7 @@ class RecursiveNeuralNetworkPredictor():
                                                             deque(), deque(), deque()
         self.prediction = None
 
-        self.hid = self.model.layers[0].units
+        self.hid = self.model.layers[self.first_layer_index].units
 
         self.s = s
         self.b = b
