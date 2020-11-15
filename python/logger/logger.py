@@ -22,7 +22,7 @@ class Logger:
     def verbose(self, **kwargs):
         print("__________________________________")
         for key, value in kwargs.items():
-            print("GPC : {0} = {1}".format(key, value))
+            print("NMPC : {0} = {1}".format(key, value))
 
     def save_log(self, filename = 'log_output.json'):
         import json

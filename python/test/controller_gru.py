@@ -21,7 +21,7 @@ NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       nd = 3, dd = 3, K = 1,
                                       Q = np.array([[1e-6, 0., 0],
                                                     [0., 3e4, 0.],
-                                                    [0., 0., 1e4]]),
+                                                    [0., 0., 1e3]]),
                                       Lambda = np.array([[1., 0.],
                                                          [0., 1.]]),
                                       s = 1e-20, b = 1e-10, r = 4e5,
@@ -41,8 +41,11 @@ NNP.y0 = neutral_point
 NNP.u0 = [np.deg2rad(Block.motors._zero1),
                         np.deg2rad(Block.motors._zero2)]
 
-target = FixedTarget(a = 0. / 1000., b = 0./1000.,
-                     center = neutral_point)
+
+#target = FixedTarget(a = 0. / 1000., b = 0./1000.,
+#                     center = neutral_point)
+
+target = FigureEight(a = 10./1000., b = 15./1000., wavelength = 400., center = neutral_point)
 
 Block.calibration_max = np.array([613., 134., 104., 174, 86., 146., 183., 1., 2., 1., 60.])
 
@@ -100,8 +103,8 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(np.rad2deg(u_action[0])+5., -100., 50.)
-            u_action[1] = np.clip(np.rad2deg(u_action[1]), -100., 50.)
+            u_action[0] = np.clip(np.rad2deg(u_action[0])+10., -100., 50.)
+            u_action[1] = np.clip(1.2*(np.rad2deg(u_action[1]) + 50.) -50. + 12., -100., 50.)
 
             Block.step(action = u_action)
 
