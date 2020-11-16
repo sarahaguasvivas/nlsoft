@@ -19,16 +19,16 @@ verbose = 1
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
                                       nd = 4, dd = 4, K = 1,
-                                      Q = np.array([[1e2, 0., 0],
-                                                    [0., 1e4, 0.],
-                                                    [0., 0., 1e3]]),
-                                      Lambda = np.array([[1., 0.],
-                                                         [0., 1]]),
-                                      s = 1e-20, b = 1e-5, r = 4e-4,
+                                      Q = np.array([[1e5, 0., 0],
+                                                    [0., 1e6, 0.],
+                                                    [0., 0., 1e6]]),
+                                      Lambda = np.array([[1e3, 0.],
+                                                         [0., 1.]]),
+                                      s = 1e-20, b = 1e-20, r = 4e2,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
-                                      step_size = 7e-3)
+                                      step_size = 7e-4)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -45,7 +45,7 @@ NNP.u0 = [np.deg2rad(Block.motors._zero1),
 #target = FixedTarget(a = 0. / 1000., b = 0./1000.,
 #                     center = neutral_point)
 
-target = FigureEight(a = 5./1000., b = 20./1000., wavelength = 400., center = neutral_point)
+target = FigureEight(a = 10./1000., b = 20./1000., wavelength = 400., center = neutral_point)
 
 Block.calibration_max = np.array([613., 134., 104., 174, 86., 146., 183., 1., 2., 1., 60.])
 

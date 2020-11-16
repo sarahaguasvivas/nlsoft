@@ -34,8 +34,7 @@ class SolowayNR:
     def __fsolve_newton(self, u0, del_u, rtol=1e-10, maxit=50, verbose=False):
         u = np.array(u0).copy()
         del_u = np.zeros(u.shape)
-        #Fu = -self.d_model.jacobian(u, del_u)
-        norm0 = self.previous_norm #np.linalg.norm(Fu)
+        norm0 = self.previous_norm
         enorm_last = np.linalg.norm(u - np.array([1,1]))
         for i in range(maxit):
             Fu = -self.d_model.jacobian(u, del_u)
