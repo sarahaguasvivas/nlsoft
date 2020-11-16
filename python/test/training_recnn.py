@@ -51,7 +51,6 @@ def create_network():
     model.add(Dense(8, activation='relu', kernel_initializer='random_normal',
                     kernel_regularizer=regularizers.l1(0.01),
                     activity_regularizer=regularizers.l2(0.02), input_shape= (26,)))
-    model.add(Dense(3, activation='tanh'))
     model.add(Dense(3, activation='tanh', kernel_initializer='random_normal'))
     model.compile(optimizer="adam", loss=thousand_mse, metrics=['mse'])
     return model

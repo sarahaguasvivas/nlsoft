@@ -7,6 +7,6 @@ from datetime import date
 import traceback, sys
 B = BlockGym()
 B.reset()
-B.step([-80., -50.])
+#B.step([-80., -50.])
 today = date.today()
 print(B.get_state())

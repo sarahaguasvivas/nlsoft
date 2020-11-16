@@ -18,16 +18,16 @@ verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
-                                      nd = 3, dd = 3, K = 5,
-                                      Q = np.array([[1e1, 0., 0],
-                                                    [0., 1e3, 0],
+                                      nd = 3, dd = 3, K = 2,
+                                      Q = np.array([[1., 0., 0],
+                                                    [0., 1e4, 0],
                                                     [0., 0., 1e3]]),
                                       Lambda = np.array([[1., 0.],
                                                          [0., 1.]]),
                                       s = 1e-20, b = 1., r = 4.,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
-                                      u0 = [np.deg2rad(-50.), np.deg2rad(-50.)],
+                                      u0 = [np.deg2rad(-60.), np.deg2rad(-50.)],
                                       step_size = 7e-3)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
@@ -38,14 +38,15 @@ time.sleep(1)
 neutral_point = Block.get_state()
 
 NNP.y0 = neutral_point
-NNP.u0 = [np.deg2rad(-50.), np.deg2rad(-50.)]
+NNP.u0 = [np.deg2rad(-60.),
+                        np.deg2rad(-50.)]
 
 #target = FigureEight(a = 10. / 1000., b = 10./1000., wavelength= 400.,
 #                     center = neutral_point)
 
 #target = FixedTarget(a = 10. / 1000., b = -10./1000., center = neutral_point)
 
-target = FigureEight(a = 10./1000., b = 15./1000., wavelength = 400., center = neutral_point)
+target = FigureEight(a = 10./1000., b = 20./1000., wavelength = 300., center = neutral_point)
 
 #Block.get_signal_calibration()
 Block.calibration_max = np.array([613., 134., 104., 174, 86., 146., 183., 1., 2., 1., 60.])
@@ -109,7 +110,7 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(np.rad2deg(u_action[0])+3., -100., 50.)
+            u_action[0] = np.clip(np.rad2deg(u_action[0]), -100., 50.)
             u_action[1] = np.clip(np.rad2deg(u_action[1])+20., -100., 50.)
 
             #u_action[0] = (1.+np.cos(2.* np.pi / 1000. * n))/2. * 150. - 100.
@@ -145,6 +146,7 @@ try:
         Block.reset()
     log.plot_log()
     log.save_log(filename = FILENAME)
+    Block.reset()
 
 except Exception as e:
     print(str(e))
