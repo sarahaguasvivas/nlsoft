@@ -1,6 +1,6 @@
 import os, sys
 sys.path.append(os.path.join(os.environ['HOME'], 'gpc_controller/python'))
-from controller.soloway_nr import *
+from controller.online_soloway_nr import *
 from block_gym.block_gym import *
 import time, os
 from logger.logger import Logger
@@ -18,17 +18,17 @@ verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
-                                      nd = 3, dd = 3, K = 3,
-                                      Q = np.array([[1e3, 0., 0],
-                                                    [0., 2e4, 0],
+                                      nd = 3, dd = 3, K = 2,
+                                      Q = np.array([[1e2, 0., 0],
+                                                    [0., 1e4, 0],
                                                     [0., 0., 1e4]]),
                                       Lambda = np.array([[5., 0.],
-                                                         [0., 5.]]),
+                                                         [0., 1.]]),
                                       s = 1e-20, b = 1., r = 1.,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
-                                      step_size = 9.8e-2)
+                                      step_size = 5e-2)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -46,7 +46,7 @@ NNP.u0 = [np.deg2rad(-70.),
 
 #target = FixedTarget(a = 10. / 1000., b = -10./1000., center = neutral_point)
 
-target = FigureEight(a = 10./1000., b = 20./1000., wavelength = 300., center = neutral_point)
+target = FigureEight(a = 10./1000., b = 20./1000., wavelength = 400., center = neutral_point)
 
 #Block.get_signal_calibration()
 Block.calibration_max = np.array([613., 134., 104., 174, 86., 146., 183., 1., 2., 1., 60.])
@@ -102,16 +102,16 @@ try:
 
             NNP.ym = (NNP.C @ target_path.T).reshape(NNP.ny, -1).T.tolist()
 
-            start_sol = time.time()
+            #start_sol = time.time()
             u_optimal, del_u,  _ = NR_opt.optimize(u = u_optimal_old, delu = del_u,
                                         maxit = 1, rtol = 1e-4, verbose = False)
-            sol_time = time.time() - start_sol
+            #sol_time = time.time() - start_sol
 
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(1.17*(np.rad2deg(u_action[0]) + 50.) - 50. + 2.8, -100., 50.)
-            u_action[1] = np.clip(np.rad2deg(u_action[1])+20., -100., 50.)
+            u_action[0] = np.clip(1.3*(np.rad2deg(u_action[0]) + 50.) - 50. + 7., -100., 50.)
+            u_action[1] = np.clip(np.rad2deg(u_action[1]) + 16., -100., 50.)
 
             #u_action[0] = (1.+np.cos(2.* np.pi / 1000. * n))/2. * 150. - 100.
             #u_action[1] = (1.+np.sin(2.* np.pi / 1000. * n))/2. * 150. - 100.
@@ -128,15 +128,15 @@ try:
             if verbose == 0:
                 log.verbose(actual = actual_,
                             yn = predicted_states, ym = target_path[0, :],
-                            elapsed = elapsed, sol_time = sol_time, u = u_action)
+                            elapsed = elapsed, u = u_action)
             if verbose == 1:
                 log.verbose(u_action = u_action, elapsed = elapsed,
-                            solution_time = sol_time)
+                            )
 
             log.log({str(e) : {'actual' : actual_,
                             'yn' : predicted_states.tolist(),
                             'elapsed' : elapsed,
-                            'sol_time' : sol_time,
+            #                'sol_time' : sol_time,
                             'u' : [u_action],
                             'signal' : signal}})
             if e == 0:
@@ -147,7 +147,7 @@ try:
     log.plot_log()
     log.save_log(filename = FILENAME)
     Block.reset()
-
+    Block.step([-80., -50.])
 except Exception as e:
     print(str(e))
     print("Closing all connections!")
