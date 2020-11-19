@@ -18,18 +18,18 @@ verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
-                                      nd = 2, dd = 2, K = 2,
-                                      Q = np.array([[1e3, 0., 0],
-                                                    [0., 1e7, 0.],
-                                                    [0., 0., 1e6]]),
+                                      nd = 2, dd = 2, K = 1,
+                                      Q = np.array([[1., 0., 0],
+                                                    [0., 1e5, 0.],
+                                                    [0., 0., 1e5]]),
 
-                                      Lambda = np.array([[5e2, 0.],
+                                      Lambda = np.array([[1., 0.],
                                                          [0., 1.]]),
-                                      s = 1e-20, b = 1e-5, r = 4e5,
+                                      s = 1e-20, b = 1., r = 4.,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
-                                      step_size = 5e-3)
+                                      step_size = 2e-3)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -104,10 +104,10 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(1.2*(np.rad2deg(u_action[0]) + 50.) - 50. + 11., -100., 50.)
-            u_action[1] = np.clip(0.7*(np.rad2deg(u_action[1]) + 50.) - 50. + 2., -100., 50.)
+            u_action[0] = np.clip(1.*(np.rad2deg(u_action[0]) + 50.) - 50. , -100., 50.)
+            u_action[1] = np.clip(1.*(np.rad2deg(u_action[1]) + 50.) - 50. , -100., 50.)
 
-            #Block.step(action = u_action)
+            Block.step(action = u_action)
 
             NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action,
                         predicted_states.tolist(), target_path[0, :].tolist())

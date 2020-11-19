@@ -1,6 +1,6 @@
 import os, sys
 sys.path.append(os.path.join(os.environ['HOME'], 'gpc_controller/python'))
-from controller.online_soloway_nr import *
+from controller.soloway_nr import *
 from block_gym.block_gym import *
 import time, os
 from logger.logger import Logger
@@ -28,7 +28,7 @@ NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
-                                      step_size = 5e-2)
+                                      step_size = 8e-2)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
