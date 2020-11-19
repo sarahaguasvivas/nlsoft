@@ -9,27 +9,27 @@ from test.training_recnn import thousand_mse
 from target.target import FigureEight, FixedTarget
 import numpy as np
 
-model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_GRU.hdf5'
+model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_GRU1.hdf5'
 
-NUM_EXPERIMENTS = 50
+NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 3000
 FILENAME = 'gru_log_output.json'
 verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
-                                      nd = 3, dd = 3, K = 1,
+                                      nd = 2, dd = 2, K = 2,
                                       Q = np.array([[1e3, 0., 0],
-                                                    [0., 5e4, 0.],
-                                                    [0., 0., 1e4]]),
+                                                    [0., 1e7, 0.],
+                                                    [0., 0., 1e6]]),
 
-                                      Lambda = np.array([[5., 0.],
+                                      Lambda = np.array([[5e2, 0.],
                                                          [0., 1.]]),
-                                      s = 1e-20, b = 1., r = 1.,
+                                      s = 1e-20, b = 1e-5, r = 4e5,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
-                                      step_size = 5e-2)
+                                      step_size = 5e-3)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -65,7 +65,7 @@ try:
     for e in range(NUM_EXPERIMENTS):
         log.log({str(e) : {'predicted' : [], 'actual' : [], 'yn' : [],
                 'elapsed' : [], 'u' : []}})
-
+        print(e)
         Block.reset()
         time.sleep(1)
         NNP.y0 = Block.get_state()
@@ -104,10 +104,10 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(1.2*(np.rad2deg(u_action[0]) + 50.) - 50.+ 11., -100., 50.)
-            u_action[1] = np.clip(0.8*(np.rad2deg(u_action[1]) + 50) - 50., -100., 50.)
+            u_action[0] = np.clip(1.2*(np.rad2deg(u_action[0]) + 50.) - 50. + 11., -100., 50.)
+            u_action[1] = np.clip(0.7*(np.rad2deg(u_action[1]) + 50.) - 50. + 2., -100., 50.)
 
-            Block.step(action = u_action)
+            #Block.step(action = u_action)
 
             NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action,
                         predicted_states.tolist(), target_path[0, :].tolist())
@@ -116,12 +116,14 @@ try:
             u_deque = roll_deque(u_deque, u_optimal[0, :].tolist())
             elapsed = time.time()-seconds
             actual_ = np.array(Block.get_state()).tolist()
-            if verbose == 0:
-                log.verbose( actual = actual_,
-                            yn = predicted_states, ym = target_path[0, :],
-                            elapsed = elapsed, u = u_action)
-            if verbose == 1:
-                log.verbose(u_action = u_action, elapsed = time.time() - seconds)
+
+            if verbose is not None:
+                if verbose == 0:
+                    log.verbose( actual = actual_,
+                                yn = predicted_states, ym = target_path[0, :],
+                                elapsed = elapsed, u = u_action)
+                if verbose == 1:
+                    log.verbose(u_action = u_action, elapsed = time.time() - seconds)
 
             log.log({str(e) : {'actual' : actual_,
                             'yn' : predicted_states.tolist(),
@@ -134,9 +136,10 @@ try:
         u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
         Block.reset()
 
+    Block.step([-80., -50.])
     log.save_log(filename=FILENAME)
     log.plot_log()
-    Block.step([-80., -50.])
+
 
 except Exception as e1:
     print(str(e1))

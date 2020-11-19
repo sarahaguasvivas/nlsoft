@@ -145,10 +145,11 @@ try:
         u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
         Block.reset()
 
+    Block.step([-80., -50.])
     log.save_log(filename=FILENAME)
     log.plot_log()
     Block.reset()
-    Block.step([-80., -50.])
+
 except Exception as e:
     print(str(e))
     print("Closing all connections!")
