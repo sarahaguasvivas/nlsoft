@@ -19,17 +19,17 @@ verbose = 1
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
                                       nd = 2, dd = 2, K = 1,
-                                      Q = np.array([[1., 0., 0],
-                                                    [0., 1e5, 0.],
-                                                    [0., 0., 1e5]]),
+                                      Q = np.array([[1e2, 0., 0],
+                                                    [0., 7e6, 0.],
+                                                    [0., 0., 2e6]]),
 
-                                      Lambda = np.array([[1., 0.],
+                                      Lambda = np.array([[3e2, 0.],
                                                          [0., 1.]]),
-                                      s = 1e-20, b = 1., r = 4.,
+                                      s = 1e-20, b = 5e3, r = 1e2,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
-                                      step_size = 2e-3)
+                                      step_size = 1e-2)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -105,7 +105,7 @@ try:
             del_u_action = del_u[0, :].tolist()
 
             u_action[0] = np.clip(1.*(np.rad2deg(u_action[0]) + 50.) - 50. , -100., 50.)
-            u_action[1] = np.clip(1.*(np.rad2deg(u_action[1]) + 50.) - 50. , -100., 50.)
+            u_action[1] = np.clip(1.*(np.rad2deg(u_action[1]) + 50.) - 50. - 40. , -100., 50.)
 
             Block.step(action = u_action)
 

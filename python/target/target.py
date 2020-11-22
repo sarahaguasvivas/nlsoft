@@ -57,20 +57,19 @@ class Diagonal:
         ang2 = np.arctan2(self.center[0], self.center[2])
         return (ang1 - ang2) % (2. * np.pi)
 
-    def spin(self, timestep, n1, n2, dims, current_point):
+    def spin(self, timestep, n1, n2, dims):
         target = np.empty([n2 - n1, dims])
-        self.center= current_point
         phase = 0
         for i in range(n1, n2):
             y = self.amplitude / 2. * np.sin(2.*np.pi*(timestep+ i ) \
                                             / (self.wavelength) + phase + \
-                                                0.00001*(timestep + i )**2)
+                                                0.000001*(timestep + i )**2)
 
             z = self.amplitude * np.sin(2*np.pi*(timestep + i  ) / \
                                             (self.wavelength) + phase +\
-                                        0.00001*(timestep + i )**2)
+                                        0.000001*(timestep + i )**2)
 
-            x =  self.amplitude * np.sin(-1000*z*y)
+            x = -0.003*(y**2/(20./1000.)**2 - z**2 / (10./1000.)**2)
 
             target[i, :] = [self.center[0] + x, self.center[1] + y, self.center[2] + z]
         return target
@@ -81,27 +80,29 @@ class Pringle:
         self.wavelength = wavelength
         self.amplitude = amplitude
         self.center = center
+        self.a = 100./1000.
+        self.b = 100./1000.
 
-    def find_projection_along_path(self, current_point):
+    def find_projection_along_path(self):
         ang1 = np.arctan2(self.center[0], self.center[2])
         ang2 = np.arctan2(self.center[0], self.center[2])
         return (ang1 - ang2) % (2. * np.pi)
 
-    def spin(self, timestep, n1, n2, dims, current_point):
+    def spin(self, timestep, n1, n2, dims, current_point = [0., 0., 0.]):
         target = np.empty([n2 - n1, dims])
 
-        phase = self.find_projection_along_path(current_point)
-        #phase = 0
+        #phase = self.find_projection_along_path(current_point)
+        phase = 0
         i = 0
 
         for _ in range(n1, n2):
             z = self.amplitude * np.sin(2.*np.pi*(timestep + i) \
                                                         / self.wavelength + phase) + 0./1000.
-            y = self.amplitude * np.cos(2*np.pi*(timestep + i)/ \
+            y = self.amplitude / 2. * np.cos(2*np.pi*(timestep + i)/ \
                                                         self.wavelength + phase) + 0./1000.
 
-            x = self.amplitude * np.sin(1000.*z*y) + 0./1000.
-
+            #x = 0.2 * np.sin(y) + 1./1000. #- z ** 2 / (20./1000.) ** 2)
+            x =13.*(y+10./1000.)*z + 1./1000.
             target[i, :] = [self.center[0] + x, self.center[1] + y, self.center[2] + z]
             i+=1
         return target
@@ -204,7 +205,7 @@ class FigureEight:
             y = self.a * np.sin((timestep + i) / self.wavelength) - 3./1000.
             z = self.b * np.sin((timestep + i) / self.wavelength) * \
                 np.cos((timestep + i)/self.wavelength) + 0./1000.
-            x = 0.003*(y**2/self.a**2 - z**2 / self.b**2)
+            x = -0.003*(y**2/self.a**2 - z**2 / self.b**2)
             target[i, :] = [x + self.center[0],
                             y + self.center[1],
                             z + self.center[2]]

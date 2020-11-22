@@ -6,14 +6,14 @@ import time, os
 from logger.logger import Logger
 from utilities.util import *
 from test.training_recnn import thousand_mse
-from target.target import FigureEight, FixedTarget
+from target.target import FigureEight, FixedTarget, Diagonal, Pringle
 import numpy as np
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id.hdf5'
 
-NUM_EXPERIMENTS = 1
+NUM_EXPERIMENTS = 50
 NUM_TIMESTEPS = 3000
-FILENAME = 'rnn_log_output.json'
+FILENAME = 'rnn_log_output_pringle.json'
 verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
@@ -23,12 +23,12 @@ NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                                     [0., 1e4, 0],
                                                     [0., 0., 1e4]]),
                                       Lambda = np.array([[5., 0.],
-                                                         [0., 1.]]),
-                                      s = 1e-20, b = 1., r = 1.,
+                                                         [0., 10.]]),
+                                      s = 1e-20, b = 1., r = 4e2,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
-                                      step_size = 8e-2)
+                                      step_size = 3e-2)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -43,11 +43,12 @@ NNP.u0 = [np.deg2rad(-70.),
 
 #target = FigureEight(a = 10. / 1000., b = 10./1000., wavelength= 400.,
 #                     center = neutral_point)
-
 #target = FixedTarget(a = 10. / 1000., b = -10./1000., center = neutral_point)
+#target = FigureEight(a = 10./1000., b = 20./1000., wavelength = 400., center = neutral_point)
+#target = Diagonal(wavelength = 15000, amplitude=10./1000., center = neutral_point)
 
-target = FigureEight(a = 10./1000., b = 20./1000., wavelength = 400., center = neutral_point)
-
+target = Pringle(wavelength = 1000, amplitude = 10./1000., \
+                                center = neutral_point)
 #Block.get_signal_calibration()
 Block.calibration_max = np.array([613., 134., 104., 174, 86., 146., 183., 1., 2., 1., 60.])
 
@@ -111,7 +112,7 @@ try:
             del_u_action = del_u[0, :].tolist()
 
             u_action[0] = np.clip(1.3*(np.rad2deg(u_action[0]) + 50.) - 50. + 7., -100., 50.)
-            u_action[1] = np.clip(np.rad2deg(u_action[1]) + 16., -100., 50.)
+            u_action[1] = np.clip(np.rad2deg(u_action[1]) + 23., -100., 50.)
 
             #u_action[0] = (1.+np.cos(2.* np.pi / 1000. * n))/2. * 150. - 100.
             #u_action[1] = (1.+np.sin(2.* np.pi / 1000. * n))/2. * 150. - 100.

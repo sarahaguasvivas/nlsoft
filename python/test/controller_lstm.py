@@ -6,29 +6,30 @@ import time, os
 from logger.logger import Logger
 from utilities.util import *
 from test.training_recnn import thousand_mse
-from target.target import FigureEight
+from target.target import FigureEight, FixedTarget
 import numpy as np
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_LSTM.hdf5'
 
 NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 3000
-
+FILENAME = 'LSTM_log_output.json'
 verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
-                                      nd = 3, dd = 3, K = 1,
-                                      Q = np.array([[1e1, 0., 0],
-                                                    [0., 1e3, 0.],
-                                                    [0., 0., 1e3]]),
-                                      Lambda = np.array([[1., 0.],
-                                                         [0., 1.]]),
-                                      s = 1e-20, b = 1., r = 4.,
+                                      nd = 2, dd = 2, K = 2,
+                                      Q = np.array([[1e6, 0., 0],
+                                                    [0., 9e4, 0.],
+                                                    [0., 0., 7e3]]),
+
+                                      Lambda = np.array([[5e-1, 0.],
+                                                         [0., 5e1]]),
+                                      s = 1e-25, b = 1e5, r = 4e10,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
-                                      u0 = [np.deg2rad(0.)]*2,
-                                      step_size = 5e-3)
+                                      u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
+                                      step_size = 3e-2)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -41,8 +42,11 @@ NNP.y0 = neutral_point
 NNP.u0 = [np.deg2rad(Block.motors._zero1),
                         np.deg2rad(Block.motors._zero2)]
 
-target = FigureEight(a = 5. / 1000., b = 10./1000., wavelength= 300.,
-                     center = neutral_point)
+
+#target = FixedTarget(a = 0. / 1000., b = 0./1000.,
+#                     center = neutral_point)
+
+target = FigureEight(a = 10./1000., b = 20./1000., wavelength = 400., center = neutral_point)
 
 Block.calibration_max = np.array([613., 134., 104., 174, 86., 146., 183., 1., 2., 1., 60.])
 
@@ -61,7 +65,7 @@ try:
     for e in range(NUM_EXPERIMENTS):
         log.log({str(e) : {'predicted' : [], 'actual' : [], 'yn' : [],
                 'elapsed' : [], 'u' : []}})
-
+        print(e)
         Block.reset()
         time.sleep(1)
         NNP.y0 = Block.get_state()
@@ -94,14 +98,14 @@ try:
             target_path = target.spin(n, 0, NNP.K, 3)
             NNP.ym = (NNP.C @ target_path.T).reshape(NNP.ny, -1).T.tolist()
 
-            u_optimal, del_u,  _ = NR_opt.optimize(u = u_optimal_old, delu = del_u,
-                                        maxit = 1, rtol = 1e-4, verbose = True)
+            u_optimal, del_u, _ = NR_opt.optimize(u = u_optimal_old, delu = del_u,
+                                        maxit = 1, rtol = 1e-4, verbose = False)
 
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(np.rad2deg(u_action[0])+5., -100., 50.)
-            u_action[1] = np.clip(np.rad2deg(u_action[1]), -100., 50.)
+            u_action[0] = np.clip(1.*(np.rad2deg(u_action[0]) + 50.) - 50. , -100., 50.)
+            u_action[1] = np.clip(1.*(np.rad2deg(u_action[1]) + 50.) - 50. - 40. , -100., 50.)
 
             #Block.step(action = u_action)
 
@@ -112,12 +116,14 @@ try:
             u_deque = roll_deque(u_deque, u_optimal[0, :].tolist())
             elapsed = time.time()-seconds
             actual_ = np.array(Block.get_state()).tolist()
-            if verbose == 0:
-                log.verbose( actual = actual_,
-                            yn = predicted_states, ym = target_path[0, :],
-                            elapsed = elapsed, u = u_action)
-            if verbose == 1:
-                log.verbose(u_action = u_action, elapsed = time.time() - seconds)
+
+            if verbose is not None:
+                if verbose == 0:
+                    log.verbose( actual = actual_,
+                                yn = predicted_states, ym = target_path[0, :],
+                                elapsed = elapsed, u = u_action)
+                if verbose == 1:
+                    log.verbose(u_action = u_action, elapsed = time.time() - seconds)
 
             log.log({str(e) : {'actual' : actual_,
                             'yn' : predicted_states.tolist(),
@@ -129,8 +135,11 @@ try:
 
         u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
         Block.reset()
+
+    Block.step([-80., -50.])
+    log.save_log(filename=FILENAME)
     log.plot_log()
-    log.save_log(filename = 'lstm_log_output.json')
+
 
 except Exception as e1:
     print(str(e1))
