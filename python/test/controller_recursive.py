@@ -11,7 +11,7 @@ import numpy as np
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id.hdf5'
 
-NUM_EXPERIMENTS = 50
+NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 3000
 FILENAME = 'rnn_log_output_pringle.json'
 verbose = 1
@@ -44,11 +44,11 @@ NNP.u0 = [np.deg2rad(-70.),
 #target = FigureEight(a = 10. / 1000., b = 10./1000., wavelength= 400.,
 #                     center = neutral_point)
 #target = FixedTarget(a = 10. / 1000., b = -10./1000., center = neutral_point)
-#target = FigureEight(a = 10./1000., b = 20./1000., wavelength = 400., center = neutral_point)
+target = FigureEight(a = 10./1000., b = 10./1000., wavelength = 400., center = neutral_point)
 #target = Diagonal(wavelength = 15000, amplitude=10./1000., center = neutral_point)
 
-target = Pringle(wavelength = 1000, amplitude = 10./1000., \
-                                center = neutral_point)
+#target = Pringle(wavelength = 1000, amplitude = 10./1000., \
+#                                center = neutral_point)
 #Block.get_signal_calibration()
 Block.calibration_max = np.array([613., 134., 104., 174, 86., 146., 183., 1., 2., 1., 60.])
 

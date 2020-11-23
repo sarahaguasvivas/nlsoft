@@ -20,16 +20,16 @@ NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
                                       nd = 2, dd = 2, K = 2,
                                       Q = np.array([[1e6, 0., 0],
-                                                    [0., 9e4, 0.],
-                                                    [0., 0., 7e3]]),
+                                                    [0., 1e6, 0.],
+                                                    [0., 0., 1e6]]),
 
-                                      Lambda = np.array([[5e-1, 0.],
-                                                         [0., 5e1]]),
-                                      s = 1e-25, b = 1e5, r = 4e10,
+                                      Lambda = np.array([[6e2, 0.],
+                                                         [0., 1e2]]),
+                                      s = 1e-20, b = 5., r = 4,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
-                                      step_size = 3e-2)
+                                      step_size = 5e-3)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 

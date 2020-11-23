@@ -35,7 +35,7 @@ for exp in range(N):
     for j, i in enumerate(actions7):
         start = time.time()
         B.step(action = [i, actions8[j]])
-        print (i, actions8[j])
+        #print (i, actions8[j])
         data = B.get_observation() + B.get_real_position()
         data = data + [i, actions8[j]]
         #print >> f, ", ".join(map(str, data))
@@ -53,7 +53,7 @@ for exp in range(N):
 
         for j in aactions:
             B.step(action=[i, j])
-            print(i, j)
+            #print(i, j)
             data = B.get_observation() + B.get_real_position()
             data = data + [i, j]
             #print >> f, ", ".join(map(str, data))
@@ -71,7 +71,7 @@ for exp in range(N):
 
         for j in aactions:
             B.step(action=[j, i])
-            print (j, i)
+            #print (j, i)
             data = B.get_observation() + B.get_real_position()
             data = data + [j, i]
             #print >> f, ", ".join(map(str, data))
