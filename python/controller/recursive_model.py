@@ -276,11 +276,15 @@ class RecursiveNeuralNetworkPredictor():
 
                 for j in range(self.nu):
                    for i in range(self.m):
-                       hessian[h, m] += kronecker_delta(h, j)*kronecker_delta(m, j) * \
-                               (2.0*self.s / np.power((u[j, i] + self.r / 2. - \
+                       hessian[h, m] += (2.0*self.s / np.power((u[j, i] + self.r / 2. - \
                                self.b), 3.0) + \
                                2.0 * self.s / np.power(self.r/2. +\
                                self.b - u[j, i], 3.0))
+                       #hessian[h, m] += kronecker_delta(h, j) * kronecker_delta(m, j) * \
+                       #                 (2.0 * self.s / np.power((u[j, i] + self.r / 2. - \
+                       #                                           self.b), 3.0) + \
+                       #                  2.0 * self.s / np.power(self.r / 2. + \
+                       #                                          self.b - u[j, i], 3.0))
         return hessian
 
     @tf.function
@@ -379,10 +383,15 @@ class RecursiveNeuralNetworkPredictor():
 
                 sub_sum = np.array([0.0, 0.0])
                 for i in range(self.m):
-                    sub_sum[i] += kronecker_delta(h, j) * (-self.s / np.power(u[j, i] + \
-                                          self.r / 2.0 - self.b, 2) + \
+                    sub_sum[i] += (-self.s / np.power(u[j, i] + \
+                                self.r / 2.0 - self.b, 2) + \
                                 self.s / np.power(self.r / 2.0 + \
-                                             self.b - u[j, i], 2.0))
+                                self.b - u[j, i], 2.0))
+
+                    #sub_sum[i] += kronecker_delta(h, j) * (-self.s / np.power(u[j, i] + \
+                    #                      self.r / 2.0 - self.b, 2) + \
+                    #            self.s / np.power(self.r / 2.0 + \
+                    #                         self.b - u[j, i], 2.0))
                 jacobian[j, :] += sub_sum
         jacobian += np.array(sum_output).reshape(self.nu, -1)
         return jacobian

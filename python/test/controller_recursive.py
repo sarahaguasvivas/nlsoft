@@ -18,13 +18,13 @@ verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
-                                      nd = 3, dd = 3, K = 2,
-                                      Q = np.array([[1e2, 0., 0],
-                                                    [0., 1e4, 0],
+                                      nd = 3, dd = 3, K = 5,
+                                      Q = np.array([[1e3, 0., 0],
+                                                    [0., 4e4, 0],
                                                     [0., 0., 1e4]]),
-                                      Lambda = np.array([[5., 0.],
+                                      Lambda = np.array([[50., 0.],
                                                          [0., 10.]]),
-                                      s = 1e-20, b = 1., r = 4e2,
+                                      s = 1e-20, b = 1e-10, r = 4e5,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
@@ -111,7 +111,7 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(1.3*(np.rad2deg(u_action[0]) + 50.) - 50. + 7., -100., 50.)
+            u_action[0] = np.clip(1.3*(np.rad2deg(u_action[0]) + 50.) - 50. + 2., -100., 50.)
             u_action[1] = np.clip(np.rad2deg(u_action[1]) + 23., -100., 50.)
 
             #u_action[0] = (1.+np.cos(2.* np.pi / 1000. * n))/2. * 150. - 100.

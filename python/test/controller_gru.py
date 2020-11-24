@@ -11,24 +11,24 @@ import numpy as np
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_GRU1.hdf5'
 
-NUM_EXPERIMENTS = 50
+NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 3000
 FILENAME = 'gru_log_output.json'
 verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
-                                      nd = 2, dd = 2, K = 4,
-                                      Q = np.array([[1e4, 0., 0],
-                                                    [0., 1e5, 0.],
-                                                    [0., 0., 1e4]]),
-                                      Lambda = np.array([[5., 0.],
-                                                         [0., 10.]]),
-                                      s = 1e-20, b = 1., r = 4e2,
+                                      nd = 2, dd = 2, K = 3,
+                                      Q = np.array([[5e3, 0., 0],
+                                                    [0., 1e6, 0.],
+                                                    [0., 0., 1e5]]),
+                                      Lambda = np.array([[1e2, 0.],
+                                                         [0., 1e1]]),
+                                      s = 1e-20, b = 1e-5, r = 4e5,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
-                                      step_size = 3e-3)
+                                      step_size = 3e-2)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -109,8 +109,8 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(1.4*(np.rad2deg(u_action[0]) + 50.) - 50.  + 10., -100., 50.)
-            u_action[1] = np.clip(1.*(np.rad2deg(u_action[1]) + 50.) - 50. + 20. , -100., 50.)
+            u_action[0] = np.clip(1.*(np.rad2deg(u_action[0]) + 50.) - 50.+ 0., -100., 50.)
+            u_action[1] = np.clip(1.*(np.rad2deg(u_action[1]) + 50.) - 50.+ 12., -100., 50.)
 
             Block.step(action = u_action)
 
