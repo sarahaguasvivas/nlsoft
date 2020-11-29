@@ -64,10 +64,10 @@ def neural_network_training(X, y):
         X_train = X[train]
         y_train = y[train]
         model = create_network(x_train_shape=X_train.shape)
-        model.fit(X_train, y_train, epochs = 100, batch_size = 2000)
+        model.fit(X_train, y_train, epochs = 200, batch_size = 2000)
         k_fold_results += [np.mean(np.linalg.norm(1000.*model.predict(X[test])- 1000.*y[test], axis = 1))]
 
-    model.save('sys_id_GRU1.hdf5')
+    model.save('sys_id_GRU.hdf5')
     return '', k_fold_results
 
 def plot_sys_id(X, y, modelfile= 'sys_id_oct_23.hdf5'):

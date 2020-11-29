@@ -9,7 +9,7 @@ from test.training_recnn import thousand_mse
 from target.target import FigureEight, FixedTarget, Pringle, Diagonal
 import numpy as np
 
-model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_GRU1.hdf5'
+model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_GRU.hdf5'
 
 NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 3000
@@ -19,12 +19,12 @@ verbose = 1
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
                                       nd = 2, dd = 2, K = 3,
-                                      Q = np.array([[5e3, 0., 0],
-                                                    [0., 1e6, 0.],
-                                                    [0., 0., 1e5]]),
-                                      Lambda = np.array([[1e2, 0.],
-                                                         [0., 1e1]]),
-                                      s = 1e-20, b = 1e-5, r = 4e5,
+                                      Q = np.array([[1e4, 0., 0],
+                                                    [0., 1e5, 0.],
+                                                    [0., 0., 1e4]]),
+                                      Lambda = np.array([[8., 0.],
+                                                         [0., 1e-1]]),
+                                      s = 1e-20, b = 5e-5, r = 4e5,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
@@ -51,6 +51,7 @@ NNP.u0 = [np.deg2rad(Block.motors._zero1),
 
 #target = Pringle(wavelength = 1000, amplitude = 10./1000., \
 #                                center = neutral_point)
+
 target = FigureEight(a = 10./1000., b = 20./1000., wavelength = 400., center = neutral_point)
 
 Block.calibration_max = np.array([613., 134., 104., 174, 86., 146., 183., 1., 2., 1., 60.])
@@ -109,10 +110,11 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(1.*(np.rad2deg(u_action[0]) + 50.) - 50.+ 0., -100., 50.)
-            u_action[1] = np.clip(1.*(np.rad2deg(u_action[1]) + 50.) - 50.+ 12., -100., 50.)
+            u_action[0] = np.clip(1.*(np.rad2deg(u_action[0]) + 50.) - 50.- 5., -100., 50.)
+            u_action[1] = np.clip(1.*(np.rad2deg(u_action[1]) + 50.) - 50.+ 0., -100., 50.)
 
             Block.step(action = u_action)
+            #Block.step(action = [-70., -50.])
 
             NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action,
                         predicted_states.tolist(), target_path[0, :].tolist())
