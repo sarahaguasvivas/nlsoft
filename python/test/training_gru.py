@@ -50,8 +50,8 @@ def create_network(x_train_shape : Tuple[int]):
     model = Sequential()
     model.add(GRU(units = 5, input_shape = (1,x_train_shape[-1])))
     #model.add(Flatten())
-    #model.add(Dense(3, activation = 'relu', kernel_initializer='random_normal'))
-    model.add(Dense(3, activation='linear', kernel_initializer='random_normal'))
+    model.add(Dense(4, activation = 'tanh', kernel_initializer='random_normal'))
+    model.add(Dense(3, activation='tanh', kernel_initializer='random_normal'))
     model.compile(optimizer="adam", loss=huber_loss, metrics=['mse'])
     return model
 
@@ -64,7 +64,7 @@ def neural_network_training(X, y):
         X_train = X[train]
         y_train = y[train]
         model = create_network(x_train_shape=X_train.shape)
-        model.fit(X_train, y_train, epochs = 200, batch_size = 2000)
+        model.fit(X_train, y_train, epochs = 200, batch_size = 1000)
         k_fold_results += [np.mean(np.linalg.norm(1000.*model.predict(X[test])- 1000.*y[test], axis = 1))]
 
     model.save('sys_id_GRU.hdf5')
