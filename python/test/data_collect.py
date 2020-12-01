@@ -23,6 +23,7 @@ N = 200
 
 today = date.today()
 f = open("data_" + today.strftime("%b_%d_%Y")+".csv", "w+")
+el = open('elapsed_' + today.strftime("%b_%d_%Y")+ ".csv", "w+")
 # my_string = ','.join(map(str, my_list))
 #try:
 for exp in range(N):
@@ -42,7 +43,9 @@ for exp in range(N):
         f.write(", ".join(map(str, data)))
         f.write("\n")
         elapsed = time.time() - start
-        print("elapsed: ", elapsed)
+        el.write(str(elapsed))
+        el.write("\n")
+        #print("elapsed: ", elapsed)
     B.reset()
     print("sides")
     for i in actions1:
@@ -52,6 +55,7 @@ for exp in range(N):
             aactions = actions3
 
         for j in aactions:
+            start = time.time()
             B.step(action=[i, j])
             #print(i, j)
             data = B.get_observation() + B.get_real_position()
@@ -59,6 +63,9 @@ for exp in range(N):
             #print >> f, ", ".join(map(str, data))
             f.write(",".join(map(str, data)))
             f.write("\n")
+            elapsed = time.time() - start
+            el.write(str(elapsed))
+            el.write("\n")
         flag = not flag
     B.reset()
     print("updown")
@@ -70,6 +77,7 @@ for exp in range(N):
             aactions = actions6
 
         for j in aactions:
+            start = time.time()
             B.step(action=[j, i])
             #print (j, i)
             data = B.get_observation() + B.get_real_position()
@@ -77,6 +85,9 @@ for exp in range(N):
             #print >> f, ", ".join(map(str, data))
             f.write(", ".join(map(str, data)))
             f.write("\n")
+            elapsed = time.time() - start
+            el.write(str(elapsed))
+            el.write("\n")
         flag = not flag
     B.reset()
 B.reset()

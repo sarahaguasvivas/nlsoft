@@ -14,12 +14,13 @@ import keras.backend as K
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 from mpl_toolkits.mplot3d import axes3d, Axes3D
+from scipy.spatial.transform import Rotation as R
 import random
 NUM_DATA_RUNS = 200
 TRAIN = True
 
 plt.style.use('seaborn')
-filename = str(os.environ["HOME"]) + "/gpc_controller/python/data/data_Oct_27_2020.csv"
+filename = str(os.environ["HOME"]) + "/gpc_controller/python/data/data_Nov_30_2020.csv"
 
 font = FontProperties()
 font.set_family('serif')
@@ -149,6 +150,11 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
         signals[:, i]/= max_signals[i]
 
     position = data_array[:, 11:14] # not using Euler angles
+
+    rotation = np.array([0.8, 0.5, 0.])
+    rot = R.from_rotvec(rotation)
+    position = rot.apply(position)
+
     inputs = data_array[:, 14:]
 
     N = max(nd, dd) # data sample where we will start first

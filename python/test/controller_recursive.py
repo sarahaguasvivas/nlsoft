@@ -22,13 +22,13 @@ NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       Q = np.array([[1e3, 0., 0],
                                                     [0., 4e4, 0],
                                                     [0., 0., 1e4]]),
-                                      Lambda = np.array([[50., 0.],
-                                                         [0., 10.]]),
+                                      Lambda = np.array([[5., 0.],
+                                                         [0., 1.]]),
                                       s = 1e-20, b = 1e-10, r = 4e5,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
-                                      step_size = 3e-2)
+                                      step_size = 5e-2)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -50,7 +50,9 @@ target = FigureEight(a = 10./1000., b = 10./1000., wavelength = 400., center = n
 #target = Pringle(wavelength = 1000, amplitude = 10./1000., \
 #                                center = neutral_point)
 #Block.get_signal_calibration()
-Block.calibration_max = np.array([613., 134., 104., 174, 86., 146., 183., 1., 2., 1., 60.])
+
+# [625. 121. 101. 143.  99. 131. 413.  10.   0.  40.  20.]
+Block.calibration_max = np.array([625., 121., 101., 143, 99., 131., 413., 10., 1., 40., 20.])
 
 u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
 del_u = np.zeros(u_optimal_old.shape)
@@ -111,11 +113,11 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(1.3*(np.rad2deg(u_action[0]) + 50.) - 50. + 2., -100., 50.)
-            u_action[1] = np.clip(np.rad2deg(u_action[1]) + 23., -100., 50.)
+            #u_action[0] = np.clip(1.3*(np.rad2deg(u_action[0]) + 50.) - 50. + 2., -100., 50.)
+            #u_action[1] = np.clip(np.rad2deg(u_action[1]) + 23., -100., 50.)
 
-            #u_action[0] = (1.+np.cos(2.* np.pi / 1000. * n))/2. * 150. - 100.
-            #u_action[1] = (1.+np.sin(2.* np.pi / 1000. * n))/2. * 150. - 100.
+            u_action[0] = (1.+np.cos(2.* np.pi / 1000. * n))/2. * 150. - 100.
+            u_action[1] = (1.+np.sin(2.* np.pi / 1000. * n))/2. * 150. - 100.
 
             Block.step(action = u_action)
 

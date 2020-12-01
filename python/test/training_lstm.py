@@ -14,13 +14,14 @@ import keras.backend as K
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 from mpl_toolkits.mplot3d import axes3d, Axes3D
+from scipy.spatial.transform import Rotation as R
 import random
 NUM_DATA_RUNS = 200
 TRAIN = True
 from typing import List, Tuple
 
 plt.style.use('seaborn')
-filename = str(os.environ["HOME"]) + "/gpc_controller/python/data/data_Oct_27_2020.csv"
+filename = str(os.environ["HOME"]) + "/gpc_controller/python/data/data_Nov_30_2020.csv"
 
 font = FontProperties()
 font.set_family('serif')
@@ -50,7 +51,7 @@ def create_network(x_train_shape : Tuple[int]):
     model = Sequential()
     model.add(LSTM(units = 5, input_shape = (1,x_train_shape[-1])))
     #model.add(Flatten())
-    model.add(Dense(3, activation = 'relu', kernel_initializer='random_normal'))
+    model.add(Dense(4, activation = 'tanh', kernel_initializer='random_normal'))
     model.add(Dense(3, activation='tanh', kernel_initializer='random_normal'))
     model.compile(optimizer="adam", loss=huber_loss, metrics=['mse'])
     return model
@@ -150,6 +151,10 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
 
     position = data_array[:, 11:14] # not using Euler angles
     inputs = data_array[:, 14:]
+
+    rotation = np.array([0.8, 0.5, 0.])
+    rot = R.from_rotvec(rotation)
+    position = rot.apply(position)
 
     N = max(nd, dd) # data sample where we will start first
 
