@@ -33,13 +33,14 @@ NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
 log = Logger()
-Block.reset()
-time.sleep(1)
-neutral_point = Block.get_state()
 
-NNP.y0 = neutral_point
 NNP.u0 = [np.deg2rad(-70.),
                         np.deg2rad(-50.)]
+
+Block.step(action = [-70., -50.])
+time.sleep(1)
+neutral_point = Block.get_state()
+NNP.y0 = neutral_point
 
 #target = FigureEight(a = 10. / 1000., b = 10./1000., wavelength= 400.,
 #                     center = neutral_point)
@@ -56,6 +57,8 @@ Block.calibration_max = np.array([625., 121., 101., 143, 99., 131., 413., 10., 1
 
 u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
 del_u = np.zeros(u_optimal_old.shape)
+
+
 
 log.log({'metadata' : {'neutral_point' : neutral_point,
          'num_experiments' : NUM_EXPERIMENTS,
@@ -113,11 +116,11 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            #u_action[0] = np.clip(1.3*(np.rad2deg(u_action[0]) + 50.) - 50. + 2., -100., 50.)
-            #u_action[1] = np.clip(np.rad2deg(u_action[1]) + 23., -100., 50.)
+            u_action[0] = np.clip(1.*(np.rad2deg(u_action[0]) + 50.) - 50. + 0, -100., 50.)
+            u_action[1] = np.clip(np.rad2deg(u_action[1]) + 0., -100., 50.)
 
-            u_action[0] = (1.+np.cos(2.* np.pi / 1000. * n))/2. * 150. - 100.
-            u_action[1] = (1.+np.sin(2.* np.pi / 1000. * n))/2. * 150. - 100.
+            #u_action[0] = (1.+np.cos(2.* np.pi / 1000. * n))/2. * 150. - 100.
+            #u_action[1] = (1.+np.sin(2.* np.pi / 1000. * n))/2. * 150. - 100.
 
             Block.step(action = u_action)
 
