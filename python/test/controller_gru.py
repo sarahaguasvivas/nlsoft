@@ -13,22 +13,22 @@ model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_G
 
 NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 3000
-FILENAME = 'gru_log_output.json'
+FILENAME = 'gru_log_output_figure8.json'
 verbose = 1
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
-                                      nd = 2, dd = 2, K = 1,
-                                      Q = np.array([[1e4, 0., 0],
-                                                    [0., 8e5, 0.],
-                                                    [0., 0., 3e5]]),
-                                      Lambda = np.array([[50., 0.],
+                                      nd = 2, dd = 2, K = 2,
+                                      Q = np.array([[1e5, 0., 0],
+                                                    [0., 1e5, 0.],
+                                                    [0., 0., 1e5]]),
+                                      Lambda = np.array([[30., 0.],
                                                          [0., 10.]]),
-                                      s = 1e-20, b = 1e-10, r = 4e5,
+                                      s = 1e-20, b = 1., r = 4.,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
-                                      step_size = 9e-2)
+                                      step_size = 5e-1)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -42,15 +42,15 @@ NNP.u0 = [np.deg2rad(Block.motors._zero1),
                         np.deg2rad(Block.motors._zero2)]
 
 
-target = FixedTarget(a = 0. / 1000., b = 0./1000.,
-                     center = neutral_point)
+#target = FixedTarget(a = 0. / 1000., b = 0./1000.,
+#                     center = neutral_point)
 #target = FixedTarget(a = 10. / 1000., b = -10./1000., center = neutral_point)
 #target = Diagonal(wavelength = 15000, amplitude=10./1000., center = neutral_point)
 
 #target = Pringle(wavelength = 1000, amplitude = 10./1000., \
 #                                center = neutral_point)
 
-#target = FigureEight(a = 10./1000., b = 20./1000., wavelength = 400., center = neutral_point)
+target = FigureEight(a = 10./1000., b = 20./1000., wavelength = 400., center = neutral_point)
 
 Block.calibration_max = np.array([622., 133., 105., 143, 128., 139., 164., 1., 1., 1., 6.])
 
@@ -71,7 +71,7 @@ try:
                 'elapsed' : [], 'u' : []}})
         print(e)
         Block.reset()
-        time.sleep(1)
+        time.sleep(5)
         NNP.y0 = Block.get_state()
 
         log.log_dictionary['metadata']['neutral_point'] = NNP.y0
@@ -108,8 +108,8 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(1.*(np.rad2deg(u_action[0]) + 50.) - 50.+ 1., -100., 50.)
-            u_action[1] = np.clip(1.1*(np.rad2deg(u_action[1]) + 50.) - 50.+ 25., -100., 50.)
+            u_action[0] = np.clip(1.*(np.rad2deg(u_action[0]) + 50.) - 50., -100., 50.)
+            u_action[1] = np.clip(1*(np.rad2deg(u_action[1]) + 50.) - 50., -100., 50.)
 
             Block.step(action = u_action)
             #Block.step(action = [-70., -50.])
