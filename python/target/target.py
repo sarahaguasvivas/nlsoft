@@ -210,10 +210,10 @@ class FigureEight:
             y = self.a * np.sin((timestep + i) / self.wavelength) + 0./1000.
             z = self.b * np.sin((timestep + i) / self.wavelength) * \
                np.cos((timestep + i)/self.wavelength) + 0./1000.
-            x = 0.001*np.sin((timestep+i) / (self.wavelength))**2
+            x = 0.002*np.sin((timestep+i) / (self.wavelength))**2
 
             del_X = [x, y, z]
-            rotation = np.array([0.0, 0.3, 0.])
+            rotation = np.array([0.0, 0.3, -0.3])
             rot = R.from_rotvec(rotation)
             del_X = rot.apply(del_X)
 
