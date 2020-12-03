@@ -96,17 +96,17 @@ class Pringle:
         i = 0
 
         for _ in range(n1, n2):
-            z = self.amplitude * np.sin(2.*np.pi*(timestep + i) \
+            z = self.amplitude  * np.sin(2.*np.pi*(timestep + i) \
                                                         / self.wavelength + phase) - 5./1000.
-            y = self.amplitude /2. * np.cos(2*np.pi*(timestep + i)/ \
-                                                        self.wavelength + phase) - 5./1000.
+            y = self.amplitude / 1.5  * np.cos(2*np.pi*(timestep + i)/ \
+                                                        self.wavelength + phase) - 7./1000.
 
             #x = 0.2 * np.sin(y) + 1./1000. #- z ** 2 / (20./1000.) ** 2)
-            x =  20.*(y + 0./1000.)*(z + 0./1000.)
+            x =  20.*(y + 2./1000.)*(z + 0./1000.)
             #x = 0.0025 * np.sin((timestep + i) / (self.wavelength)) ** 2
 
             del_X = [x, y, z]
-            rotation = np.array([0., 0.3, 0.])
+            rotation = np.array([0.1, 0.2, 0.])
             #rotation = np.array([0., 0., 0.])
             rot = R.from_rotvec(rotation)
             del_X = rot.apply(del_X)

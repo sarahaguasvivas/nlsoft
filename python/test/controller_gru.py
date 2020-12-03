@@ -11,7 +11,7 @@ import numpy as np
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_GRU.hdf5'
 
-NUM_EXPERIMENTS = 1
+NUM_EXPERIMENTS = 50
 NUM_TIMESTEPS = 3000
 FILENAME = 'gru_log_output_pringle.json'
 verbose = 1
@@ -47,7 +47,7 @@ NNP.u0 = [np.deg2rad(Block.motors._zero1),
 
 #target = Diagonal(wavelength = 15000, amplitude=10./1000., center = neutral_point)
 
-target = Pringle(wavelength = 2000, amplitude = 10./1000., \
+target = Pringle(wavelength = 2000, amplitude = 10./1000.,
                                 center = neutral_point)
 
 #target = FigureEight(a = 10./1000., b = 20./1000., wavelength = 400., center = neutral_point)
