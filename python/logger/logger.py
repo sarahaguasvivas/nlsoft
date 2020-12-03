@@ -211,9 +211,11 @@ class Logger:
         plt.show()
 
         plt.figure()
-        plt.plot(np.mean(signal, axis = 0)[:-1, :])
+        for i in range(signal.shape[-1]):
+            plt.plot(np.mean(signal, axis = 0)[:-1, i], label = str(i))
         plt.title("Tracking of the Mean Optical Lace Signals During Experiment", **font)
         plt.xticks(fontsize=14, **font)
         plt.yticks(fontsize=14, **font)
+        plt.legend()
         plt.show()
 

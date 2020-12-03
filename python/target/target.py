@@ -97,13 +97,24 @@ class Pringle:
 
         for _ in range(n1, n2):
             z = self.amplitude * np.sin(2.*np.pi*(timestep + i) \
-                                                        / self.wavelength + phase) + 0./1000.
-            y = self.amplitude / 2. * np.cos(2*np.pi*(timestep + i)/ \
-                                                        self.wavelength + phase) + 0./1000.
+                                                        / self.wavelength + phase) - 5./1000.
+            y = self.amplitude /2. * np.cos(2*np.pi*(timestep + i)/ \
+                                                        self.wavelength + phase) - 5./1000.
 
             #x = 0.2 * np.sin(y) + 1./1000. #- z ** 2 / (20./1000.) ** 2)
-            x =13.*(y+10./1000.)*z + 1./1000.
-            target[i, :] = [self.center[0] + x, self.center[1] + y, self.center[2] + z]
+            x =  20.*(y + 0./1000.)*(z + 0./1000.)
+            #x = 0.0025 * np.sin((timestep + i) / (self.wavelength)) ** 2
+
+            del_X = [x, y, z]
+            rotation = np.array([0., 0.3, 0.])
+            #rotation = np.array([0., 0., 0.])
+            rot = R.from_rotvec(rotation)
+            del_X = rot.apply(del_X)
+
+            target[i, :] = [del_X[0] + self.center[0],
+                            del_X[1] + self.center[1],
+                            del_X[2] + self.center[2]]
+
             i+=1
         return target
 
@@ -210,7 +221,7 @@ class FigureEight:
             y = self.a * np.sin((timestep + i) / self.wavelength) + 0./1000.
             z = self.b * np.sin((timestep + i) / self.wavelength) * \
                np.cos((timestep + i)/self.wavelength) + 0./1000.
-            x = 0.002*np.sin((timestep+i) / (self.wavelength))**2
+            x = 0.0025*np.sin((timestep+i) / (self.wavelength))**2
 
             del_X = [x, y, z]
             rotation = np.array([0.0, 0.3, -0.3])

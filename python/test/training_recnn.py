@@ -49,7 +49,7 @@ keras.losses.custom_loss = custom_loss
 
 def create_network():
     model = Sequential()
-    model.add(Dense(5, activation='relu', kernel_initializer='random_normal',
+    model.add(Dense(10, activation='relu', kernel_initializer='random_normal',
                     kernel_regularizer=regularizers.l1(0.01),
                     activity_regularizer=regularizers.l2(0.02), input_shape= (26,)))
     model.add(Dense(3, activation='tanh', kernel_initializer='random_normal'))
