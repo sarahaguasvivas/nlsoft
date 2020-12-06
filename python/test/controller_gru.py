@@ -11,24 +11,38 @@ import numpy as np
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_GRU.hdf5'
 
-NUM_EXPERIMENTS = 50
-NUM_TIMESTEPS = 3000
-FILENAME = 'gru_log_output_pringle.json'
+NUM_EXPERIMENTS = 1
+NUM_TIMESTEPS = 1000
+FILENAME = 'gru_log_output_disturbance.json'
 verbose = 1
+
+#NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
+#                                      N1 = 0, N2 = 1, Nu = 1,
+#                                      nd = 2, dd = 2, K = 2,
+#                                      Q = np.array([[1e3, 0., 0],
+#                                                    [0., 2e3, 0.],
+#                                                    [0., 0., 1e3]]),
+#                                      Lambda = np.array([[1., 0.],
+#                                                         [0., 1.]]),
+#                                      s = 1e-20, b = 1e-10, r = 4e5,
+#                                      states_to_control = [1, 1, 1],
+#                                      y0= [0.0, 0.0, 0.0],
+#                                      u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
+#                                      step_size = 8e-2)
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
-                                      nd = 2, dd = 2, K = 2,
-                                      Q = np.array([[2e6, 0., 0],
-                                                    [0., 1e6, 0.],
-                                                    [0., 0., 2e6]]),
-                                      Lambda = np.array([[100., 0.],
-                                                         [0., 50.]]),
-                                      s = 1e-20, b = 5e-1, r = 4e-2,
+                                      nd = 2, dd = 2, K = 10,
+                                      Q = np.array([[7e3, 0., 0],
+                                                    [0., 2e3, 0.],
+                                                    [0., 0., 3e3]]),
+                                      Lambda = np.array([[1., 0.],
+                                                         [0., 1.]]),
+                                      s = 1e-20, b = 1e-10, r = 4e2,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
-                                      step_size = 5e-1)
+                                      step_size = 8e-3)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -42,17 +56,21 @@ NNP.u0 = [np.deg2rad(Block.motors._zero1),
                         np.deg2rad(Block.motors._zero2)]
 
 
-#target = FixedTarget(a = 0. / 1000., b = 0./1000.,
-#                     center = neutral_point)
+target = FixedTarget(a = 0. / 1000., b = 0./1000.,
+                     center = neutral_point)
 
 #target = Diagonal(wavelength = 15000, amplitude=10./1000., center = neutral_point)
 
-target = Pringle(wavelength = 2000, amplitude = 10./1000.,
-                                center = neutral_point)
+#target = Pringle(wavelength = 2000, amplitude = 10./1000.,
+#                                center = neutral_point)
 
 #target = FigureEight(a = 10./1000., b = 20./1000., wavelength = 400., center = neutral_point)
+# 5-> 139.
+# 6-> 164.
+# -1> 6
 
-Block.calibration_max = np.array([622., 133., 105., 250., 128., 139., 164., 1., 1., 1., 6.])
+#Block.calibration_max = np.array([613., 134., 104., 174, 128., 146., 183., 1., 2., 1., 60.])
+Block.calibration_max = np.array([60., 80., 80., 100., 100., 50., 50., 50., 2., 1., 60.])
 
 u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
 del_u = np.zeros(u_optimal_old.shape)
@@ -108,11 +126,11 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(1.*(np.rad2deg(u_action[0]) + 50.) - 50., -100., 50.)
-            u_action[1] = np.clip(1.*(np.rad2deg(u_action[1]) + 50.) - 50. + 7., -100., 50.)
+            #u_action[0] = np.clip(1.*(np.rad2deg(u_action[0]) + 50.) - 50. + 6., -100., 50.)
+            #u_action[1] = np.clip(1.*(np.rad2deg(u_action[1]) + 50.) - 50. + 10., -100., 50.)
 
-            #u_action[0] = ((1.+np.cos(2.* np.pi / 1000. * n))/2. * 150. - 100.)
-            #u_action[1] = ((1.+np.sin(2.* np.pi / 1000. * n))/2. * 150. - 100.)
+            u_action[0] = ((1.+np.cos(2.* np.pi / 1000. * n))/2. * 150. - 100.)
+            u_action[1] = ((1.+np.sin(2.* np.pi / 1000. * n))/2. * 150. - 100.)
 
             Block.step(action = u_action)
             #Block.step(action = [-70., -50.])

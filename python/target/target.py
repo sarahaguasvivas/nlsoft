@@ -63,15 +63,23 @@ class Diagonal:
         for i in range(n1, n2):
             y = self.amplitude / 2. * np.sin(2.*np.pi*(timestep+ i ) \
                                             / (self.wavelength) + phase + \
-                                                0.000001*(timestep + i )**2)
+                                                0.000001*(timestep + i )**2) - 5./1000.
 
             z = self.amplitude * np.sin(2*np.pi*(timestep + i  ) / \
                                             (self.wavelength) + phase +\
                                         0.000001*(timestep + i )**2)
 
-            x = -0.003*(y**2/(20./1000.)**2 - z**2 / (10./1000.)**2)
+            x = 0.0009*(y**2/(10./1000.)**2 - z**2 / (10./1000.)**2) - 1./1000.
 
-            target[i, :] = [self.center[0] + x, self.center[1] + y, self.center[2] + z]
+            del_X = [x, y, z]
+            rotation = np.array([0.3, 0.4 + np.pi, -0.3])
+            rot = R.from_rotvec(rotation)
+            del_X = rot.apply(del_X)
+
+            target[i, :] = [del_X[0] + self.center[0],
+                            del_X[1] + self.center[1],
+                            del_X[2] + self.center[2]]
+            #target[i, :] = [self.center[0] + x, self.center[1] + y, self.center[2] + z]
         return target
 
 class Pringle:
@@ -96,18 +104,15 @@ class Pringle:
         i = 0
 
         for _ in range(n1, n2):
-            z = self.amplitude  * np.sin(2.*np.pi*(timestep + i) \
+            z = self.amplitude / 1.* np.sin(2.*np.pi*(timestep + i) \
                                                         / self.wavelength + phase) - 5./1000.
-            y = self.amplitude / 1.5  * np.cos(2*np.pi*(timestep + i)/ \
-                                                        self.wavelength + phase) - 7./1000.
+            y = self.amplitude / 2.* np.cos(2*np.pi*(timestep + i)/ \
+                                                        self.wavelength + phase) - 5./1000.
 
-            #x = 0.2 * np.sin(y) + 1./1000. #- z ** 2 / (20./1000.) ** 2)
-            x =  20.*(y + 2./1000.)*(z + 0./1000.)
-            #x = 0.0025 * np.sin((timestep + i) / (self.wavelength)) ** 2
+            x = 0.0003 *(z**2 / self.amplitude**2 - 4.* y**2 / self.amplitude**2) #45.* y * z + 0./1000.
 
             del_X = [x, y, z]
-            rotation = np.array([0.1, 0.2, 0.])
-            #rotation = np.array([0., 0., 0.])
+            rotation = np.array([0.1, 0.2, 0.1])
             rot = R.from_rotvec(rotation)
             del_X = rot.apply(del_X)
 
@@ -218,13 +223,13 @@ class FigureEight:
             #    np.cos((timestep + i)/self.wavelength) + 0./1000.
             #x = 0.003*(y**2/self.a**2 - z**2 / self.b**2)
 
-            y = self.a * np.sin((timestep + i) / self.wavelength) + 0./1000.
+            y = self.a * np.sin((timestep + i) / self.wavelength)  - 0./1000.
             z = self.b * np.sin((timestep + i) / self.wavelength) * \
-               np.cos((timestep + i)/self.wavelength) + 0./1000.
-            x = 0.0025*np.sin((timestep+i) / (self.wavelength))**2
+               np.cos((timestep + i)/self.wavelength) - 10./1000.
+            x = 0.0025*np.sin((timestep+i) / (self.wavelength))**2 + 0./1000.
 
             del_X = [x, y, z]
-            rotation = np.array([0.0, 0.3, -0.3])
+            rotation = np.array([0., -0.5, 0.5])
             rot = R.from_rotvec(rotation)
             del_X = rot.apply(del_X)
 

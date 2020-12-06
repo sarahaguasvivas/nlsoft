@@ -49,7 +49,7 @@ keras.losses.custom_loss = custom_loss
 
 def create_network():
     model = Sequential()
-    model.add(Dense(10, activation='relu', kernel_initializer='random_normal',
+    model.add(Dense(8, activation='relu', kernel_initializer='random_normal',
                     kernel_regularizer=regularizers.l1(0.01),
                     activity_regularizer=regularizers.l2(0.02), input_shape= (26,)))
     model.add(Dense(3, activation='tanh', kernel_initializer='random_normal'))
@@ -152,11 +152,11 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
     position = data_array[:, 11:14] # not using Euler angles
 
     rotation = np.array([-1.5, 0., -0.6])
-    rotation1 = np.array([-.7, 0.5, -0.6])
+    #rotation1 = np.array([-.7, 0.5, -0.6])
     rot = R.from_rotvec(rotation).inv()
-    rot1 = R.from_rotvec(rotation1)
+    #rot1 = R.from_rotvec(rotation1)
     position = rot.apply(position)
-    position = rot1.apply(position)
+    #position = rot1.apply(position)
 
 
     inputs = data_array[:, 14:]
