@@ -16,33 +16,33 @@ NUM_TIMESTEPS = 1000
 FILENAME = 'gru_log_output_disturbance.json'
 verbose = 1
 
-#NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
-#                                      N1 = 0, N2 = 1, Nu = 1,
-#                                      nd = 2, dd = 2, K = 2,
-#                                      Q = np.array([[1e3, 0., 0],
-#                                                    [0., 2e3, 0.],
-#                                                    [0., 0., 1e3]]),
-#                                      Lambda = np.array([[1., 0.],
-#                                                         [0., 1.]]),
-#                                      s = 1e-20, b = 1e-10, r = 4e5,
-#                                      states_to_control = [1, 1, 1],
-#                                      y0= [0.0, 0.0, 0.0],
-#                                      u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
-#                                      step_size = 8e-2)
-
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
-                                      nd = 2, dd = 2, K = 10,
-                                      Q = np.array([[7e3, 0., 0],
+                                      nd = 2, dd = 2, K = 2,
+                                      Q = np.array([[1e3, 0., 0],
                                                     [0., 2e3, 0.],
-                                                    [0., 0., 3e3]]),
+                                                    [0., 0., 1e3]]),
                                       Lambda = np.array([[1., 0.],
                                                          [0., 1.]]),
-                                      s = 1e-20, b = 1e-10, r = 4e2,
+                                      s = 1e-20, b = 1e-10, r = 4e5,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
-                                      step_size = 8e-3)
+                                      step_size = 8e-2)
+
+#NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
+#                                      N1 = 0, N2 = 1, Nu = 1,
+#                                      nd = 2, dd = 2, K = 10,
+#                                      Q = np.array([[7e3, 0., 0],
+#                                                    [0., 2e3, 0.],
+#                                                    [0., 0., 3e3]]),
+#                                      Lambda = np.array([[1., 0.],
+#                                                         [0., 1.]]),
+#                                      s = 1e-20, b = 1e-10, r = 4e2,
+#                                      states_to_control = [1, 1, 1],
+#                                      y0= [0.0, 0.0, 0.0],
+#                                      u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
+#                                      step_size = 8e-3)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -126,11 +126,11 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            #u_action[0] = np.clip(1.*(np.rad2deg(u_action[0]) + 50.) - 50. + 6., -100., 50.)
-            #u_action[1] = np.clip(1.*(np.rad2deg(u_action[1]) + 50.) - 50. + 10., -100., 50.)
+            u_action[0] = np.clip(1.*(np.rad2deg(u_action[0]) + 50.) - 50. + 0., -100., 50.)
+            u_action[1] = np.clip(1.*(np.rad2deg(u_action[1]) + 50.) - 50. + 0., -100., 50.)
 
-            u_action[0] = ((1.+np.cos(2.* np.pi / 1000. * n))/2. * 150. - 100.)
-            u_action[1] = ((1.+np.sin(2.* np.pi / 1000. * n))/2. * 150. - 100.)
+            #u_action[0] = ((1.+np.cos(2.* np.pi / 1000. * n))/2. * 150. - 100.)
+            #u_action[1] = ((1.+np.sin(2.* np.pi / 1000. * n))/2. * 150. - 100.)
 
             Block.step(action = u_action)
             #Block.step(action = [-70., -50.])

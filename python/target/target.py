@@ -223,19 +223,19 @@ class FigureEight:
             #    np.cos((timestep + i)/self.wavelength) + 0./1000.
             #x = 0.003*(y**2/self.a**2 - z**2 / self.b**2)
 
-            y = self.a * np.sin((timestep + i) / self.wavelength)  + 0./1000.
-            z = self.b * np.sin((timestep + i) / self.wavelength) * \
+            z = self.a * np.sin((timestep + i) / self.wavelength)  + 0./1000.
+            y = self.b * np.sin((timestep + i) / self.wavelength) * \
                np.cos((timestep + i)/self.wavelength) - 0./1000.
-            x = 0.001*np.sin((timestep+i) / (self.wavelength))**2 + 0./1000.
+            x = 0.002*np.sin((timestep+i) / (self.wavelength))**2 + 0./1000.
 
             del_X = [x, y, z]
-            rotation = np.array([-0.2, -0.6, .3])
+            rotation = np.array([0., -0.5, 0.3])
             rot = R.from_rotvec(rotation)
             del_X = rot.apply(del_X)
 
             target[i, :] = [del_X[0] + self.center[0] + 5./1000.,
-                            del_X[1] + self.center[1] + 5./1000.,
-                            del_X[2] + self.center[2] - 6./1000.]
+                            del_X[1] + self.center[1] + 10./1000.,
+                            del_X[2] + self.center[2] - 10./1000.]
             i+=1
         return target
 
