@@ -11,7 +11,7 @@ import numpy as np
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id.hdf5'
 
-NUM_EXPERIMENTS = 50
+NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 3000
 FILENAME = 'rnn_log_output_figure8.json'
 verbose = 1
@@ -43,8 +43,7 @@ time.sleep(1)
 neutral_point = Block.get_state()
 NNP.y0 = neutral_point
 
-#target = FigureEight(a = 10. / 1000., b = 10./1000., wavelength= 400.,
-#                     center = neutral_point)
+
 #target = FixedTarget(a = 10. / 1000., b = -10./1000., center = neutral_point)
 target = FigureEight(a = 10./1000., b = 15./1000., wavelength = 400., center = neutral_point)
 #target = Diagonal(wavelength = 15000, amplitude=10./1000., center = neutral_point)
@@ -53,7 +52,7 @@ target = FigureEight(a = 10./1000., b = 15./1000., wavelength = 400., center = n
 #                                center = neutral_point)
 #Block.get_signal_calibration()
 
-#Block.calibration_max = np.array([622., 133., 105., 143, 128., 139., 164., 1., 1., 1., 60.])
+
 Block.calibration_max = np.array([613., 134., 104., 174, 128., 146., 183., 1., 2., 1., 6.])
 
 u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
