@@ -61,7 +61,7 @@ def neural_network_training(X, y):
     k_fold_results = []
     for train, test in kfold.split(X, y):
         model = create_network()
-        model.fit(X[train], y[train], epochs = 100, batch_size = 1000)
+        model.fit(X[train], y[train], epochs = 50, batch_size = 1000)
         k_fold_results += [np.mean(np.linalg.norm(1000.*model.predict(X[test])- 1000.*y[test], axis = 1))]
     model.save('sys_id.hdf5')
     return 'sys_id.hdf5', k_fold_results
@@ -152,11 +152,11 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
     position = data_array[:, 11:14] # not using Euler angles
 
     rotation = np.array([-1.5, 0., -0.6])
-    #rotation1 = np.array([-.7, 0.5, -0.6])
+    rotation1 = np.array([-np.pi/4., 0.5, 0.])
     rot = R.from_rotvec(rotation).inv()
-    #rot1 = R.from_rotvec(rotation1)
+    rot1 = R.from_rotvec(rotation1)
     position = rot.apply(position)
-    #position = rot1.apply(position)
+    position = rot1.apply(position)
 
 
     inputs = data_array[:, 14:]

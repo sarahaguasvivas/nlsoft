@@ -105,14 +105,14 @@ class Pringle:
 
         for _ in range(n1, n2):
             z = self.amplitude / 1.* np.sin(2.*np.pi*(timestep + i) \
-                                                        / self.wavelength + phase) - 5./1000.
+                                                        / self.wavelength + phase) - 0./1000.
             y = self.amplitude / 2.* np.cos(2*np.pi*(timestep + i)/ \
-                                                        self.wavelength + phase) - 5./1000.
+                                                        self.wavelength + phase) - 0./1000.
 
-            x = 0.0003 *(z**2 / self.amplitude**2 - 4.* y**2 / self.amplitude**2) #45.* y * z + 0./1000.
+            x = 0.003 *(z**2 / self.amplitude**2 - 4.* y**2 / self.amplitude**2) #45.* y * z + 0./1000.
 
             del_X = [x, y, z]
-            rotation = np.array([0.1, 0.2, 0.1])
+            rotation = np.array([-0.1 , -np.pi/4., np.pi/4.])
             rot = R.from_rotvec(rotation)
             del_X = rot.apply(del_X)
 
@@ -223,19 +223,19 @@ class FigureEight:
             #    np.cos((timestep + i)/self.wavelength) + 0./1000.
             #x = 0.003*(y**2/self.a**2 - z**2 / self.b**2)
 
-            z = self.a * np.sin((timestep + i) / self.wavelength)  + 0./1000.
-            y = self.b * np.sin((timestep + i) / self.wavelength) * \
+            y = self.a * np.sin((timestep + i) / self.wavelength)  + 0./1000.
+            z = self.b * np.sin((timestep + i) / self.wavelength) * \
                np.cos((timestep + i)/self.wavelength) - 0./1000.
-            x = 0.002*np.sin((timestep+i) / (self.wavelength))**2 + 0./1000.
+            x = 0.003*np.sin((timestep+i) / (self.wavelength))**2 + 0./1000.
 
             del_X = [x, y, z]
-            rotation = np.array([0., -0.5, 0.3])
+            rotation = np.array([0.5, 0.5, 0.])
             rot = R.from_rotvec(rotation)
             del_X = rot.apply(del_X)
 
-            target[i, :] = [del_X[0] + self.center[0] + 5./1000.,
-                            del_X[1] + self.center[1] + 10./1000.,
-                            del_X[2] + self.center[2] - 10./1000.]
+            target[i, :] = [del_X[0] + self.center[0] - 0./1000.,
+                            del_X[1] + self.center[1] + 5./1000.,
+                            del_X[2] + self.center[2] + 15./1000.]
             i+=1
         return target
 

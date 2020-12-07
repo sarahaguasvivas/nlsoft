@@ -65,7 +65,7 @@ def neural_network_training(X, y):
         X_train = X[train]
         y_train = y[train]
         model = create_network(x_train_shape=X_train.shape)
-        model.fit(X_train, y_train, epochs = 100, batch_size = 1000)
+        model.fit(X_train, y_train, epochs = 10, batch_size = 1000)
         k_fold_results += [np.mean(np.linalg.norm(1000.*model.predict(X[test])- 1000.*y[test], axis = 1))]
 
     model.save('sys_id_LSTM.hdf5')
@@ -153,11 +153,11 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
     inputs = data_array[:, 14:]
 
     rotation = np.array([-1.5, 0., -0.6])
-    #rotation1 = np.array([-.7, 0.5, -0.6])
+    rotation1 = np.array([-np.pi/4., 0.5, 0.])
     rot = R.from_rotvec(rotation).inv()
-    #rot1 = R.from_rotvec(rotation1)
+    rot1 = R.from_rotvec(rotation1)
     position = rot.apply(position)
-    #position = rot1.apply(position)
+    position = rot1.apply(position)
 
     N = max(nd, dd) # data sample where we will start first
 

@@ -12,14 +12,15 @@ import numpy as np
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_GRU.hdf5'
 
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 1000
+NUM_TIMESTEPS = 3000
 FILENAME = 'gru_log_output_disturbance.json'
 verbose = 1
+savelog = False
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
                                       nd = 2, dd = 2, K = 2,
-                                      Q = np.array([[1e3, 0., 0],
+                                      Q = np.array([[3e3, 0., 0],
                                                     [0., 2e3, 0.],
                                                     [0., 0., 1e3]]),
                                       Lambda = np.array([[1., 0.],
@@ -27,7 +28,7 @@ NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       s = 1e-20, b = 1e-10, r = 4e5,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
-                                      u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
+                                      u0 = [np.deg2rad(-60.), np.deg2rad(-50.)],
                                       step_size = 8e-2)
 
 #NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
@@ -52,25 +53,22 @@ time.sleep(1)
 neutral_point = Block.get_state()
 
 NNP.y0 = neutral_point
-NNP.u0 = [np.deg2rad(Block.motors._zero1),
-                        np.deg2rad(Block.motors._zero2)]
+NNP.u0 = [np.deg2rad(-60.),
+                        np.deg2rad(-50.)]
 
 
-target = FixedTarget(a = 0. / 1000., b = 0./1000.,
-                     center = neutral_point)
+#target = FixedTarget(a = 0. / 1000., b = 0./1000.,
+#                     center = neutral_point)
 
 #target = Diagonal(wavelength = 15000, amplitude=10./1000., center = neutral_point)
 
 #target = Pringle(wavelength = 2000, amplitude = 10./1000.,
 #                                center = neutral_point)
 
-#target = FigureEight(a = 10./1000., b = 20./1000., wavelength = 400., center = neutral_point)
-# 5-> 139.
-# 6-> 164.
-# -1> 6
+target = FigureEight(a = 10./1000., b = 15./1000., wavelength = 400., center = neutral_point)
 
 #Block.calibration_max = np.array([613., 134., 104., 174, 128., 146., 183., 1., 2., 1., 60.])
-Block.calibration_max = np.array([60., 80., 80., 100., 100., 50., 50., 50., 2., 1., 60.])
+Block.calibration_max = np.array([613., 134., 104., 174, 128., 146., 183., 1., 2., 1., 60.])
 
 u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
 del_u = np.zeros(u_optimal_old.shape)
@@ -88,7 +86,7 @@ try:
         log.log({str(e) : {'predicted' : [], 'actual' : [], 'yn' : [],
                 'elapsed' : [], 'u' : []}})
         print(e)
-        Block.reset()
+        Block.step(action = NNP.u0)
         time.sleep(5)
         NNP.y0 = Block.get_state()
 
@@ -163,7 +161,8 @@ try:
         Block.reset()
 
     Block.step([-80., -50.])
-    log.save_log(filename=FILENAME)
+    if savelog:
+        log.save_log(filename=FILENAME)
     log.plot_log()
 
 
