@@ -151,12 +151,12 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
 
     position = data_array[:, 11:14] # not using Euler angles
 
-    rotation = np.array([-1.5, 0., -0.6])
-    rotation1 = np.array([-np.pi/4., 0.5, 0.])
-    rot = R.from_rotvec(rotation).inv()
-    rot1 = R.from_rotvec(rotation1)
-    position = rot.apply(position)
-    position = rot1.apply(position)
+    #rotation = np.array([-1.5, 0., -0.6])
+    #rotation1 = np.array([-np.pi/4., 0.5, 0.])
+    #rot = R.from_rotvec(rotation).inv()
+    #rot1 = R.from_rotvec(rotation1)
+    #position = rot.apply(position)
+    #position = rot1.apply(position)
 
 
     inputs = data_array[:, 14:]

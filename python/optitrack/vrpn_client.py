@@ -55,7 +55,8 @@ class BlockState():
 
         head_o = head[:3]
         base_o = base[:3]
-        base_orientation = np.array([-np.pi/4., 0.5, 0.])
+        #base_orientation = np.array([-np.pi/4., 0.5, 0.])
+        base_orientation = np.array([-1.5, 0., -0.6])
         Rot = R.from_rotvec(base_orientation)
         v = Rot.apply(np.array(head_o) - np.array(base_o))
         return v.tolist()

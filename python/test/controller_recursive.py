@@ -115,11 +115,11 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(np.rad2deg(u_action[0]) - 0., -100., 50.)
-            u_action[1] = np.clip(np.rad2deg(u_action[1]) + 5., -100., 50.)
+            #u_action[0] = np.clip(np.rad2deg(u_action[0]) - 0., -100., 50.)
+            #u_action[1] = np.clip(np.rad2deg(u_action[1]) + 5., -100., 50.)
 
-            #u_action[0] = ((1.+ np.cos(2.* np.pi / 1000. * n))/(2.) * 150. - 100.)
-            #u_action[1] = ((1.+ np.cos(2.* np.pi / 1000. * n)* np.sin(2.* np.pi / 1000. * n))/(2.) * 150. - 100.)
+            u_action[0] = ((1.+ np.cos(2.* np.pi / 1000. * n))/(2.) * 150. - 100.)
+            u_action[1] = ((1.+ np.cos(2.* np.pi / 1000. * n)* np.sin(2.* np.pi / 1000. * n))/(2.) * 150. - 100.)
 
             Block.step(action = u_action)
 

@@ -234,8 +234,8 @@ class FigureEight:
             del_X = rot.apply(del_X)
 
             target[i, :] = [del_X[0] + self.center[0] + 0./1000.,
-                            del_X[1] + self.center[1] + 5./1000.,
-                            del_X[2] + self.center[2] + 11./1000.]
+                            del_X[1] + self.center[1] + 0./1000.,
+                            del_X[2] + self.center[2] + 0./1000.]
             i+=1
         return target
 
