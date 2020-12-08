@@ -21,7 +21,7 @@ TRAIN = True
 from typing import List, Tuple
 
 plt.style.use('seaborn')
-filename = str(os.environ["HOME"]) + "/gpc_controller/python/data/data_Nov_30_2020.csv"
+filename = str(os.environ["HOME"]) + "/gpc_controller/python/data/data_Dec_07_2020.csv"
 
 font = FontProperties()
 font.set_family('serif')
@@ -51,7 +51,7 @@ def create_network(x_train_shape : Tuple[int]):
     model = Sequential()
     model.add(LSTM(units = 5, input_shape = (1,x_train_shape[-1])))
     #model.add(Flatten())
-    model.add(Dense(4, activation = 'tanh', kernel_initializer='random_normal'))
+    model.add(Dense(5, activation = 'tanh', kernel_initializer='random_normal'))
     model.add(Dense(3, activation='tanh', kernel_initializer='random_normal'))
     model.compile(optimizer="adam", loss=huber_loss, metrics=['mse'])
     return model

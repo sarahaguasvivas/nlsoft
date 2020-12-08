@@ -17,7 +17,7 @@ verbose = 1
 savelog = False
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
-                                      nd = 2, dd = 2, K = 3,
+                                      nd = 2, dd = 2, K = 2,
                                       Q = np.array([[1e5, 0., 0],
                                                     [0., 1e5, 0.],
                                                     [0., 0., 1e5]]),
