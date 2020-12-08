@@ -11,11 +11,11 @@ import numpy as np
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id.hdf5'
 
-NUM_EXPERIMENTS = 50
+NUM_EXPERIMENTS = 5
 NUM_TIMESTEPS = 3000
 FILENAME = 'rnn_log_output_figure8.json'
 verbose = 1
-savelog = True
+savelog = False
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
@@ -50,7 +50,7 @@ target = FigureEight(a = 10./1000., b = 20./1000., wavelength = 400., center = n
 #Block.get_signal_calibration()
 
 #615. 110. 103. 157.  99. 155. 170.   1.   1.   7.   6.
-Block.calibration_max = np.array([615., 110., 103., 157., 99., 155., 170., 1., 1., 7., 6.])
+Block.calibration_max = np.array([615., 110., 103., 157., 99., 155., 170., 1., 1., 7., 30.])
 
 u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
 del_u = np.zeros(u_optimal_old.shape)
