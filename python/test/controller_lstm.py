@@ -26,7 +26,7 @@ NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       s = 1e-20, b = 1e-5, r = 4e3,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
-                                      u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
+                                      u0 = [np.deg2rad(-50.), np.deg2rad(-50.)],
                                       step_size = 5e-2)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
