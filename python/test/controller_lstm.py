@@ -10,24 +10,24 @@ import numpy as np
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_LSTM.hdf5'
 
-NUM_EXPERIMENTS = 1
+NUM_EXPERIMENTS = 50
 NUM_TIMESTEPS = 3000
 FILENAME = 'LSTM_log_output_figure8.json'
 verbose = 1
-savelog = False
+savelog = True
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
-                                      nd = 2, dd = 2, K = 3,
+                                      nd = 2, dd = 2, K = 2,
                                       Q = np.array([[1., 0., 0],
-                                                    [0., 3e4, 0.],
-                                                    [0., 0., 5e4]]),
-                                      Lambda = np.array([[5., 0.],
+                                                    [0., 1e4, 0.],
+                                                    [0., 0., 6e3]]),
+                                      Lambda = np.array([[1., 0.],
                                                          [0., 1.]]),
                                       s = 1e-20, b = 1e-5, r = 4e3,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-50.), np.deg2rad(-50.)],
-                                      step_size = 5e-2)
+                                      step_size = 8e-2)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -43,12 +43,9 @@ NNP.y0 = neutral_point
 #target = FixedTarget(a = 0. / 1000., b = 0./1000.,
 #                     center = neutral_point)
 
-target = FigureEight(a = 10./1000., b = 5./1000., wavelength = 400., center = neutral_point)
+target = FigureEight(a = 8./1000., b = 15./1000., wavelength = 400., center = neutral_point)
 
-#target = Pringle(wavelength = 2000, amplitude = 10./1000.,
-#                                center = neutral_point)
-
-Block.calibration_max = np.array([615., 110., 103., 157., 99., 155., 170., 1., 2., 7., 60.])
+Block.calibration_max = np.array([613., 134., 104., 200., 128., 146., 183., 1., 1., 7., 60])
 
 u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
 del_u = np.zeros(u_optimal_old.shape)
@@ -104,7 +101,7 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(1.*(np.rad2deg(u_action[0]) + 50.) - 50. + 15., -100., 50.)
+            u_action[0] = np.clip(1.*(np.rad2deg(u_action[0]) + 50.) - 50. + 2., -100., 50.)
             u_action[1] = np.clip(1.*(np.rad2deg(u_action[1]) + 50.) - 50. - 0., -100., 50.)
 
             #u_action[0] = ((1.+ np.cos(2.* np.pi / 1000. * n))/(2.) * 150. - 100.)
