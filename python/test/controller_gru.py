@@ -20,16 +20,16 @@ savelog = False
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
                                       nd = 2, dd = 2, K = 3,
-                                      Q = np.array([[3e3, 0., 0],
-                                                    [0., 1e4, 0.],
-                                                    [0., 0., 1e4]]),
+                                      Q = np.array([[4e3, 0., 0],
+                                                    [0., 2e4, 0.],
+                                                    [0., 0., 2e4]]),
                                       Lambda = np.array([[1., 0.],
                                                          [0., 1.]]),
-                                      s = 1e-20, b = 1e-5, r = 4e3,
+                                      s = 1e-20, b = 1e-5, r = 4.,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
-                                      step_size = 8e-2)
+                                      step_size = 5e-2)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
@@ -106,11 +106,11 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(1.*(np.rad2deg(u_action[0]) + 50.) - 50. - 0., -100., 50.)
-            u_action[1] = np.clip(1.*(np.rad2deg(u_action[1]) + 50.) - 50. + 0., -100., 50.)
+            #u_action[0] = np.clip(1.*(np.rad2deg(u_action[0]) + 50.) - 50. + 0., -100., 50.)
+            #u_action[1] = np.clip(1.*(np.rad2deg(u_action[1]) + 50.) - 50. + 10., -100., 50.)
 
-            #u_action[0] = ((1.+np.cos(2.* np.pi / 1000. * n))/2. * 150. - 100.)
-            #u_action[1] = ((1.+np.sin(2.* np.pi / 1000. * n))/2. * 150. - 100.)
+            u_action[0] = ((1.+np.cos(2.* np.pi / 1000. * n))/2. * 150. - 100.)
+            u_action[1] = ((1.+np.sin(2.* np.pi / 1000. * n))/2. * 150. - 100.)
 
             Block.step(action = u_action)
 

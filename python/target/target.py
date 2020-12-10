@@ -218,15 +218,15 @@ class FigureEight:
         target = np.empty([n2-n1, dims])
         i = 0
         for _ in range(n1, n2):
-            y = self.a * np.sin((timestep + i) / self.wavelength)  - 0./1000.
+            y = self.a * np.sin((timestep + i) / self.wavelength)  + 5./1000.
             z = self.b * np.sin((timestep + i) / self.wavelength) * \
                np.cos((timestep + i)/self.wavelength) + 0./1000.
-            x = -0.003*np.sin((timestep+i) / (self.wavelength))**2 - 0./1000.
+            x = 0.003*np.sin((timestep+i) / (self.wavelength))**2 - 0./1000.
 
             del_X = [x, y, z]
 
-            rotation = np.array([-np.pi/3., -np.pi/8., -np.pi/4.])
-            #rotation = np.array([0., 0., 0.])
+            #rotation = np.array([-np.pi/3., -np.pi/4., -np.pi/6.])
+            rotation = np.array([0., 0., 0.])
             rot = R.from_rotvec(rotation)
             del_X = rot.apply(del_X)
 

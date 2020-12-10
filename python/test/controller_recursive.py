@@ -11,11 +11,11 @@ import numpy as np
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id.hdf5'
 
-NUM_EXPERIMENTS = 50
+NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 3000
 FILENAME = 'rnn_log_output_figure8.json'
 verbose = 1
-savelog = True
+savelog = False
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
@@ -112,11 +112,11 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(np.rad2deg(u_action[0]) + 10., -100., 50.)
-            u_action[1] = np.clip(np.rad2deg(u_action[1]) + 30., -100., 50.)
+            #u_action[0] = np.clip(np.rad2deg(u_action[0]) + 10., -100., 50.)
+            #u_action[1] = np.clip(np.rad2deg(u_action[1]) + 30., -100., 50.)
 
-            #u_action[0] = ((1.+ np.cos(2.* np.pi / 1000. * n))/(2.) * 150. - 100.)
-            #u_action[1] = ((1.+ np.sin(2.* np.pi / 1000. * n))/(2.) * 150. - 100.)
+            u_action[0] = ((1.+ np.cos(2.* np.pi / 1000. * n))/(2.) * 150. - 100.)
+            u_action[1] = ((1.+ np.sin(2.* np.pi / 1000. * n))/(2.) * 150. - 100.)
 
             Block.step(action = u_action)
 
