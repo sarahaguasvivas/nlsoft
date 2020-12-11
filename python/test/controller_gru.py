@@ -11,11 +11,11 @@ import numpy as np
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_GRU.hdf5'
 
-NUM_EXPERIMENTS = 1
+NUM_EXPERIMENTS = 50
 NUM_TIMESTEPS = 3000
 FILENAME = 'gru_log_output_diagonal.json'
 verbose = None
-savelog = False
+savelog = True
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,

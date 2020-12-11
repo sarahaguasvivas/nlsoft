@@ -72,7 +72,7 @@ class Diagonal:
             x = 0.004 *(z**2 / self.amplitude**2 - y**2 / self.amplitude**2)
 
             del_X = [x, y, z]
-            rotation = np.array([0.,  -np.pi/6., 0.1])
+            rotation = np.array([0.,  -np.pi/6., 0.3])
             rot = R.from_rotvec(rotation)
             del_X = rot.apply(del_X)
 
