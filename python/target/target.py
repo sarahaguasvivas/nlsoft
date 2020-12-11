@@ -63,20 +63,20 @@ class Diagonal:
         for i in range(n1, n2):
             y = self.amplitude / 2. * np.sin(2.*np.pi*(timestep+ i ) \
                                             / (self.wavelength) + phase + \
-                                                0.000001*(timestep + i )**2) - 5./1000.
+                                                0.000001*(timestep + i )**2) - 0./1000.
 
             z = self.amplitude * np.sin(2*np.pi*(timestep + i  ) / \
                                             (self.wavelength) + phase +\
-                                        0.000001*(timestep + i )**2)
+                                        0.000001*(timestep + i )**2) + 10./1000.
 
-            x = 0.0009*(y**2/(10./1000.)**2 - z**2 / (10./1000.)**2) - 1./1000.
+            x = 0.004 *(z**2 / self.amplitude**2 - y**2 / self.amplitude**2)
 
             del_X = [x, y, z]
-            rotation = np.array([0.3, 0.4 + np.pi, -0.3])
+            rotation = np.array([0.,  -np.pi/6., 0.1])
             rot = R.from_rotvec(rotation)
             del_X = rot.apply(del_X)
 
-            target[i, :] = [del_X[0] + self.center[0],
+            target[i, :] = [del_X[0] + self.center[0] + 2./1000.,
                             del_X[1] + self.center[1],
                             del_X[2] + self.center[2]]
             #target[i, :] = [self.center[0] + x, self.center[1] + y, self.center[2] + z]

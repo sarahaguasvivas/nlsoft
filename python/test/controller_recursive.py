@@ -13,8 +13,8 @@ model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id.h
 
 NUM_EXPERIMENTS = 50
 NUM_TIMESTEPS = 3000
-FILENAME = 'rnn_log_output_figure8.json'
-verbose = 1
+FILENAME = 'rnn_log_output_pringle.json'
+verbose = None
 savelog = True
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
@@ -45,7 +45,7 @@ NNP.y0 = neutral_point
 #target = FigureEight(a = 8./1000., b = 15./1000., wavelength = 400., center = neutral_point)
 #target = Diagonal(wavelength = 15000, amplitude=10./1000., center = neutral_point)
 
-target = Pringle(wavelength = 1000, amplitude = 10./1000., \
+target = Pringle(wavelength = 1000, amplitude = 5./1000., \
                                 center = neutral_point)
 #Block.get_signal_calibration()
 
@@ -67,7 +67,7 @@ try:
     for e in range(NUM_EXPERIMENTS):
         log.log({str(e) : {'predicted' : [], 'actual' : [], 'yn' : [],
                 'elapsed' : [], 'u' : []}})
-
+        print(e)
         #Block.reset()
         Block.step(action=NNP.u0)
         time.sleep(1)
