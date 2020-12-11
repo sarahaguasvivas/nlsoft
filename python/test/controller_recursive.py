@@ -42,11 +42,11 @@ NNP.y0 = neutral_point
 
 
 #target = FixedTarget(a = 10. / 1000., b = -10./1000., center = neutral_point)
-target = FigureEight(a = 8./1000., b = 15./1000., wavelength = 400., center = neutral_point)
+#target = FigureEight(a = 8./1000., b = 15./1000., wavelength = 400., center = neutral_point)
 #target = Diagonal(wavelength = 15000, amplitude=10./1000., center = neutral_point)
 
-#target = Pringle(wavelength = 1000, amplitude = 10./1000., \
-#                                center = neutral_point)
+target = Pringle(wavelength = 1000, amplitude = 10./1000., \
+                                center = neutral_point)
 #Block.get_signal_calibration()
 
 #615. 110. 103. 157.  99. 155. 170.   1.   1.   7.   6.
