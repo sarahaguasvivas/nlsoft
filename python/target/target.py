@@ -223,7 +223,7 @@ class FigureEight:
             y = self.a * np.sin((timestep + i) / self.wavelength)  - 0./1000.
             z = self.b * np.sin((timestep + i) / self.wavelength) * \
                np.cos((timestep + i)/self.wavelength) + 0./1000.
-            x = 0.002*np.sin((timestep+i) / (self.wavelength))**2 - 0./1000.
+            x = 0.001*np.sin((timestep+i) / (self.wavelength))**2 - 0./1000.
 
             del_X = [x, y, z]
 

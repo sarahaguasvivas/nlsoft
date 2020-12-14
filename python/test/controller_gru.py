@@ -11,15 +11,15 @@ import numpy as np
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_GRU.hdf5'
 
-NUM_EXPERIMENTS = 1
+NUM_EXPERIMENTS = 10
 NUM_TIMESTEPS = 3000
 FILENAME = 'gru_log_output_figure8.json'
 verbose = None
-savelog = False
+savelog = True
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
-                                      nd = 2, dd = 2, K = 3,
+                                      nd = 2, dd = 2, K = 2,
                                       Q = np.array([[1e5, 0., 0],
                                                     [0., 2e4, 0.],
                                                     [0., 0., 5e4]]),
@@ -59,7 +59,7 @@ NNP.y0 = neutral_point
 
 #target = Diagonal(wavelength = 15000, amplitude= 10./1000., center = neutral_point)
 
-target = FigureEight(a = 10./1000., b = 20./1000., wavelength = 400., center = neutral_point)
+target = FigureEight(a = 8./1000., b = 20./1000., wavelength = 400., center = neutral_point)
 #target = Pringle(wavelength = 1000, amplitude = 5./1000.,
 #                                center = neutral_point)
 
@@ -120,8 +120,8 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(1.*(np.rad2deg(u_action[0]) + 50.) - 50. - 10., -100., 50.)
-            u_action[1] = np.clip(1.*(np.rad2deg(u_action[1]) + 50.) - 50. - 5., -100., 50.)
+            u_action[0] = np.clip(1.*(np.rad2deg(u_action[0]) + 50.) - 50. - 14., -100., 50.)
+            u_action[1] = np.clip(1.*(np.rad2deg(u_action[1]) + 50.) - 50. - 3., -100., 50.)
 
             #u_action[0] = ((1.+np.cos(2.* np.pi / 1000. * n))/2. * 150. - 100.)
             #u_action[1] = ((1.+np.sin(2.* np.pi / 1000. * n))/2. * 150. - 100.)
