@@ -19,9 +19,9 @@ savelog = False
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
-                                      nd = 2, dd = 2, K = 2,
-                                      Q = np.array([[6e4, 0., 0],
-                                                    [0., 1e4, 0.],
+                                      nd = 2, dd = 2, K = 3,
+                                      Q = np.array([[1e5, 0., 0],
+                                                    [0., 2e4, 0.],
                                                     [0., 0., 5e4]]),
                                       Lambda = np.array([[1., 0.],
                                                          [0., 5.]]),
@@ -29,7 +29,7 @@ NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-60.), np.deg2rad(-50.)],
-                                      step_size = 5e-2)
+                                      step_size = 8e-2)
 
 #NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
 #                                      N1 = 0, N2 = 1, Nu = 1,
@@ -120,8 +120,8 @@ try:
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()
 
-            u_action[0] = np.clip(1.*(np.rad2deg(u_action[0]) + 50.) - 50. - 15., -100., 50.)
-            u_action[1] = np.clip(1.*(np.rad2deg(u_action[1]) + 50.) - 50. - 12., -100., 50.)
+            u_action[0] = np.clip(1.*(np.rad2deg(u_action[0]) + 50.) - 50. - 10., -100., 50.)
+            u_action[1] = np.clip(1.*(np.rad2deg(u_action[1]) + 50.) - 50. - 5., -100., 50.)
 
             #u_action[0] = ((1.+np.cos(2.* np.pi / 1000. * n))/2. * 150. - 100.)
             #u_action[1] = ((1.+np.sin(2.* np.pi / 1000. * n))/2. * 150. - 100.)
