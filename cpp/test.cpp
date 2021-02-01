@@ -60,6 +60,9 @@ int main(){
 
     // testing_inverse:
     std::cout << "Inverse: " << std::endl;
+    set_to_zero(f);
+    for (int i=0; i<f.rows; i++) f.data[i*a.cols+i] = 1.0;
+    print_matrix(f);
     Matrix2 g = inverse(f);
     print_matrix(g);
 

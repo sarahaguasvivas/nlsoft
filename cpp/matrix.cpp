@@ -148,7 +148,7 @@ void ludcmp(struct Matrix2 a, int *indx, float * d)
 
    int imax;
    int n = a.rows;
-   float big, dum, sum, temp;
+   float big = 0.0, dum, sum, temp;
    float * vv;
    int error = 0;
 
@@ -156,21 +156,22 @@ void ludcmp(struct Matrix2 a, int *indx, float * d)
    *d = 1.0;
    
     for (int i = 1; i<=n; i++)
-   {
+    {
        big = 0.0;
        for (int j=1; j <= n; j++)
        {
-           if ((temp == fabs(a.data[i * a.cols + j])) > big) big = temp;
+           if ((temp = fabs(a.data[i * a.cols + j])) > big) big = temp;
        }
        if (big == 0.0) {
            error = 1;
            vv[i] = 0.0;
-       } else vv[i] = 1.0/big;
-   }
+       }  
+       vv[i] = 1.0/big;
+    }
       
     for (int j=1 ; j <= n; j++)
     {
-        for (int i = 1; i< j; i++)
+        for (int i = 1; i < j; i++)
         {
             sum = a.data[i*a.cols + j];
             for (int k = 1; k < i; k++)
@@ -212,11 +213,10 @@ void ludcmp(struct Matrix2 a, int *indx, float * d)
             for (int i = j+1; i <= n; i++) a.data[i*a.cols + j] *= dum;
         }
     }
-  
     free_vector(vv, 1, n);
 }
 
-void lubksb(struct Matrix2 a, int *indx, float * b)
+void lubksb(struct Matrix2 a, int *indx, float b[])
 {
     int i, ii=0, ip, j;
     float sum;
@@ -235,7 +235,7 @@ void lubksb(struct Matrix2 a, int *indx, float * b)
     for (i = n; i >= 1; i--){
         sum = b[i];
         for (j = i+1; j<= n ; j++) sum -= a.data[i*a.cols+j] * b[j];
-        b[i] = sum/a.data[i*a.cols + j];
+        b[i] = sum/a.data[i*a.cols + i];
     }
 }
 
