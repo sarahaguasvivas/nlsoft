@@ -5,6 +5,7 @@ struct Matrix2{
     int rows;
     int cols;
     float *data;
+    float tiny = 1e-20; // very small number
 };
 
 void set(struct Matrix2 &, int, int);

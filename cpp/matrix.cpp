@@ -126,7 +126,123 @@ struct Matrix2 multiply(struct Matrix2 a, struct Matrix2 b)
     }
     return product;
 }
-struct Matrix2 inverse (struct Matrix2)
+
+void ludcmp(struct Matrix2 a, int *indx, float * d)
+{   /*
+    References
+        ----------
+        [2] W. H. Press, S. A. Teukolsky, W. T. Vetterling and B. P. Flannery,
+            "Numerical Recipes (3rd edition)", Cambridge University Press, 2007,
+            page 46. https://www.cec.uchile.cl/cinetica/pcordero/MC_libros/NumericalRecipesinC.pdf
+    */
+
+   int imax;
+   int n = a.rows;
+   float big, dum, sum, temp;
+   Matrix2 vv;
+   int error = 0;
+   set(vv, 1, n);
+   *d = 1.0;
+
+   for (int i = 1; i<=n; i++)
+   {
+       big = 0.0;
+       for (int j=1; j <= n; j++)
+       {
+           if ((temp == fabs(a.data[i * a.cols + j])) > big) big = temp;
+       }
+       if (big == 0.0) error = 1;
+       else vv.data[i*a.cols] = 1.0/big;
+   }
+   for (int j=1 ; j <= n; j++)
+   {
+        for (int i = 1; i< j; i++)
+        {
+            sum = a.data[i*a.cols + j];
+            for (int k = 1; k < i; k++)
+            {
+                sum -= a.data[i*a.cols + k] * a.data[k*a.cols + j];
+            }
+            a.data[i*a.cols + j] = sum;
+        }
+        for (int i = 1; i <=n; i++)
+        {
+            sum = a.data[i*a.cols + j];
+            for (int k = 1; k<j; k++)
+                sum -= a.data[i*a.cols + k] * a.data[k*a.cols + j];
+            a.data[i*a.cols + j] = sum;
+            if ((dum = vv.data[i*a.cols]*fabs(sum)) >= big)
+            {
+                big = dum;
+                imax = i;
+            }
+        }
+        if (j != imax){
+            for (int k=1; k<=n; k++)
+            {
+                dum = a.data[imax*a.cols + k];
+                a.data[imax * a.cols + k]= a.data[j*a.cols + k];
+                a.data[j*a.cols + k] = dum;
+            }
+            *d = -(*d);
+            vv.data[imax*a.cols] = vv.data[j*a.cols];
+        }
+        indx[j] = imax;
+        if (a.data[j*a.cols + j] == 0.0) a.data[j*a.cols + j] = a.tiny;
+        if (j!= n)
+        {
+            dum = 1.0/a.data[j*a.cols+j];
+            for (int i = j+1; i <= n; i++) a.data[i*a.cols + j] *= dum;
+        }
+    }
+    release(vv);
+}
+
+void lubksb(struct Matrix2 a, int *indx, float * b)
 {
+    int i, ii=0, ip, j;
+    float sum;
+    int n = a.cols;
+
+    for (i = 1; i <= n; i++)
+    {
+        ip = indx[i];
+        sum = b[ip];
+        b[ip]= b[i];
+        if (ii)
+            for (j = ii; j<= i-1; j++) sum -= a.data[i*a.cols + j] * b[j];
+        else if (sum) ii = i;
+        b[i] = sum;
+    }
+    for (i = n; i >= 1; i--){
+        sum = b[i];
+        for (j = i+1; j<= n ; j++) sum -= a.data[i*a.cols+j] * b[j];
+        b[i] = sum/a.data[i*a.cols + j];
+    }
+}
+
+
+struct Matrix2 inverse (struct Matrix2 a)
+{
+    /*
+        References
+            ----------
+            .. [1] MATLAB reference documention, "Rank"
+                https://www.mathworks.com/help/techdoc/ref/rank.html
+            .. [2] W. H. Press, S. A. Teukolsky, W. T. Vetterling and B. P. Flannery,
+                "Numerical Recipes (3rd edition)", Cambridge University Press, 2007,
+                page 795.
+    */
+
+    int i, j, *indx;
+    float d, *col, *y;
+    ludcmp(a, indx, &d);
+    for (j = 1; j <= a.cols; j++)
+    {
+        for (i = 1; i <= a.cols; i++) col[i] = 0.0;
+        col[j] = 1.0;
+        lubksb(a, indx, col);
+        for (i = 1; i <= a.cols; i++) y[i*a.cols + j] = col[i]; 
+    }
 
 }
