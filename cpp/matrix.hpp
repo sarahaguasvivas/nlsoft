@@ -17,5 +17,8 @@ struct Matrix2 multiply(struct Matrix2, struct Matrix2);
 struct Matrix2 hadamard(struct Matrix2, struct Matrix2);
 struct Matrix2 inverse (struct Matrix2);
 void release(struct Matrix2 & a);
+void lubksb(struct Matrix2, int *, float *);
+void ludcmp(struct Matrix2, int *, float *);
+float * vector(int, int);
 
 #endif

@@ -58,6 +58,10 @@ int main(){
     Matrix2 f = multiply(d, e);
     print_matrix(f);
 
+    // testing_inverse:
+    std::cout << "Inverse: " << std::endl;
+    Matrix2 g = inverse(f);
+    print_matrix(g);
 
     release(a);
     release(b);
@@ -65,6 +69,7 @@ int main(){
     release(d);
     release(e);
     release(f);
+    release(g);
 
     return 0;
 }
