@@ -188,7 +188,7 @@ void ludcmp(struct Matrix2 a, int * indx, float *d)
                 
         indx[j]=imax;
         if (a.data[j*a.cols + j] == 0.0) a.data[j*a.cols + j]= a.tiny;
-        if (j != n - 1) {
+        if (j != n) {
             dum = 1.0 / (a.data[j*a.cols + j]);
             for (i=j + 1;i<n;i++) a.data[i*a.cols + j] *= dum;
         }
