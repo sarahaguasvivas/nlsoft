@@ -228,7 +228,7 @@ void lubksb(struct Matrix2 a, int *indx,float b[])
 	}
 }
 
-struct Matrix2 solve_matrix_eqn(struct Matrix2 a, struct Matrix2 b, int m)
+struct Matrix2 solve_matrix_eqn(struct Matrix2 a, struct Matrix2 b)
 {
     /*
         This is the solution to Ax=b through LU decomposition
@@ -241,14 +241,13 @@ struct Matrix2 solve_matrix_eqn(struct Matrix2 a, struct Matrix2 b, int m)
                 page 795.
 
         Modified to start indices at 0
-        m -> number of control inputs in the system
     */
     
     Matrix2 u; 
-
+    int m = b.cols;
     float d;
     int n = a.cols, *indx;
-    float * x = (float*)malloc(a.rows* m * sizeof(float));
+    float * x = (float*)malloc(a.rows* b.cols * sizeof(float));
     float * col = (float*)malloc(a.rows * sizeof(float));
 
     ludcmp(a, indx, &d);
@@ -307,7 +306,7 @@ struct Matrix2 inverse(struct Matrix2 a)
     free(y);
 }
 
-struct Matrix2 nr_optimizer(struct Matrix2 j, struct Matrix2 h, struct Matrix2 u0)
+struct Matrix2 nr_optimizer(struct Matrix2 jacobian, struct Matrix2 hessian, struct Matrix2 u0)
 {
     /*
         Taken from:
@@ -318,7 +317,7 @@ struct Matrix2 nr_optimizer(struct Matrix2 j, struct Matrix2 h, struct Matrix2 u
     set(u_optimal, u0.rows, u0.cols);
     equal(u_optimal, u0);
 
-    u_optimal = solve_matrix_eqn(h, j, m);
+    u_optimal = solve_matrix_eqn(hessian, jacobian);
 
     return u_optimal;
 }
