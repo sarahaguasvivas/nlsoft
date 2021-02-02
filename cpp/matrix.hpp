@@ -17,9 +17,9 @@ struct Matrix2 multiply(struct Matrix2, struct Matrix2);
 struct Matrix2 hadamard(struct Matrix2, struct Matrix2);
 struct Matrix2 inverse (struct Matrix2);
 void release(struct Matrix2 & a);
-void lubksb(struct Matrix2&, int *, float *);
-void ludcmp(struct Matrix2&, int *, float *);
-float * vector(int, int);
+void lubksb(struct Matrix2, int *, float *);
+void ludcmp(struct Matrix2, int *, float *);
 void equal(struct Matrix2 &, struct Matrix2);
-
+struct Matrix2 nr_optimizer(struct Matrix2, struct Matrix2, struct Matrix2);
+struct Matrix2 solve_matrix_eqn(struct Matrix2, struct Matrix2);
 #endif

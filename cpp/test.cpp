@@ -68,12 +68,17 @@ int main(){
 
     //testing_inverse for random matrix:
     for (int i=0; i<e.rows; i++) e.data[i*e.cols + i] *= 100;
+    std::cout << "A:" << std::endl;
     print_matrix(e);
-    Matrix2 h = inverse(e);
+    Matrix2 h;
+    set(h, e.rows, e.cols); 
+    h = inverse(e);
+    std::cout << "A_inv: " << std::endl;
     print_matrix(h);
     Matrix2 test_inverse;
     set(test_inverse, h.rows, h.cols);
-    test_inverse = multiply(h, e);
+    test_inverse = multiply(e, h);
+    std::cout << "A*A_inv" << std::endl;
     print_matrix(test_inverse);
 
     release(a);
@@ -84,6 +89,7 @@ int main(){
     release(f);
     release(g);
     release(h);
+    release(test_inverse);
 
     return 0;
 }
