@@ -67,7 +67,7 @@ int main(){
     print_matrix(g);
 
     //testing_inverse for random matrix:
-    for (int i=0; i<e.rows; i++) e.data[i*e.cols + i] *= 100;
+    for (int i = 0; i<e.rows; i++) e.data[i*e.cols + i] *= 100;
     std::cout << "A:" << std::endl;
     print_matrix(e);
     Matrix2 h;

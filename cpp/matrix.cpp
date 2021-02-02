@@ -25,7 +25,6 @@ struct Matrix2 transpose(struct Matrix2 a)
 
     if (a.rows == a.cols){
         for (int i = 0 ; i < size; i++) transp.data[i] = a.data[i];
-
         for (int i = 0 ; i< a.rows; i++)
         {
             for (int j = 0; j< a.cols; j++)
@@ -144,14 +143,14 @@ void ludcmp(struct Matrix2 a, int * indx, float *d)
                 page 46. https://www.cec.uchile.cl/cinetica/pcordero/MC_libros/NumericalRecipesinC.pdf
     */
     int n = a.cols;
-    int i,imax = 0,j,k;
-    float big = 0.0,dum = 0.0,sum = 0.0,temp;
+    int i, imax = 0, j, k;
+    float big = 0.0, dum = 0.0, sum = 0.0, temp;
     float *vv;
      
     vv = (float*)malloc(n*sizeof(float));
     *d = 1.0;
 
-    for (i=0;i<n;i++) {
+    for (i=0;i<n;i++){
         big=0.0;
         for (j=0;j<n;j++)
             if ((temp=fabs(a.data[i*a.cols + j])) > big) big=temp;
@@ -160,15 +159,15 @@ void ludcmp(struct Matrix2 a, int * indx, float *d)
     }
     
     for (j=0; j<n; j++) {
-        for (i=0;i<j - 1;i++) {
+        for (i=0;i < j;i++) {
             sum = a.data[i*a.cols + j];
-            for (k=0;k < i - 1;k++) sum -= a.data[i*a.cols + k]*a.data[k*a.cols + j];
+            for (k=0;k < i;k++) sum -= a.data[i*a.cols + k]*a.data[k*a.cols + j];
             a.data[i*a.cols + j]=sum;
         }
         big = 0.0;
-        for (i = j - 1; i < n;i++) {
+        for (i = j; i < n;i++) {
             sum = a.data[i*a.cols + j];
-            for (k = 0;k < j - 1; k++)
+            for (k = 0;k < j; k++)
                 sum -= a.data[i*a.cols + k]*a.data[k*a.cols + j];
             a.data[i*a.cols + j]=sum;
             if ((dum=vv[i]*fabs(sum)) >= big) {
@@ -191,7 +190,7 @@ void ludcmp(struct Matrix2 a, int * indx, float *d)
         if (a.data[j*a.cols + j] == 0.0) a.data[j*a.cols + j]= a.tiny;
         if (j != n - 1) {
             dum = 1.0 / (a.data[j*a.cols + j]);
-            for (i=j;i<n;i++) a.data[i*a.cols + j] *= dum;
+            for (i=j + 1;i<n;i++) a.data[i*a.cols + j] *= dum;
         }
     }
     free(vv);
@@ -295,6 +294,7 @@ struct Matrix2 inverse(struct Matrix2 a)
         for (i = 0; i < a.cols; i++) col[i] = 0.0;
         col[j] = 1.0;
         lubksb(inverse, indx, col);
+
         for (i = 0; i < a.cols; i++) y[i*a.cols + j] = col[i]; 
     }
 
@@ -312,13 +312,12 @@ struct Matrix2 nr_optimizer(struct Matrix2 jacobian, struct Matrix2 hessian, str
         Taken from:
             https://github.com/sarahaguasvivas/nlsoft/blob/master/python/controller/soloway_nr.py
     */
+
     Matrix2 u_optimal;
     int m = u0.cols;
     set(u_optimal, u0.rows, u0.cols);
     equal(u_optimal, u0);
-
     u_optimal = solve_matrix_eqn(hessian, jacobian);
-
     return u_optimal;
 }
 
