@@ -127,116 +127,108 @@ struct Matrix2 multiply(struct Matrix2 a, struct Matrix2 b)
     }
     return product;
 }
-float * vector(int nl, int nh){
-    float *v;
-    v = (float*)malloc((size_t)((nh-nl+1+1)*sizeof(float)));
-    return v-nl+1;
+
+void equal(struct Matrix2 &b, struct Matrix2 a){
+    // assuming b is already allocated
+    b.rows = a.rows;
+    b.cols = a.cols;
+    for (int i = 0; i<a.cols*a.rows; i++) b.data[i] = a.data[i];
 }
 
-void free_vector(float *v, int nl, int nh){
-    free((float*)(v+nl-1));
-}
-
-void ludcmp(struct Matrix2 a, int *indx, float * d)
-{   /*
+void ludcmp(struct Matrix2& a, int * indx, float *d)
+{
+    /*
     References
         ----------
         [2] W. H. Press, S. A. Teukolsky, W. T. Vetterling and B. P. Flannery,
             "Numerical Recipes (3rd edition)", Cambridge University Press, 2007,
             page 46. https://www.cec.uchile.cl/cinetica/pcordero/MC_libros/NumericalRecipesinC.pdf
     */
+    int n = a.cols;
+    int i,imax,j,k;
+    float big,dum,sum = 0.0,temp;
+    float *vv;
+     
+    vv = (float*)malloc(n*sizeof(float));
+    *d=1.0;
 
-   int imax;
-   int n = a.rows;
-   float big = 0.0, dum, sum, temp;
-   float * vv;
-   int error = 0;
-
-   vv = vector(1, n);
-   *d = 1.0;
-   
-    for (int i = 1; i<=n; i++)
-    {
-       big = 0.0;
-       for (int j=1; j <= n; j++)
-       {
-           if ((temp = fabs(a.data[i * a.cols + j])) > big) big = temp;
-       }
-       if (big == 0.0) {
-           error = 1;
-           vv[i] = 0.0;
-       }  
-       vv[i] = 1.0/big;
+    for (i=0;i<n;i++) {
+        big=0.0;
+        for (j=0;j<n;j++)
+            if ((temp=fabs(a.data[i*a.cols + j])) > big) big=temp;
+        if (big == 0.0) std::cout << "Singular matrix in routine LUDCMP" << std::endl;
+        vv[i] = 1.0/big;
     }
-      
-    for (int j=1 ; j <= n; j++)
-    {
-        for (int i = 1; i < j; i++)
-        {
+    
+    for (j=0;j<n;j++) {
+        for (i=0;i<j;i++) {
             sum = a.data[i*a.cols + j];
-            for (int k = 1; k < i; k++)
-            {
-                sum -= a.data[i*a.cols + k] * a.data[k*a.cols + j];
-            }
-            a.data[i*a.cols + j] = sum;
+            for (k=0;k < i;k++) sum -= a.data[i*a.cols + k]*a.data[k*a.cols + j];
+            a.data[i*a.cols + j]=sum;
         }
         big = 0.0;
-        for (int i = 1; i <=n; i++)
-        {
-            sum = a.data[i*a.cols + j];
-            for (int k = 1; k<j; k++)
-                sum -= a.data[i*a.cols + k] * a.data[k*a.cols + j];
-            a.data[i*a.cols + j] = sum;
-            if ((dum = vv[i]*fabs(sum)) >= big)
-            {
-                big = dum;
-                imax = i;
+        for (i=j;i<n;i++) {
+            sum=a.data[i*a.cols + j];
+            for (k=0;k<j;k++)
+                sum -= a.data[i*a.cols + k]*a.data[k*a.cols + j];
+            a.data[i*a.cols + j]=sum;
+            if ((dum=vv[i]*fabs(sum)) >= big) {
+                big=dum;
+                imax=i;
             }
         }
-                     
-        if (j != imax){
-            for (int k=1; k<=n; k++)
-            {
-                dum = a.data[imax*a.cols + k];
-                a.data[imax * a.cols + k]= a.data[j*a.cols + k];
-                a.data[j*a.cols + k] = dum;
+                
+        if (j != imax) {
+            for (k=0;k<n;k++) {
+                dum=a.data[imax*a.cols + k];
+                a.data[imax*a.cols + k]=a.data[j*a.cols + k];
+                a.data[j*a.cols + k]=dum;
             }
             *d = -(*d);
-            vv[imax] = vv[j];
+            vv[imax]=vv[j];
         }
-             
-        indx[j] = imax;
-        if (a.data[j*a.cols + j] == 0.0) a.data[j*a.cols + j] = a.tiny;
-        if (j!= n)
-        {
-            dum = 1.0/a.data[j*a.cols+j];
-            for (int i = j+1; i <= n; i++) a.data[i*a.cols + j] *= dum;
+                
+        indx[j]=imax;
+        if (a.data[j*a.cols + j] == 0.0) a.data[j*a.cols + j]= a.tiny;
+        if (j != n - 1) {
+            dum= 1.0/(a.data[j*a.cols + j]);
+            for (i=j;i<n;i++) a.data[i*a.cols + j] *= dum;
         }
     }
-    free_vector(vv, 1, n);
+        
+    free(vv);
 }
 
-void lubksb(struct Matrix2 a, int *indx, float b[])
+void lubksb(struct Matrix2& a, int *indx,float b[])
 {
-    int i, ii=0, ip, j;
-    float sum;
+    /*
+    References
+        ----------
+        [2] W. H. Press, S. A. Teukolsky, W. T. Vetterling and B. P. Flannery,
+            "Numerical Recipes (3rd edition)", Cambridge University Press, 2007,
+            page 46. https://www.cec.uchile.cl/cinetica/pcordero/MC_libros/NumericalRecipesinC.pdf
+    */
+	int i,ii=0,ip,j;
+	float sum;
     int n = a.cols;
 
-    for (i = 1; i <= n; i++)
-    {
-        ip = indx[i];
-        sum = b[ip];
-        b[ip]= b[i];
-        if (ii)
-            for (j = ii; j<= i-1; j++) sum -= a.data[i*a.cols + j] * b[j];
-        else if (sum) ii = i;
-        b[i] = sum;
-    }
-    for (i = n; i >= 1; i--){
-        sum = b[i];
-        for (j = i+1; j<= n ; j++) sum -= a.data[i*a.cols+j] * b[j];
-        b[i] = sum/a.data[i*a.cols + i];
-    }
+	for (i = 0; i < n; i++)
+	{
+		ip=indx[i];
+		sum=b[ip];
+		b[ip]=b[i];
+		if (ii)
+			for (j=ii;j<=i;j++) sum -= a.data[i*a.cols + j]*b[j];
+		else if (sum) ii=i;
+		b[i]=sum;
+	}
+	for (i=n-1;i>=0;i--)
+	{
+		sum=b[i];
+		for (j= i;j < n;j++) sum -= a.data[i*a.cols + j]*b[j];
+        std::cout << sum << " " << a.data[i*a.cols + i] << " ";
+		b[i]=sum/a.data[i*a.cols + i];
+	}
 }
 
 struct Matrix2 inverse (struct Matrix2 a)
@@ -256,21 +248,24 @@ struct Matrix2 inverse (struct Matrix2 a)
     
     indx = (int*)malloc(a.cols * sizeof(int));
     col = (float*)malloc(a.cols*sizeof(float));
-
+    float * y = (float*)malloc(a.cols*a.rows * sizeof(float));
     Matrix2 inverse;
     set(inverse, a.rows, a.cols);
+    equal(inverse, a);
+
+    ludcmp(inverse, indx, &d);
     
-    ludcmp(a, indx, &d);
-    
-    for (j = 1; j <= a.cols; j++)
+    for (j = 0; j < a.cols; j++)
     {
-        for (i = 1; i <= a.cols; i++) col[i] = 0.0;
+        for (i = 0; i < a.cols; i++) col[i] = 0.0;
         col[j] = 1.0;
-        lubksb(a, indx, col);
-        for (i = 1; i <= a.cols; i++) inverse.data[i*a.cols + j] = col[i]; 
+        lubksb(inverse, indx, col);
+        for (i = 0; i < a.cols; i++) y[i*a.cols + j] = col[i]; 
     }
+    for (int i = 0; i < a.rows*a.cols; i++) a.data[i] = y[i];
 
     return inverse;
     free(indx);
     free(col);
+    free(y);
 }
