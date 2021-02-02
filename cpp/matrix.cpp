@@ -225,8 +225,7 @@ void lubksb(struct Matrix2& a, int *indx,float b[])
 	for (i=n-1;i>=0;i--)
 	{
 		sum=b[i];
-		for (j= i;j < n;j++) sum -= a.data[i*a.cols + j]*b[j];
-        std::cout << sum << " " << a.data[i*a.cols + i] << " ";
+		for (j= i + 1;j <= n;j++) sum -= a.data[i*a.cols + j]*b[j];
 		b[i]=sum/a.data[i*a.cols + i];
 	}
 }
@@ -241,6 +240,8 @@ struct Matrix2 inverse (struct Matrix2 a)
             .. [2] W. H. Press, S. A. Teukolsky, W. T. Vetterling and B. P. Flannery,
                 "Numerical Recipes (3rd edition)", Cambridge University Press, 2007,
                 page 795.
+
+        Modified to start indices at 0
     */
 
     int i, j, *indx;
@@ -262,7 +263,7 @@ struct Matrix2 inverse (struct Matrix2 a)
         lubksb(inverse, indx, col);
         for (i = 0; i < a.cols; i++) y[i*a.cols + j] = col[i]; 
     }
-    for (int i = 0; i < a.rows*a.cols; i++) a.data[i] = y[i];
+    for (int i = 0; i < inverse.rows*inverse.cols; i++) inverse.data[i] = y[i];
 
     return inverse;
     free(indx);

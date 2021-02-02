@@ -66,6 +66,16 @@ int main(){
     Matrix2 g = inverse(f);
     print_matrix(g);
 
+    //testing_inverse for random matrix:
+    for (int i=0; i<e.rows; i++) e.data[i*e.cols + i] *= 100;
+    print_matrix(e);
+    Matrix2 h = inverse(e);
+    print_matrix(h);
+    Matrix2 test_inverse;
+    set(test_inverse, h.rows, h.cols);
+    test_inverse = multiply(h, e);
+    print_matrix(test_inverse);
+
     release(a);
     release(b);
     release(c);
@@ -73,6 +83,7 @@ int main(){
     release(e);
     release(f);
     release(g);
+    release(h);
 
     return 0;
 }
