@@ -111,6 +111,18 @@ int main(){
     std::cout << "A*A_inv" << std::endl;
     print_matrix(test_inverse);
 
+    Matrix2 first_derivative;
+    Matrix2 second_derivative;
+    set(first_derivative, 3, 2);
+    set(second_derivative, 3, 2);
+    float* input = (float*)malloc(26*sizeof(float));
+    start = std::chrono::high_resolution_clock::now();
+    nn_gradients(first_derivative, second_derivative, 3, 2, 3, 26, input);
+    stop = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    std::cout << "elapsed: " << duration.count() << std::endl;
+    
+    free(input);
     release(a);
     release(b);
     release(c);

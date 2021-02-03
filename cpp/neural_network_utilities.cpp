@@ -1,6 +1,6 @@
 #include "neural_network_utilities.hpp"
 
-void nn_gradients(Matrix2 &first_derivative, Matrix2 &second_derivative, int N, int n, int m, int nd, int input_size, float * input)
+void nn_gradients(Matrix2 first_derivative, Matrix2 second_derivative, int n, int m, int nd, int input_size, float * input)
 {
     float epsilon = 8e-3;
     int size_first = first_derivative.rows * first_derivative.cols;
