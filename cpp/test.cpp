@@ -16,8 +16,8 @@ void print_matrix(struct Matrix2 a)
         std::cout << "]," << std::endl;
     }
     std::cout << std::endl;
-
 }
+
 void fill_with_random(struct Matrix2 & a){
     time_t t;
     int size = a.rows*a.cols;
@@ -28,7 +28,7 @@ void fill_with_random(struct Matrix2 & a){
 
 int main(){
     Matrix2 a;
-    set(a, 4, 4);
+    set(a, 10, 10);
 
     fill_with_random(a);
 

@@ -4,6 +4,10 @@
 *.txt
 *.csv
 *.json
+
+!.gitignore
+!CMakelists.txt
+
 # Distribution / packaging
 .Python
 build/
