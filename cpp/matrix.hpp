@@ -1,5 +1,8 @@
 #ifndef __MATRIX_H__
 #define __MATRIX_H__
+#include <math.h>
+#include <stdlib.h>
+#include <iostream>
 
 struct Matrix2{
     int rows;

@@ -1,6 +1,8 @@
 #include <iostream>
 #include <cstdlib>
 #include "matrix.hpp"
+#include <chrono>
+#include "neural_network_utilities.hpp"
 
 void print_matrix(struct Matrix2 a)
 {
@@ -27,6 +29,7 @@ void fill_with_random(struct Matrix2 & a){
 }
 
 int main(){
+    
     Matrix2 a;
     set(a, 10, 10);
 
@@ -35,35 +38,62 @@ int main(){
     // testing transpose
     std::cout << "Transpose:" << std::endl;
     print_matrix(a);
+    auto start = std::chrono::high_resolution_clock::now();
     Matrix2 b = transpose(a);
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
     print_matrix(b); 
+    std::cout << "elapsed: " << duration.count() << std::endl;
 
     // testing_sum
     std::cout << "Sum: " << std::endl;
+    start = std::chrono::high_resolution_clock::now();
     Matrix2 c = add(a, b); 
+    stop = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
     print_matrix(c);
+    std::cout << "elapsed: " << duration.count() << std::endl;
+
 
     // testing_subtraction:
     std::cout << "Subtract: " << std::endl;
+    start = std::chrono::high_resolution_clock::now();
     Matrix2 d = subtract(c, a);
+    stop = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
     print_matrix(d);
-
+    std::cout << "elapsed: " << duration.count() << std::endl;
+    
+    
     // testing_hadamard:
     std::cout << "Hadamard: " << std::endl;
+    start = std::chrono::high_resolution_clock::now();
     Matrix2 e = hadamard(c, d);
+    stop = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    std::cout << "elapsed: " << duration.count() << std::endl;
     print_matrix(e);
 
     // testing_multiply:
     std::cout << "Product: " << std::endl;
+    start = std::chrono::high_resolution_clock::now();
     Matrix2 f = multiply(d, e);
+    stop = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    std::cout << "elapsed: " << duration.count() << std::endl;
     print_matrix(f);
-
+        
+    
     // testing_inverse:
     std::cout << "Inverse: " << std::endl;
     set_to_zero(f);
     for (int i=0; i<f.rows; i++) f.data[i*a.cols+i] = 1.0;
     print_matrix(f);
+    start = std::chrono::high_resolution_clock::now();
     Matrix2 g = inverse(f);
+    stop = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    std::cout << "elapsed: " << duration.count() << std::endl;
     print_matrix(g);
 
     //testing_inverse for random matrix:
