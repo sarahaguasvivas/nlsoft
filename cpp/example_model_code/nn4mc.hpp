@@ -11,16 +11,16 @@
 #ifndef __NEURAL_NETWORK_H__
 #define __NEURAL_NETWORK_H__
 
-#ifdef __cplusplus
+/*#if __cplusplus
 extern "C" {
 #endif
+*/
+#include "dense.hpp"
+#include "parameters.hpp"
+#include <stdlib.h>
 
-#include "parameters.h"
-#include "dense.h"
-
-
-struct Dense dense_19;
-struct Dense dense_20;
-
+void buildLayers();
+float * fwdNN(float*);
 
 #endif
+

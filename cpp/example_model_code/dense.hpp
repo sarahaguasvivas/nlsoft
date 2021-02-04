@@ -11,6 +11,8 @@
 #ifndef __DENSE_H__
 #define __DENSE_H__
 
+#include <math.h> 
+#include <stdlib.h>
 
 struct Dense {
 	// Weights and biases defining the layer
@@ -27,7 +29,6 @@ struct Dense {
 };
 
 struct Dense buildDense(const float*, const float*, int, int, char, int);
-
-float * fwdDense(struct Dense, float* );
+float * fwdDense(struct Dense, float*);
 
 #endif

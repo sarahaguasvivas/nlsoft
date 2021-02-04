@@ -1,24 +1,21 @@
-#include "dense.h"
-#include <math.h> 
-#include <stdlib.h>
+#include "dense.hpp"
 
 #define max(a, b) (((a)>(b) ? (a) : (b)))
 #define min(a, b) (((a)<(b) ? (a) : (b)))
 
-
 struct Dense buildDense(const float* W, const float* b, int input_size, int output_size, char activation, int use_bias)
 {
-  struct Dense layer;
+    struct Dense layer;
 
-  layer.weights = W;
-  layer.biases = b;
+    layer.weights = W;
+    layer.biases = b;
 
-  layer.input_shape[0] = input_size;
-  layer.output_shape[0] = output_size;
+    layer.input_shape[0] = input_size;
+    layer.output_shape[0] = output_size;
     layer.weight_shape[0] = input_size;
     layer.weight_shape[1] = output_size;
     layer.activation = activation;
-  return layer;
+    return layer;
 }
 
 
@@ -87,12 +84,8 @@ float * fwdDense(struct Dense L, float* input)
                  } else h[ii] = (float)(expf(h[ii]) / sum_exp);
              }
          }
-
-
-
   }
 
     free(input);
     return h;
-
 }

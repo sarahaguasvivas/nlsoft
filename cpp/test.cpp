@@ -111,6 +111,7 @@ int main(){
     std::cout << "A*A_inv" << std::endl;
     print_matrix(test_inverse);
 
+    
     Matrix2 first_derivative;
     Matrix2 second_derivative;
     set(first_derivative, 3, 2);
@@ -122,6 +123,7 @@ int main(){
     duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
     std::cout << "elapsed: " << duration.count() << std::endl;
     
+
     free(input);
     release(a);
     release(b);

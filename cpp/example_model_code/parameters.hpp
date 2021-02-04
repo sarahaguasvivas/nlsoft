@@ -60,8 +60,4 @@ const float dense_20_b[3] = {-0.0768522, -0.0251563, 0.00184072};
 
 
 
-#ifdef __cplusplus
-}
-
-#endif
 #endif

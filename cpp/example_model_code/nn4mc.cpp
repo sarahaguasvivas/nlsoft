@@ -7,8 +7,10 @@
     This file implements the nerual network and associated functions.
 
 */
-#include "nn4mc.h"
-#include <stdlib.h>
+#include "nn4mc.hpp"
+
+struct Dense dense_19;
+struct Dense dense_20;
 
 void buildLayers(){
 
