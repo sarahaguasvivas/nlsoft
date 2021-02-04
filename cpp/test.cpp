@@ -102,7 +102,11 @@ int main(){
     print_matrix(e);
     Matrix2 h;
     set(h, e.rows, e.cols); 
+    start = std::chrono::high_resolution_clock::now();
     h = inverse(e);
+    stop = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    std::cout << "elapsed: " << duration.count() << std::endl;
     std::cout << "A_inv: " << std::endl;
     print_matrix(h);
     Matrix2 test_inverse;
@@ -121,6 +125,7 @@ int main(){
     nn_gradients(first_derivative, second_derivative, 3, 2, 3, 26, input);
     stop = std::chrono::high_resolution_clock::now();
     duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    std::cout << "gradients code" << std::endl;
     std::cout << "elapsed: " << duration.count() << std::endl;
     
 
