@@ -118,16 +118,24 @@ int main(){
     
     Matrix2 first_derivative;
     Matrix2 second_derivative;
+    
     set(first_derivative, 3, 2);
     set(second_derivative, 3, 2);
+
+    set_to_ones(first_derivative);
+    set_to_ones(second_derivative);
+    
     float* input = (float*)malloc(26*sizeof(float));
+    for (int i=0; i< 26; i++) input[i] = 1.0;
     start = std::chrono::high_resolution_clock::now();
-    nn_gradients(first_derivative, second_derivative, 3, 2, 3, 26, input);
+    nn_gradients(&first_derivative, &second_derivative, 3, 2, 3, 26, input);
     stop = std::chrono::high_resolution_clock::now();
     duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-    std::cout << "gradients code" << std::endl;
     std::cout << "elapsed: " << duration.count() << std::endl;
-    
+    std::cout << "First derivative: " << std::endl;
+    print_matrix(first_derivative);
+    std::cout << "Second derivative: " << std::endl;
+    print_matrix(second_derivative);
 
     free(input);
     release(a);

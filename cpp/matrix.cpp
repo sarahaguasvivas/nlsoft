@@ -1,7 +1,4 @@
 #include "matrix.hpp"
-#include <math.h>
-#include <stdlib.h>
-#include <iostream>
 
 void set(struct Matrix2 & a, int rows, int cols)
 {
@@ -103,6 +100,11 @@ void set_to_zero(struct Matrix2 & a){
     for (int i = size - 1; i >= 0; i--) a.data[i] = 0.0;
 }
 
+void set_to_ones(struct Matrix2 & a){
+    int size = a.rows*a.cols;
+    for (int i = size - 1; i >= 0; i--) a.data[i] = 1.0;
+}
+
 struct Matrix2 multiply(struct Matrix2 a, struct Matrix2 b)
 {
     Matrix2 product;
@@ -154,7 +156,7 @@ void ludcmp(struct Matrix2 a, int * indx, float *d)
         big=0.0;
         for (j=0;j<n;j++)
             if ((temp=fabs(a.data[i*a.cols + j])) > big) big=temp;
-        if (big == 0.0) std::cout << "Singular matrix in routine LUDCMP" << std::endl;
+        //if (big == 0.0) std::cout << "Singular matrix in routine LUDCMP" << std::endl;
         vv[i] = 1.0/big;
     }
     
