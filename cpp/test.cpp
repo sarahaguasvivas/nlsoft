@@ -1,10 +1,9 @@
 #include <iostream>
 #include <cstdlib>
-#include "matrix.hpp"
 #include <chrono>
-#include "neural_network_utilities.hpp"
+#include "utilities/neural_network_utilities.hpp"
 
-void print_matrix(struct Matrix2 a)
+void print_matrix (struct Matrix2 a)
 {
     std::cout << std::endl;
     std::cout << "["; 
