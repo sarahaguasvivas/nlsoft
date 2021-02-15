@@ -1,21 +1,34 @@
 #include "neural_network_utilities.hpp"
-
-Matrix2 * nn_prediction(int N, int n, float * input_next)
+#include <iostream>
+Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int dd, float * input_next, float * u)
 {
-    Matrix2 * y_output;
-    set(*y_output, N, n);
+    Matrix2 y_output;
+    set(y_output, N, n);
     buildLayers();
 
     for (int i = 0; i < N; i++)
     {
-        float * output_next = (float*)malloc(n*sizeof(float));
+        float * output_next;
         output_next = fwdNN(input_next);
         
-        float *input_next = (float*)malloc(n*sizeof(float)); 
-        for (int j = 0; j < n; j++)
+        float * input_next = (float*)malloc(input_size*sizeof(float)); 
+
+        float previous_output[n*dd];
+
+        for (int j = m*nd; j < m*nd + n*dd; j++)
+        {
+            previous_output[j - m*nd] = input_next[j];
+        }
+
+        for (int j = m*nd + n; j < m*nd + n*dd; j++)
         { 
-            input_next[j] = output_next[j];
-            y_output->data[i * n + j] = output_next[j];
+            input_next[j] = previous_output[j - n];
+        }
+
+        for (int j = m*nd; j < m*nd + n; j++)
+        { 
+            input_next[j] = output_next[j - m*nd];
+            y_output.data[i * n + j - m*nd] = output_next[j - m*nd];
         }
 
         free(output_next);

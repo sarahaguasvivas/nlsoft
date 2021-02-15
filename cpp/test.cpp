@@ -135,8 +135,17 @@ int main(){
     print_matrix(first_derivative);
     std::cout << "Second derivative: " << std::endl;
     print_matrix(second_derivative);
+    
+    float * input1 = (float*)malloc(36*sizeof(float));
+    for (int i=0; i< 36; i++) input1[i] = 1.0;
+    float * u = (float*)malloc(5*2*sizeof(float));
+    for (int i=0; i< 10; i++) u[i] = 1.0;    
+    Matrix2 y_out = nn_prediction(3, 1, 3, 2, 36, 5, 5, input1, u);
+    std::cout << "Prediction: " << std::endl;
+    print_matrix(y_out);
 
     free(input);
+    free(input1);
     release(a);
     release(b);
     release(c);
