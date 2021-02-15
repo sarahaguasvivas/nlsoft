@@ -1,5 +1,6 @@
 #include "neural_network_utilities.hpp"
 #include <iostream>
+
 Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int dd, float * input_next, float * u)
 {
     Matrix2 y_output;
@@ -12,7 +13,6 @@ Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int d
         output_next = fwdNN(input_next);
         
         float * input_next = (float*)malloc(input_size*sizeof(float)); 
-
         float previous_output[n*dd];
 
         for (int j = m*nd; j < m*nd + n*dd; j++)
@@ -39,7 +39,6 @@ Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int d
 
 void nn_gradients(Matrix2 * first_derivative, Matrix2 * second_derivative, int n, int m, int nd, int input_size, float * input)
 {
-
     float epsilon = 8e-3;
     int size_first = first_derivative->rows * first_derivative->cols;
     int size_second = second_derivative->rows* second_derivative->cols;
