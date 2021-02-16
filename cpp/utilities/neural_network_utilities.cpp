@@ -26,7 +26,7 @@ Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int d
         output_next = fwdNN(input_next);
         
         // Input:
-        roll_window(0, nd*m, m, previous_input);
+        roll_window(0, nd*m - 1, m, previous_input);
 
         if (i < Nc)
         {
