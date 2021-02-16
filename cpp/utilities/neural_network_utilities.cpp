@@ -17,50 +17,39 @@ Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int d
     buildLayers();
     float previous_input[input_size];
     for (int i=0; i<input_size; i++) previous_input[i] = input_next[i];
-    
+
     for (int i = 0; i < N; i++)
     {
         float * output_next;
-        for (int j = 0; j < input_size; j++) std::cout << input_next[j] << " ";
-        std::cout << std::endl;
         output_next = fwdNN(input_next);
-        
-        // Input:
         roll_window(0, nd*m - 1, m, previous_input);
-
         if (i < Nc)
         {
             for (int k = 0; k < m; k++)
             {
                previous_input[k] = u[i*m + k];
             }        
-        } else
+        } 
+        else
         {
             for (int k = 0; k < m; k++)
             {
                previous_input[k] = u[(Nc-1)*m + k];
             }
         }
-
-        // Output: 
         roll_window(nd*m, nd*m + dd*n - 1, n, previous_input);
-
         for (int j = m*nd; j < m*nd + n; j++)
         { 
             previous_input[j] = output_next[j - m*nd];
         }
-
         for (int j = 0; j < n; j++)
         {
             y_output.data[i * n + j] = output_next[j];
         }
-
+        free(output_next);
         float * input_next = (float*)malloc(input_size*sizeof(float));        
         for (int j = 0; j < input_size; j++) input_next[j] = previous_input[j];
-
-        free(output_next);
     }
-
     return y_output;
 }
 
@@ -74,9 +63,6 @@ void nn_gradients(Matrix2 * first_derivative, Matrix2 * second_derivative, int n
     set_to_zero(*first_derivative);
     set_to_zero(*second_derivative);
 
-    float *output  = (float*)malloc(n*sizeof(float));
-    float *output_minus_h = (float*)malloc(n*sizeof(float));
-    float *output_plus_h = (float*)malloc(n*sizeof(float));       
 
     buildLayers();
 
@@ -96,6 +82,10 @@ void nn_gradients(Matrix2 * first_derivative, Matrix2 * second_derivative, int n
             input_plus_h[nn] += epsilon;
             input_minus_h[nn] -= epsilon;
             
+            float *output  = (float*)malloc(n*sizeof(float));
+            float *output_minus_h = (float*)malloc(n*sizeof(float));
+            float *output_plus_h = (float*)malloc(n*sizeof(float));       
+           
             output = fwdNN(input_center);
             output_plus_h = fwdNN(input_plus_h);
             output_minus_h = fwdNN(input_minus_h);
@@ -103,11 +93,10 @@ void nn_gradients(Matrix2 * first_derivative, Matrix2 * second_derivative, int n
             first_derivative->data[i*first_derivative->cols + j] += (output_plus_h[i] - output_minus_h[i]) / (2. * epsilon);
             second_derivative->data[i*second_derivative->cols + j] += (output_plus_h[i] - 2.*output[i] + output_minus_h[i]) / (epsilon * epsilon);    
             
+            free(output);
+            free(output_minus_h);
+            free(output_plus_h);
             nn++;
         }
     }
-
-    free(output);
-    free(output_minus_h);
-    free(output_plus_h);
 }

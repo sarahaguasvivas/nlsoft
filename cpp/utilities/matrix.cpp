@@ -10,7 +10,7 @@ void set(struct Matrix2 & a, int rows, int cols)
 void release(struct Matrix2 & a)
 {
     free(a.data);
-    a.data = NULL;
+    //a.data = NULL;
 }
 
 struct Matrix2 transpose(struct Matrix2 a)

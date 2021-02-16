@@ -28,7 +28,7 @@ void fill_with_random(struct Matrix2 & a){
 }
 
 int main(){
-    
+/*   
     Matrix2 a;
     set(a, 10, 10);
 
@@ -53,7 +53,6 @@ int main(){
     print_matrix(c);
     std::cout << "elapsed: " << duration.count() << std::endl;
 
-
     // testing_subtraction:
     std::cout << "Subtract: " << std::endl;
     start = std::chrono::high_resolution_clock::now();
@@ -72,6 +71,10 @@ int main(){
     duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
     std::cout << "elapsed: " << duration.count() << std::endl;
     print_matrix(e);
+
+    release(c);
+    release(a);
+    release(b);
 
     // testing_multiply:
     std::cout << "Product: " << std::endl;
@@ -94,7 +97,10 @@ int main(){
     duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
     std::cout << "elapsed: " << duration.count() << std::endl;
     print_matrix(g);
-
+    
+    release(f);
+    release(g);
+    
     //testing_inverse for random matrix:
     for (int i = 0; i<e.rows; i++) e.data[i*e.cols + i] *= 100;
     std::cout << "A:" << std::endl;
@@ -114,7 +120,8 @@ int main(){
     std::cout << "A*A_inv" << std::endl;
     print_matrix(test_inverse);
 
-    
+    release(test_inverse);
+
     Matrix2 first_derivative;
     Matrix2 second_derivative;
     
@@ -124,10 +131,14 @@ int main(){
     set_to_ones(first_derivative);
     set_to_ones(second_derivative);
     
-    float* input = (float*)malloc(26*sizeof(float));
-    for (int i=0; i< 26; i++) input[i] = 1.0;
+    release(d);
+    release(e);
+    release(h);
+   
+    float* input = (float*)malloc(36*sizeof(float));
+    for (int i=0; i< 36; i++) input[i] = 1.0;
     start = std::chrono::high_resolution_clock::now();
-    nn_gradients(&first_derivative, &second_derivative, 3, 2, 3, 26, input);
+    nn_gradients(&first_derivative, &second_derivative, 3, 2, 3, 36, input);
     stop = std::chrono::high_resolution_clock::now();
     duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
     std::cout << "elapsed: " << duration.count() << std::endl;
@@ -135,26 +146,25 @@ int main(){
     print_matrix(first_derivative);
     std::cout << "Second derivative: " << std::endl;
     print_matrix(second_derivative);
-    
+
+    release(first_derivative);
+    release(second_derivative);
+    free(input);
+    */
     float * input1 = (float*)malloc(36*sizeof(float));
     for (int i=0; i< 36; i++) input1[i] = (float)i;
     float * u = (float*)malloc(5*2*sizeof(float));
-    for (int i=0; i< 2*2; i++) u[i] = (float)(i+1)*100;    
-    Matrix2 y_out = nn_prediction(10, 2, 3, 2, 36, 5, 5, input1, u);
+    for (int i=0; i< 2*5; i++) u[i] = (float)(i+1)*100;    
+    
+    auto start = std::chrono::high_resolution_clock::now();
+    Matrix2 y_out = nn_prediction(10, 3, 3, 2, 36, 5, 5, input1, u);
+    free(u); 
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    std::cout << "elapsed: " << duration.count() << std::endl;
     std::cout << std::endl <<  "Prediction: " << std::endl;
     print_matrix(y_out);
-
-    free(input);
-    free(input1);
-    release(a);
-    release(b);
-    release(c);
-    release(d);
-    release(e);
-    release(f);
-    release(g);
-    release(h);
-    release(test_inverse);
-
+    
+    release(y_out);
     return 0;
 }
