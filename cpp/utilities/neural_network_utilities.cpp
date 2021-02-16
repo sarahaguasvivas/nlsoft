@@ -11,8 +11,7 @@ Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int d
     {
         float * output_next;
         output_next = fwdNN(input_next);
-        
-        float * input_next = (float*)malloc(input_size*sizeof(float)); 
+         
         float previous_output[n*dd];
 
         for (int j = m*nd; j < m*nd + n*dd; j++)
@@ -20,7 +19,7 @@ Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int d
             previous_output[j - m*nd] = input_next[j];
         }
 
-        for (int j = m*nd + n; j < m*nd + n*dd; j++)
+        for (int j = m*nd + n; j < m*nd + n*dd - 1; j++)
         { 
             input_next[j] = previous_output[j - n];
         }
@@ -28,9 +27,14 @@ Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int d
         for (int j = m*nd; j < m*nd + n; j++)
         { 
             input_next[j] = output_next[j - m*nd];
-            y_output.data[i * n + j - m*nd] = output_next[j - m*nd];
         }
 
+        for (int j = 0; j < n; j++)
+        {
+            y_output.data[i * n + j] = output_next[j];
+        }
+
+        float * input_next = (float*)malloc(input_size*sizeof(float));        
         free(output_next);
     }
 
