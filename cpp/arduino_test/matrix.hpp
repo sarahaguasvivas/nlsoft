@@ -1,5 +1,10 @@
 #ifndef __MATRIX_H__
 #define __MATRIX_H__
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <math.h>
 #include <stdlib.h>
 
@@ -26,4 +31,7 @@ void equal(struct Matrix2 &, struct Matrix2);
 struct Matrix2 nr_optimizer(struct Matrix2, struct Matrix2, struct Matrix2);
 struct Matrix2 solve_matrix_eqn(struct Matrix2, struct Matrix2);
 
+#ifdef __cplusplus
+}
+#endif
 #endif
