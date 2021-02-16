@@ -8,7 +8,10 @@ extern "C" {
 #include "nn4mc.hpp"
 #include "matrix.hpp"
 
+
 void nn_gradients(Matrix2 *, Matrix2 *, int, int, int, int, float *);
+
+void roll_window(int, int, int, float *);
 
 Matrix2 nn_prediction(int, int, int, int, int, int, int, float*, float*);
 

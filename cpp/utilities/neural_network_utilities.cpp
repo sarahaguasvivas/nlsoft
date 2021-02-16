@@ -1,32 +1,53 @@
 #include "neural_network_utilities.hpp"
 #include <iostream>
 
+
+void roll_window(int start, int finish, int buffer_size, float * array)
+{
+    for (int i = finish - buffer_size; i >= start; i--) 
+    {
+        array[i + buffer_size] = array[i];
+    }
+}
+
 Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int dd, float * input_next, float * u)
 {
     Matrix2 y_output;
     set(y_output, N, n);
     buildLayers();
-
+    float previous_input[input_size];
+    for (int i=0; i<input_size; i++) previous_input[i] = input_next[i];
+    
     for (int i = 0; i < N; i++)
     {
         float * output_next;
+        for (int j = 0; j < input_size; j++) std::cout << input_next[j] << " ";
+        std::cout << std::endl;
         output_next = fwdNN(input_next);
-         
-        float previous_output[n*dd];
+        
+        // Input:
+        roll_window(0, nd*m, m, previous_input);
 
-        for (int j = m*nd; j < m*nd + n*dd; j++)
+        if (i < Nc)
         {
-            previous_output[j - m*nd] = input_next[j];
+            for (int k = 0; k < m; k++)
+            {
+               previous_input[k] = u[i*m + k];
+            }        
+        } else
+        {
+            for (int k = 0; k < m; k++)
+            {
+               previous_input[k] = u[(Nc-1)*m + k];
+            }
         }
 
-        for (int j = m*nd + n; j < m*nd + n*dd - 1; j++)
-        { 
-            input_next[j] = previous_output[j - n];
-        }
+        // Output: 
+        roll_window(nd*m, nd*m + dd*n - 1, n, previous_input);
 
         for (int j = m*nd; j < m*nd + n; j++)
         { 
-            input_next[j] = output_next[j - m*nd];
+            previous_input[j] = output_next[j - m*nd];
         }
 
         for (int j = 0; j < n; j++)
@@ -35,11 +56,14 @@ Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int d
         }
 
         float * input_next = (float*)malloc(input_size*sizeof(float));        
+        for (int j = 0; j < input_size; j++) input_next[j] = previous_input[j];
+
         free(output_next);
     }
 
     return y_output;
 }
+
 
 void nn_gradients(Matrix2 * first_derivative, Matrix2 * second_derivative, int n, int m, int nd, int input_size, float * input)
 {
