@@ -19,6 +19,7 @@ void set(struct Matrix2 &, int, int);
 void set_to_zero(struct Matrix2 &);
 void set_to_ones(struct Matrix2 &); 
 struct Matrix2 transpose(struct Matrix2);
+struct Matrix2 scale(float, struct Matrix2);
 struct Matrix2 add (struct Matrix2, struct Matrix2);
 struct Matrix2 subtract (struct Matrix2, struct Matrix2);
 struct Matrix2 multiply(struct Matrix2, struct Matrix2);

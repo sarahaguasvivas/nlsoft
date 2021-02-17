@@ -13,6 +13,16 @@ void release(struct Matrix2 & a)
     //a.data = NULL;
 }
 
+struct Matrix2 scale(float scale, struct Matrix2 matrix)
+{
+    Matrix2 scaled;
+    set(scaled, matrix.rows, matrix.cols);
+    for (int i=0; i< matrix.rows; i++)
+      for (int j=0; j<matrix.cols;j++)
+        scaled.data[i*scaled.cols + j] = scale*matrix.data[i*matrix.cols + j];
+    return scaled;
+}
+
 struct Matrix2 transpose(struct Matrix2 a)
 {
     int size = a.rows*a.cols;

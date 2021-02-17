@@ -28,7 +28,7 @@ void fill_with_random(struct Matrix2 & a){
 }
 
 int main(){
-/*   
+   
     Matrix2 a;
     set(a, 10, 10);
 
@@ -71,7 +71,15 @@ int main(){
     duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
     std::cout << "elapsed: " << duration.count() << std::endl;
     print_matrix(e);
-
+    
+    
+    Matrix2 hessian;
+    set(hessian, 10, 10);
+    hessian = add(a, multiply(a, e));
+    std::cout << "multiple operations" << std::endl;
+    print_matrix(hessian);
+    
+    
     release(c);
     release(a);
     release(b);
@@ -150,20 +158,22 @@ int main(){
     release(first_derivative);
     release(second_derivative);
     free(input);
-    */
+
     float * input1 = (float*)malloc(36*sizeof(float));
     for (int i=0; i< 36; i++) input1[i] = (float)i;
     float * u = (float*)malloc(5*2*sizeof(float));
     for (int i=0; i< 2*5; i++) u[i] = (float)(i+1)*100;    
     
-    auto start = std::chrono::high_resolution_clock::now();
+    start = std::chrono::high_resolution_clock::now();
     Matrix2 y_out = nn_prediction(10, 3, 3, 2, 36, 5, 5, input1, u);
     free(u); 
-    auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    stop = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
     std::cout << "elapsed: " << duration.count() << std::endl;
     std::cout << std::endl <<  "Prediction: " << std::endl;
     print_matrix(y_out);
+
+
     
     release(y_out);
     return 0;
