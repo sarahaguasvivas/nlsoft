@@ -13,7 +13,6 @@ float posish[3];
 void setup() {
   Serial.begin(115200);
   timestamp = 0;
-  
 }
 
 void print_matrix(Matrix2 matrix)
@@ -38,6 +37,8 @@ void loop() {
  
   float signal_calibration[NUM_SIGNAL] = {613., 134., 104., 200., 128., 146., 183., 1., 2., 7., 100.};
   int m = 2, n = 3, nd = 5, dd = 5, N = 5, Nc = 5;
+  float s = 1e-20, b = 1e-5, r = 4e3;
+  
   float ini_posish[n] = {0.05, 0.03, -0.06};
   float ini_motor[m] = {deg2rad(-70.), deg2rad(-50.)};
   float q_matrix[n*n] = {1e-3, 0., 0., 0., 1e3, 0., 0., 0., 1e3};
@@ -66,8 +67,9 @@ void loop() {
   spin_figure_eight_target(timestamp, 0, N, n, &target, ini_posish);
   Matrix2 prediction = nn_prediction(N, Nc, n, m, NUM_SIGNAL + nd*m + dd*n, nd, dd, nn_input, u);
   
-  
-  
+  /* 
+   *  Insert optimization code
+   */
   
   collect_signal(signal_, signal_calibration);
   print_array(signal_, NUM_SIGNAL);
