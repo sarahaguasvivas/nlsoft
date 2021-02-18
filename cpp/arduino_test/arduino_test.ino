@@ -36,7 +36,7 @@ void build_input_vector(float * vector, float * u, float * signal_, float * posi
 void loop() {
   
   float signal_calibration[NUM_SIGNAL] = {613., 134., 104., 200., 128., 146., 183., 1., 2., 7., 100.};
-  int m = 2, n = 3, nd = 5, dd = 5, N = 5, Nc = 5;
+  int m = 2, n = 3, nd = 5, dd = 5, N = 5, Nc = 2;
   float s = 1e-20, b = 1e-5, r = 4e3;
   int input_size = m*nd + n*dd + NUM_SIGNAL;
   
@@ -77,7 +77,7 @@ void loop() {
   /* 
    *  Optimization code here
    */
-  Serial.println("here");
+  
   step_motor(u, m);
 
   for (int i = 0; i < n; i++) posish[i] = prediction.data[0*prediction.cols + i];
@@ -93,6 +93,8 @@ void loop() {
   for (int i=0; i< Nc*m; i++) u_matrix.data[i] = u[i];
 
   jacobian = multiply(subtract(target, prediction), Q);
+  Serial.println(jacobian.rows);
+  Seria.println(jacobian.cols)
   jacobian = add(jacobian, scale(2., multiply(u_matrix, Lambda))); 
   
   for (int h = 0; h< Nc; h++)
@@ -103,14 +105,16 @@ void loop() {
         jacobian.data[i*jacobian.cols + j] += (-s / pow(u[j*m + i] + r / 2.0 - b, 3) + s / pow(r / 2.0 + b - u[j*m + i], 2));
     }
   }
-
+  jacobian.cols = m;
   // Getting Hessian: 
   Matrix2 hessian;
   set(hessian, Nc, Nc);
-
-  hessian = scale(2., multiply(Q, hadamard(first_derivative, first_derivative)));
+  //hessian = scale(2., multiply(Q, hadamard(first_derivative, first_derivative)));
+  hessian.data[0] = 1.0;
+  hessian.data[1*hessian.cols+ 1] = 1.0;
+  
   hessian = subtract(hessian, scale(2., multiply(transpose(multiply(Q, second_derivative)), transpose(subtract(target, prediction)))));
- // hessian = add(hessian, scale(2., Lambda));
+  //hessian = add(hessian, scale(2., Lambda));
 
   for (int h = 0; h < Nc; h++)
   {
@@ -120,11 +124,17 @@ void loop() {
         hessian.data[h*hessian.cols + h] += (2.*s / pow(u[j*m + i] + r / 2.0 - b, 3) + 2.0* s / pow(r / 2.0 + b - u[j*m + i], 3.));
     }
   }
+  Serial.println();
+  print_matrix(jacobian);
+  Serial.println(jacobian.rows);
+  Serial.println(jacobian.cols);
+  Serial.println("jacobian");
+  //u_matrix = solve_matrix_eqn(hessian, jacobian);
 
   /*
    * end of optimization code
    */
-   
+  
   timestamp++;
   release(hessian);
   release(jacobian);

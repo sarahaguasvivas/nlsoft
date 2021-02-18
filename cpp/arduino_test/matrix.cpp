@@ -10,7 +10,7 @@ void set(struct Matrix2 & a, int rows, int cols)
 void release(struct Matrix2 & a)
 {
     free(a.data);
-    //a.data = NULL;
+    a.data = NULL;
 }
 
 struct Matrix2 scale(float scale, struct Matrix2 matrix)
@@ -255,10 +255,11 @@ struct Matrix2 solve_matrix_eqn(struct Matrix2 a, struct Matrix2 b)
     */
     
     Matrix2 u; 
+    set(u, a.rows, b.cols);
     int m = b.cols;
     float d;
     int n = a.cols, *indx;
-    float * x = (float*)malloc(a.rows* b.cols * sizeof(float));
+   
     float * col = (float*)malloc(a.rows * sizeof(float));
 
     ludcmp(a, indx, &d);
@@ -266,10 +267,9 @@ struct Matrix2 solve_matrix_eqn(struct Matrix2 a, struct Matrix2 b)
     {
         for (int i = 0; i < a.rows; i++) col[i] = a.data[i *a.cols + j];
         lubksb(a, indx, col);
-        for (int i = 0; i < a.rows; i++) x[i*m + j] = col[i]; 
+        for (int i = 0; i < a.rows; i++) u.data[i*m + j] = col[i]; 
     }
     return u;
-    free(x);
     free(indx);
     free(col);
 }
