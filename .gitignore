@@ -6,7 +6,7 @@
 *.json
 
 !.gitignore
-!CMakelists.txt
+!CMakeLists.txt
 
 # Distribution / packaging
 .Python
