@@ -1,4 +1,5 @@
 #include "matrix.hpp"
+#include "Arduino.h"
 
 void set(struct Matrix2 & a, int rows, int cols)
 {
@@ -157,7 +158,7 @@ void ludcmp(struct Matrix2 a, int * indx, float *d)
     int n = a.cols;
     int i, imax = 0, j, k;
     float big = 0.0, dum = 0.0, sum = 0.0, temp;
-    float *vv;
+    float * vv;
      
     vv = (float*)malloc(n*sizeof(float));
     *d = 1.0;
@@ -169,6 +170,7 @@ void ludcmp(struct Matrix2 a, int * indx, float *d)
         //if (big == 0.0) std::cout << "Singular matrix in routine LUDCMP" << std::endl;
         vv[i] = 1.0/big;
     }
+ 
     
     for (j=0; j<n; j++) {
         for (i=0;i < j;i++) {
@@ -187,6 +189,7 @@ void ludcmp(struct Matrix2 a, int * indx, float *d)
                 imax=i;
             }
         }
+      
                 
         if (j != imax) {
             for (k=0;k<n;k++) {
@@ -205,7 +208,9 @@ void ludcmp(struct Matrix2 a, int * indx, float *d)
             for (i=j + 1;i<n;i++) a.data[i*a.cols + j] *= dum;
         }
     }
+   
     free(vv);
+    vv = NULL;
 }
 
 void lubksb(struct Matrix2 a, int *indx,float b[])
@@ -261,7 +266,6 @@ struct Matrix2 solve_matrix_eqn(struct Matrix2 a, struct Matrix2 b)
     int n = a.cols, *indx;
    
     float * col = (float*)malloc(a.rows * sizeof(float));
-
     ludcmp(a, indx, &d);
     for (int j=0; j < m ; j++)
     {
@@ -269,9 +273,9 @@ struct Matrix2 solve_matrix_eqn(struct Matrix2 a, struct Matrix2 b)
         lubksb(a, indx, col);
         for (int i = 0; i < a.rows; i++) u.data[i*m + j] = col[i]; 
     }
-    return u;
     free(indx);
     free(col);
+    return u;
 }
 
 struct Matrix2 inverse(struct Matrix2 a)
@@ -311,11 +315,10 @@ struct Matrix2 inverse(struct Matrix2 a)
     }
 
     for (int i = 0; i < inverse.rows*inverse.cols; i++) inverse.data[i] = y[i];
-
-    return inverse;
     free(indx);
     free(col);
     free(y);
+    return inverse;
 }
 
 struct Matrix2 nr_optimizer(struct Matrix2 jacobian, struct Matrix2 hessian, struct Matrix2 u0)

@@ -26,6 +26,8 @@ struct Dense {
 	int output_shape[1];
 };
 
+void cleanup(float**);
+
 struct Dense build_layer_dense(const float*, const float*, int, int, char);
 
 float * fwd_dense(struct Dense, float*);

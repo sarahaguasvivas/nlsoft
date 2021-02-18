@@ -13,6 +13,12 @@
 #define max(a, b) (((a)>(b) ? (a) : (b)))
 #define min(a, b) (((a)<(b) ? (a) : (b)))
 
+void cleanup(float ** pointer)
+{
+	free(*pointer);
+	*pointer = NULL;
+}
+
 struct Dense build_layer_dense(const float* W, const float* b, int input_size, int output_size, char activation)
 {
 	struct Dense layer;
@@ -42,7 +48,8 @@ float * fwd_dense(struct Dense L, float* input)
 		}
 	}
 	free(input);
-    h = activate(h,L.output_shape[0],L.activation);
+	input = NULL;
+	h = activate(h,L.output_shape[0],L.activation);
     return h;
 }
 

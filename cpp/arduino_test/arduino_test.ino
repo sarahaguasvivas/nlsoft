@@ -9,6 +9,7 @@
 
 int timestamp;
 float posish[3];
+unsigned long elapsed;
 
 void setup() {
   Serial.begin(115200);
@@ -34,6 +35,8 @@ void build_input_vector(float * vector, float * u, float * signal_, float * posi
 }
 
 void loop() {
+  
+  elapsed = millis();
   
   float signal_calibration[NUM_SIGNAL] = {613., 134., 104., 200., 128., 146., 183., 1., 2., 7., 100.};
   int m = 2, n = 3, nd = 5, dd = 5, N = 5, Nc = 2;
@@ -74,8 +77,9 @@ void loop() {
   set(first_derivative, n, m);
   set(second_derivative, n, m);
   nn_gradients(&first_derivative, &second_derivative, n, m, nd, input_size, nn_input);
+  
   /* 
-   *  Optimization code here
+   *  
    */
   
   step_motor(u, m);
@@ -83,9 +87,7 @@ void loop() {
   for (int i = 0; i < n; i++) posish[i] = prediction.data[0*prediction.cols + i];
   
   // Getting Jacobian:
-  
   Matrix2 jacobian;
-  
   Matrix2 u_matrix;
   set(u_matrix, Nc, m);
   set(jacobian, Nc, m);
@@ -93,60 +95,52 @@ void loop() {
   for (int i=0; i< Nc*m; i++) u_matrix.data[i] = u[i];
 
   jacobian = multiply(subtract(target, prediction), Q);
-  Serial.println(jacobian.rows);
-  Seria.println(jacobian.cols)
   jacobian = add(jacobian, scale(2., multiply(u_matrix, Lambda))); 
-  
-  for (int h = 0; h< Nc; h++)
-  {
-    for (int j = 0; j < Nc; j++)
-    {
-      for (int i= 0; i< m; i++)
-        jacobian.data[i*jacobian.cols + j] += (-s / pow(u[j*m + i] + r / 2.0 - b, 3) + s / pow(r / 2.0 + b - u[j*m + i], 2));
-    }
-  }
+  jacobian.rows = Nc;
   jacobian.cols = m;
+  
   // Getting Hessian: 
   Matrix2 hessian;
   set(hessian, Nc, Nc);
+  set_to_zero(hessian);
   //hessian = scale(2., multiply(Q, hadamard(first_derivative, first_derivative)));
   hessian.data[0] = 1.0;
   hessian.data[1*hessian.cols+ 1] = 1.0;
   
-  hessian = subtract(hessian, scale(2., multiply(transpose(multiply(Q, second_derivative)), transpose(subtract(target, prediction)))));
+  //hessian = subtract(hessian, scale(2., multiply(transpose(multiply(Q, second_derivative)), transpose(subtract(target, prediction)))));
   //hessian = add(hessian, scale(2., Lambda));
-
+  release(target);
+  release(Lambda);
+  release(Q);
+  release(first_derivative);
+  release(second_derivative);
+  
   for (int h = 0; h < Nc; h++)
   {
     for (int j = 0; j < m; j++)
     {
       for (int i= 0; i < m; i++)
+      {
+        jacobian.data[i*jacobian.cols + j] += (-s / pow(u[j*m + i] + r / 2.0 - b, 3) + s / pow(r / 2.0 + b - u[j*m + i], 2));
         hessian.data[h*hessian.cols + h] += (2.*s / pow(u[j*m + i] + r / 2.0 - b, 3) + 2.0* s / pow(r / 2.0 + b - u[j*m + i], 3.));
+      }
     }
   }
-  Serial.println();
-  print_matrix(jacobian);
-  Serial.println(jacobian.rows);
-  Serial.println(jacobian.cols);
-  Serial.println("jacobian");
-  //u_matrix = solve_matrix_eqn(hessian, jacobian);
 
-  /*
-   * end of optimization code
-   */
-  
-  timestamp++;
-  release(hessian);
-  release(jacobian);
-  release(u_matrix);
-  release(first_derivative);
-  release(second_derivative);
   release(prediction);
   free(u);
   free(nn_input);
-  release(Lambda);
-  release(Q);
-  release(target);
+ 
+  //u_matrix = solve_matrix_eqn(hessian, jacobian);
+ 
+  timestamp++;
+  //print_matrix(u_matrix);
+  
+  release(hessian);
+  release(jacobian);
+  release(u_matrix);
+  
+  Serial.println(millis()-elapsed);
 }
 
 float deg2rad(float deg)

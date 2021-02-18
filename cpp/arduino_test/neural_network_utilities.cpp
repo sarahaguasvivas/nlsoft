@@ -1,7 +1,6 @@
 #include "neural_network_utilities.hpp"
 #include <iostream>
 
-
 void roll_window(int start, int finish, int buffer_size, float * array)
 {
     for (int i = finish - buffer_size; i >= start; i--) 
@@ -50,6 +49,7 @@ Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int d
         float * input_next = (float*)malloc(input_size*sizeof(float));        
         for (int j = 0; j < input_size; j++) input_next[j] = previous_input[j];
     }
+   
     return y_output;
 }
 

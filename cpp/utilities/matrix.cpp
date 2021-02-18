@@ -1,4 +1,5 @@
 #include "matrix.hpp"
+#include <iostream>
 
 void set(struct Matrix2 & a, int rows, int cols)
 {
@@ -243,24 +244,22 @@ struct Matrix2 solve_matrix_eqn(struct Matrix2 a, struct Matrix2 b)
 
         Modified to start indices at 0
     */
-    
     Matrix2 u; 
     set(u, a.rows, b.cols);
     int m = b.cols;
     float d;
     int n = a.cols, *indx;
     float * col = (float*)malloc(a.rows * sizeof(float));
-
     ludcmp(a, indx, &d);
-    for (int j=0; j < m ; j++)
+    for (int j=0; j < m; j++)
     {
-        for (int i = 0; i < a.rows; i++) col[i] = a.data[i *a.cols + j];
+        for (int i = 0; i < a.cols; i++) col[i] = a.data[i *a.cols + j];
         lubksb(a, indx, col);
-        for (int i = 0; i < a.rows; i++) u.data[i*m + j] = col[i]; 
+        for (int i = 0; i < a.cols; i++) u.data[i*m + j] = col[i]; 
     }
-    return u;
-    free(indx);
+    //free(indx);
     free(col);
+    return u;
 }
 
 struct Matrix2 inverse(struct Matrix2 a)
@@ -300,11 +299,12 @@ struct Matrix2 inverse(struct Matrix2 a)
     }
 
     for (int i = 0; i < inverse.rows*inverse.cols; i++) inverse.data[i] = y[i];
-
-    return inverse;
+    
     free(indx);
     free(col);
-    free(y);
+    free(y);    
+    return inverse;
+
 }
 
 struct Matrix2 nr_optimizer(struct Matrix2 jacobian, struct Matrix2 hessian, struct Matrix2 u0)

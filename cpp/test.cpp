@@ -29,7 +29,7 @@ void fill_with_random(struct Matrix2 & a){
 
 int main(){
    
-    Matrix2 a;
+  /*  Matrix2 a;
     set(a, 10, 10);
 
     fill_with_random(a);
@@ -78,7 +78,7 @@ int main(){
     hessian = add(a, multiply(a, e));
     std::cout << "multiple operations" << std::endl;
     print_matrix(hessian);
-    
+     
     
     release(c);
     release(a);
@@ -165,16 +165,28 @@ int main(){
     for (int i=0; i< 2*5; i++) u[i] = (float)(i+1)*100;    
     
     start = std::chrono::high_resolution_clock::now();
-    Matrix2 y_out = nn_prediction(10, 3, 3, 2, 36, 5, 5, input1, u);
+    Matrix2 y_out = nn_prediction(5, 3, 3, 2, 36, 5, 5, input1, u);
     free(u); 
     stop = std::chrono::high_resolution_clock::now();
     duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
     std::cout << "elapsed: " << duration.count() << std::endl;
     std::cout << std::endl <<  "Prediction: " << std::endl;
     print_matrix(y_out);
+*/
 
+    std::cout << "Solve diff eq:" << std::endl;
+    Matrix2 hessian;
+    Matrix2 jacobian;
+    set(hessian, 2, 2);
+    set(jacobian, 2, 2);
+    fill_with_random(hessian);
+    fill_with_random(jacobian);
+    Matrix2 u_mat = solve_matrix_eqn(hessian, jacobian);
+    print_matrix(u_mat);
 
-    
-    release(y_out);
+    release(hessian);
+    release(jacobian);
+    release(u_mat); 
+    //release(y_out);
     return 0;
 }
