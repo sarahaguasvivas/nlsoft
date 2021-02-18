@@ -29,7 +29,7 @@ void fill_with_random(struct Matrix2 & a){
 
 int main(){
    
-  /*  Matrix2 a;
+    Matrix2 a;
     set(a, 10, 10);
 
     fill_with_random(a);
@@ -172,21 +172,20 @@ int main(){
     std::cout << "elapsed: " << duration.count() << std::endl;
     std::cout << std::endl <<  "Prediction: " << std::endl;
     print_matrix(y_out);
-*/
 
     std::cout << "Solve diff eq:" << std::endl;
-    Matrix2 hessian;
-    Matrix2 jacobian;
-    set(hessian, 2, 2);
-    set(jacobian, 2, 2);
-    fill_with_random(hessian);
-    fill_with_random(jacobian);
-    Matrix2 u_mat = solve_matrix_eqn(hessian, jacobian);
+    Matrix2 hessian1;
+    Matrix2 jacobian1;
+    set(hessian1, 2, 2);
+    set(jacobian1, 2, 2);
+    fill_with_random(hessian1);
+    fill_with_random(jacobian1);
+    Matrix2 u_mat = solve_matrix_eqn(hessian1, jacobian1);
     print_matrix(u_mat);
 
-    release(hessian);
-    release(jacobian);
+    release(hessian1);
+    release(jacobian1);
     release(u_mat); 
-    //release(y_out);
+    release(y_out);
     return 0;
 }

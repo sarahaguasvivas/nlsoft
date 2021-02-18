@@ -1,5 +1,4 @@
 #include "matrix.hpp"
-#include "Arduino.h"
 
 void set(struct Matrix2 & a, int rows, int cols)
 {
@@ -8,10 +7,14 @@ void set(struct Matrix2 & a, int rows, int cols)
     if (a.rows > 0 && a.cols > 0) a.data = (float*)malloc(a.rows*a.cols*sizeof(float));
 }
 
+void cleanup_helper (float ** pointer){
+  free(*pointer);
+  *pointer = NULL;
+}
+
 void release(struct Matrix2 & a)
 {
-    free(a.data);
-    a.data = NULL;
+    cleanup_helper(&a.data);
 }
 
 struct Matrix2 scale(float scale, struct Matrix2 matrix)
@@ -266,9 +269,9 @@ struct Matrix2 solve_matrix_eqn(struct Matrix2 a, struct Matrix2 b)
     int n = a.cols;
     int *indx = (int*)malloc(n*sizeof(int));
     float * col = (float*)malloc(a.rows * sizeof(float));
-    Serial.println("here");
+    
     ludcmp(a, indx, &d);
-    Serial.println("here1");
+    
     for (int j=0; j < m ; j++)
     {
         for (int i = 0; i < a.rows; i++) col[i] = a.data[i *a.cols + j];

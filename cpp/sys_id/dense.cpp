@@ -48,7 +48,7 @@ float * fwd_dense(struct Dense L, float* input)
 		}
 	}
 	free(input);
-	input = NULL;
+	
 	h = activate(h,L.output_shape[0],L.activation);
     return h;
 }

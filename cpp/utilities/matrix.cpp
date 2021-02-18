@@ -11,7 +11,7 @@ void set(struct Matrix2 & a, int rows, int cols)
 void release(struct Matrix2 & a)
 {
     free(a.data);
-    //a.data = NULL;
+    a.data = NULL;
 }
 
 struct Matrix2 transpose(struct Matrix2 a)
@@ -19,7 +19,9 @@ struct Matrix2 transpose(struct Matrix2 a)
     int size = a.rows*a.cols;
     
     Matrix2 transp;
-    set(transp, a.rows, a.cols);
+    transp.rows = a.rows;
+    transp.cols = a.cols;
+    transp.data = (float*)malloc(a.rows*a.cols * sizeof(float));
 
     if (a.rows == a.cols){
         for (int i = 0 ; i < size; i++) transp.data[i] = a.data[i];
@@ -42,7 +44,9 @@ struct Matrix2 transpose(struct Matrix2 a)
 struct Matrix2 add (struct Matrix2 a, struct Matrix2 b)
 {
     Matrix2 result;
-    set(result, a.rows, a.cols);
+    result.rows = a.rows;
+    result.cols = a.cols;
+    result.data = (float*)malloc(a.rows*a.cols * sizeof(float));
 
     if (a.rows == b.rows && a.cols == b.cols)
     {
@@ -61,8 +65,10 @@ struct Matrix2 add (struct Matrix2 a, struct Matrix2 b)
 struct Matrix2 subtract (struct Matrix2 a, struct Matrix2 b)
 {
     Matrix2 result;
-    set(result, a.rows, a.cols);
-
+    result.rows = a.rows;
+    result.cols = a.cols;
+    result.data = (float*)malloc(a.rows*a.cols * sizeof(float));
+    
     if (a.rows == b.rows && a.cols == b.cols)
     {
         for (int i=0; i< a.rows; i++)

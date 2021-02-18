@@ -46,18 +46,19 @@ void loop() {
   float ini_posish[n] = {0.05, 0.03, -0.06};
   for (int i=0; i< n; i++) posish[i] = ini_posish[i];
   float ini_motor[m] = {deg2rad(-70.), deg2rad(-50.)};
-  float q_matrix[n*n] = {1e-3, 0., 0., 0., 1e3, 0., 0., 0., 1e3};
-  float lambda_matrix[m*m] = {1., 0., 0., 1.};
+  float q_matrix[n*n] = {1e-3, 1e3, 1e3};
+  float lambda_matrix[m*m] = {1., 1.};
   
   Matrix2 Q;
   Matrix2 Lambda;
   Matrix2 target;
+  
   set(Q, n, n);
   set(Lambda, m, m);
   set(target, N, 3);
   
-  for (int i = 0; i< n*n; i++) Q.data[i] = q_matrix[i];
-  for (int i = 0; i< m*m; i++) Lambda.data[i] = lambda_matrix[i];
+  for (int i = 0; i< n; i++) Q.data[i*Q.cols + i] = q_matrix[i];
+  for (int i = 0; i< m; i++) Lambda.data[i*Lambda.cols + i] = lambda_matrix[i];
   
   float signal_[NUM_SIGNAL];
   float * nn_input = (float*)malloc((NUM_SIGNAL + nd*m + dd*n)*sizeof(float));
@@ -78,10 +79,6 @@ void loop() {
   set(second_derivative, n, m);
   nn_gradients(&first_derivative, &second_derivative, n, m, nd, input_size, nn_input);
   
-  /* 
-   *  
-   */
-  
   step_motor(u, m);
 
   for (int i = 0; i < n; i++) posish[i] = prediction.data[0*prediction.cols + i];
@@ -90,10 +87,9 @@ void loop() {
   Matrix2 jacobian;
   Matrix2 u_matrix;
   set(u_matrix, Nc, m);
-  set(jacobian, Nc, m);
  
   for (int i=0; i< Nc*m; i++) u_matrix.data[i] = u[i];
-
+  
   jacobian = multiply(subtract(target, prediction), Q);
   jacobian = add(jacobian, scale(2., multiply(u_matrix, Lambda))); 
   jacobian.rows = Nc;
@@ -101,19 +97,15 @@ void loop() {
   
   // Getting Hessian: 
   Matrix2 hessian;
-  set(hessian, Nc, Nc);
-  set_to_zero(hessian);
   hessian = scale(2., multiply(Q, hadamard(first_derivative, first_derivative)));
-  //hessian.data[0] = 1.0;
-  //hessian.data[1*hessian.cols+ 1] = 1.0;
-  
-  hessian = subtract(hessian, scale(2., multiply(transpose(multiply(Q, second_derivative)), transpose(subtract(target, prediction)))));
-  hessian = add(hessian, scale(2., Lambda));
-  release(target);
-  release(Lambda);
-  release(Q);
   release(first_derivative);
+  hessian = subtract(hessian, scale(2., multiply(transpose(multiply(Q, second_derivative)), transpose(subtract(target, prediction)))));
+  release(target);
+  release(Q);
   release(second_derivative);
+  //hessian = add(hessian, scale(2., Lambda));
+  release(Lambda);
+  
   
   for (int h = 0; h < Nc; h++)
   {
@@ -132,7 +124,8 @@ void loop() {
   free(nn_input);
  
   u_matrix = solve_matrix_eqn(hessian, jacobian);
- 
+  step_motor(u_matrix.data, m);
+  
   timestamp++;
   //print_matrix(u_matrix);
   
