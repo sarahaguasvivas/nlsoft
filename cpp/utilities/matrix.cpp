@@ -146,8 +146,8 @@ void ludcmp(struct Matrix2 a, int * indx, float *d)
                 page 46. https://www.cec.uchile.cl/cinetica/pcordero/MC_libros/NumericalRecipesinC.pdf
     */
     int n = a.cols;
-    int i, imax = 0, j, k;
-    float big = 0.0, dum = 0.0, sum = 0.0, temp;
+    int i = 0, imax = 0, j = 0, k = 0;
+    float big = 0.0, dum = 0.0, sum = 0.0, temp = 0.0;
     float *vv;
      
     vv = (float*)malloc(n*sizeof(float));
@@ -208,7 +208,7 @@ void lubksb(struct Matrix2 a, int *indx,float b[])
             "Numerical Recipes (3rd edition)", Cambridge University Press, 2007,
             page 46. https://www.cec.uchile.cl/cinetica/pcordero/MC_libros/NumericalRecipesinC.pdf
     */
-	int i,ii = 0,ip,j;
+	int i,ii = 0,ip = 0,j = 0;
 	float sum = 0.0;
     int n = a.cols;
 
@@ -248,7 +248,8 @@ struct Matrix2 solve_matrix_eqn(struct Matrix2 a, struct Matrix2 b)
     set(u, a.rows, b.cols);
     int m = b.cols;
     float d;
-    int n = a.cols, *indx;
+    int n = a.cols;
+    int *indx = (int*)malloc(n*sizeof(int));
     float * col = (float*)malloc(a.rows * sizeof(float));
     ludcmp(a, indx, &d);
     for (int j=0; j < m; j++)
@@ -257,7 +258,7 @@ struct Matrix2 solve_matrix_eqn(struct Matrix2 a, struct Matrix2 b)
         lubksb(a, indx, col);
         for (int i = 0; i < a.cols; i++) u.data[i*m + j] = col[i]; 
     }
-    //free(indx);
+    free(indx);
     free(col);
     return u;
 }

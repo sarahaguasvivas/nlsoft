@@ -263,10 +263,12 @@ struct Matrix2 solve_matrix_eqn(struct Matrix2 a, struct Matrix2 b)
     set(u, a.rows, b.cols);
     int m = b.cols;
     float d;
-    int n = a.cols, *indx;
-   
+    int n = a.cols;
+    int *indx = (int*)malloc(n*sizeof(int));
     float * col = (float*)malloc(a.rows * sizeof(float));
+    Serial.println("here");
     ludcmp(a, indx, &d);
+    Serial.println("here1");
     for (int j=0; j < m ; j++)
     {
         for (int i = 0; i < a.rows; i++) col[i] = a.data[i *a.cols + j];

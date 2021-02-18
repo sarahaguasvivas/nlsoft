@@ -103,12 +103,12 @@ void loop() {
   Matrix2 hessian;
   set(hessian, Nc, Nc);
   set_to_zero(hessian);
-  //hessian = scale(2., multiply(Q, hadamard(first_derivative, first_derivative)));
-  hessian.data[0] = 1.0;
-  hessian.data[1*hessian.cols+ 1] = 1.0;
+  hessian = scale(2., multiply(Q, hadamard(first_derivative, first_derivative)));
+  //hessian.data[0] = 1.0;
+  //hessian.data[1*hessian.cols+ 1] = 1.0;
   
-  //hessian = subtract(hessian, scale(2., multiply(transpose(multiply(Q, second_derivative)), transpose(subtract(target, prediction)))));
-  //hessian = add(hessian, scale(2., Lambda));
+  hessian = subtract(hessian, scale(2., multiply(transpose(multiply(Q, second_derivative)), transpose(subtract(target, prediction)))));
+  hessian = add(hessian, scale(2., Lambda));
   release(target);
   release(Lambda);
   release(Q);
@@ -131,7 +131,7 @@ void loop() {
   free(u);
   free(nn_input);
  
-  //u_matrix = solve_matrix_eqn(hessian, jacobian);
+  u_matrix = solve_matrix_eqn(hessian, jacobian);
  
   timestamp++;
   //print_matrix(u_matrix);
