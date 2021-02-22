@@ -10,16 +10,17 @@ void roll_window(int start, int finish, int buffer_size, float * array)
     }
 }
 
-Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int dd, float * input_next, float * u)
+Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int dd, float * previous_input, float * u)
 {
     Matrix2 y_output;
     set(y_output, N, n);
     buildLayers();
-    float previous_input[input_size];
-    for (int i=0; i<input_size; i++) previous_input[i] = input_next[i];
 
     for (int i = 0; i < N; i++)
     {
+        float * input_next = (float*)malloc(input_size*sizeof(float));        
+        for (int j = 0; j < input_size; j++) input_next[j] = previous_input[j];
+        
         float * output_next;
         output_next = fwdNN(input_next);
         roll_window(0, nd*m - 1, m, previous_input);
@@ -47,8 +48,6 @@ Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int d
             y_output.data[i * n + j] = output_next[j];
         }
         free(output_next);
-        float * input_next = (float*)malloc(input_size*sizeof(float));        
-        for (int j = 0; j < input_size; j++) input_next[j] = previous_input[j];
     }
     return y_output;
 }

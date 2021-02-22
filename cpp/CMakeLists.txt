@@ -20,5 +20,7 @@ file (GLOB CORE_LIB *.cpp ../sys_id/*.cpp ../utilities/*.cpp)
 target_include_directories (test PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} sys_id utilities)
 
 add_executable (test_transpose test.cpp sys_id/dense.cpp sys_id/activations.cpp sys_id/nn4mc.cpp) 
+add_executable (test_arduino arduino_test_valgrind.cpp sys_id/dense.cpp sys_id/activations.cpp sys_id/nn4mc.cpp)
 
 target_link_libraries (test_transpose PUBLIC matrix test nn_util activation dense nn4mc)
+target_link_libraries (test_arduino PUBLIC matrix test nn_util activation dense nn4mc)

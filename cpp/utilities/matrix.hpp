@@ -21,6 +21,7 @@ void set_to_ones(struct Matrix2 &);
 struct Matrix2 transpose(struct Matrix2);
 struct Matrix2 add (struct Matrix2, struct Matrix2);
 struct Matrix2 subtract (struct Matrix2, struct Matrix2);
+struct Matrix2 scale(float, struct Matrix2);
 struct Matrix2 multiply(struct Matrix2, struct Matrix2);
 struct Matrix2 hadamard(struct Matrix2, struct Matrix2);
 struct Matrix2 inverse (struct Matrix2);

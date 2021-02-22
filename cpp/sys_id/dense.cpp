@@ -9,6 +9,7 @@
 */
 
 #include "dense.hpp"
+#include <iostream>
 
 #define max(a, b) (((a)>(b) ? (a) : (b)))
 #define min(a, b) (((a)<(b) ? (a) : (b)))
@@ -44,12 +45,11 @@ float * fwd_dense(struct Dense L, float* input)
 
 		for(int j = 0; j < L.input_shape[0]; j++)
 		{
-            h[i] += *(L.weights + j*L.weight_shape[1] + i)*input[j];
+            h[i] += *(L.weights + j*L.weight_shape[1] + i)* input[j];
 		}
 	}
-	free(input);
-	
 	h = activate(h,L.output_shape[0],L.activation);
+	free(input);
     return h;
 }
 

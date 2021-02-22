@@ -62,6 +62,16 @@ struct Matrix2 add (struct Matrix2 a, struct Matrix2 b)
     return result;
 }
 
+struct Matrix2 scale(float scale, struct Matrix2 matrix)
+{
+    Matrix2 scaled;
+    set(scaled, matrix.rows, matrix.cols);
+    for (int i=0; i< matrix.rows; i++)
+      for (int j=0; j<matrix.cols;j++)
+        scaled.data[i*scaled.cols + j] = scale*matrix.data[i*matrix.cols + j];
+    return scaled;
+}
+
 struct Matrix2 subtract (struct Matrix2 a, struct Matrix2 b)
 {
     Matrix2 result;
@@ -196,7 +206,7 @@ void ludcmp(struct Matrix2 a, int * indx, float *d)
         }
                 
         indx[j]=imax;
-        if (a.data[j*a.cols + j] == 0.0) a.data[j*a.cols + j]= a.tiny;
+        if (abs(a.data[j*a.cols + j]) <= 1e-10) a.data[j*a.cols + j]= a.tiny;
         if (j != n) {
             dum = 1.0 / (a.data[j*a.cols + j]);
             for (i=j + 1;i<n;i++) a.data[i*a.cols + j] *= dum;
@@ -225,7 +235,7 @@ void lubksb(struct Matrix2 a, int *indx,float b[])
 		b[ip]=b[i];
 		if (ii)
 			for (j=ii;j<=i-1;j++) sum -= a.data[i*a.cols + j]*b[j];
-		else if (sum) ii=i;
+		else if (sum > 0.0 || sum < 0.0) ii=i;
 		b[i]=sum;
 	}
 	for (i = n - 1; i>=0; i--)
