@@ -74,27 +74,55 @@ int main() {
             
             // Getting Jacobian:
             Matrix2 jacobian;
+            Matrix2 jacobian3;
+
             Matrix2 u_matrix;
             set(u_matrix, Nc, m);
+            std::cout << u_matrix.data << std::endl;
             
             for (int i=0; i< Nc*m; i++) u_matrix.data[i] = u[i];
-            
-            jacobian = multiply(subtract(target, prediction), Q);
-            jacobian = add(jacobian, scale(2., multiply(u_matrix, Lambda))); 
+            Matrix2 temp;
+            temp = subtract(target, prediction);
+            jacobian3 = multiply(temp, Q);
+            release(temp);
+            temp =multiply(u_matrix, Lambda);
+            Matrix2 temp1 = scale(2., temp);
+            release(temp);
+            jacobian = add(jacobian3, temp1);
+            release(temp1);
+            release(jacobian3);
             jacobian.rows = Nc;
             jacobian.cols = m;
             
             // Getting Hessian: 
+            Matrix2 hessian2;
             Matrix2 hessian;
-            hessian = scale(2., multiply(Q, hadamard(first_derivative, first_derivative)));
+            
+            temp = hadamard(first_derivative, first_derivative);
+            temp1 = multiply(Q, temp);
+            release(temp);
+            hessian2 = scale(2., temp1); 
+            release(temp1);
+
             release(first_derivative);
-            hessian = subtract(hessian, scale(2., multiply(transpose(multiply(Q, second_derivative)), transpose(subtract(target, prediction)))));
+            temp = subtract(target, prediction);
+            temp1 = transpose(temp);
+            release(temp);
+            temp = multiply(Q, second_derivative);
+            Matrix2 temp2 = transpose(temp);
+            release(temp);
+            temp = multiply(temp2, temp1); 
+            release(temp2);
+            release(temp1);
+            temp2= scale(2., temp);
+            release(temp);
+            hessian = subtract(hessian2, temp2);
+            release(temp2);
+            release(hessian2);
             release(target);
             release(Q);
             release(second_derivative);
-            //hessian = add(hessian, scale(2., Lambda));
             release(Lambda);
-            
             
             for (int h = 0; h < Nc; h++)
             {
@@ -111,10 +139,14 @@ int main() {
             release(prediction);
             free(u);
             free(nn_input);
-            
-            u_matrix = solve_matrix_eqn(hessian, jacobian);
+
             release(u_matrix);
-            
+            u_matrix = solve_matrix_eqn(hessian, jacobian);
+
+            std::cout << u_matrix.data << std::endl;
+            std::cout << u_matrix.original_data_pointer << std::endl;
+            release(u_matrix);
+
             timestamp++;
             //print_matrix(u_matrix);
             

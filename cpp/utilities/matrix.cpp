@@ -5,10 +5,10 @@ void set(struct Matrix2 & a, int rows, int cols)
 {
     a.rows = rows;
     a.cols = cols; 
-    if (a.rows > 0 && a.cols > 0) a.data = (float*)malloc(a.rows*a.cols*sizeof(float));
+    a.data = (float*)malloc(a.rows*a.cols*sizeof(float));
 }
 
-void release(struct Matrix2 & a)
+void release(Matrix2 a)
 {
     free(a.data);
     a.data = NULL;
