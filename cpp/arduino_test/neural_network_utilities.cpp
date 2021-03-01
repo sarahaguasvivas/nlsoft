@@ -1,5 +1,4 @@
 #include "neural_network_utilities.hpp"
-#include <iostream>
 
 void roll_window(int start, int finish, int buffer_size, float * array)
 {

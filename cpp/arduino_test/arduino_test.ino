@@ -5,15 +5,18 @@
 
 #define NUM_SIGNAL  11
 #define PI 3.1415926535897932384626433832795
-#define STEP_SIZE 0.05
+#define Ts 0.05
 
 int timestamp;
 float posish[3];
 unsigned long elapsed;
 
 void setup() {
+  setup_motor();
   Serial.begin(115200);
+  setup_clock_divider();
   timestamp = 0;
+  
 }
 
 void print_matrix(Matrix2 matrix)
@@ -155,6 +158,7 @@ void loop() {
             release(u_matrix);
             u_matrix = solve_matrix_eqn(hessian, jacobian);
 
+            step_motor(u_matrix.data, m);
         
             release(u_matrix);
 

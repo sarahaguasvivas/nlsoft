@@ -17,7 +17,6 @@ extern "C" {
 
 #include <stdlib.h>
 #include "parameters.h"
-//#include "dense.hpp"
 
 float* fwdNN(float*);
 void buildLayers();
