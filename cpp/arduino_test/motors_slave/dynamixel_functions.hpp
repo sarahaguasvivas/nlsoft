@@ -1,4 +1,8 @@
+#ifndef __DYNAMIXFUNCT_H_
+#define __DYNAMIXFUNCT_H_
+
 #include <DynamixelSDK.h>
+#include <SPI.h>
 
 #define ADDR_AX_TORQUE_ENABLE           24                
 #define ADDR_AX_GOAL_POSITION           30
@@ -14,16 +18,11 @@
 #define DXL_MOVING_STATUS_THRESHOLD     20                  
 #define ESC_ASCII_VALUE                 0x1b
 
-dynamixel::PortHandler *portHandler;
-dynamixel::PacketHandler *packetHandler;
 
-volatile int n_motors;
-int goalPosition = 0;
-int isMoving = 0;
-int dxl_comm_result[2] = {COMM_TX_FAIL, COMM_TX_FAIL};            
-uint8_t dxl_error = 0;                       
-int16_t dxl_present_position = 0;          
+     
 
-uint8_t dynamixel_ids[2] = {1, 2};
+
 void actuate_motors(int *);
-void setup_dynamixel(int);
+void setup_dynamixels(int);
+
+#endif

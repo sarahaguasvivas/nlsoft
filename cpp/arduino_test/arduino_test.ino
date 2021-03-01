@@ -16,7 +16,6 @@ void setup() {
   Serial.begin(115200);
   setup_clock_divider();
   timestamp = 0;
-  
 }
 
 void print_matrix(Matrix2 matrix)
