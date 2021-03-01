@@ -1,3 +1,5 @@
+#include <DynamixelSDK.h>
+
 #define ADDR_AX_TORQUE_ENABLE           24                
 #define ADDR_AX_GOAL_POSITION           30
 #define ADDR_AX_PRESENT_POSITION        36
@@ -15,6 +17,7 @@
 dynamixel::PortHandler *portHandler;
 dynamixel::PacketHandler *packetHandler;
 
+volatile int n_motors;
 int goalPosition = 0;
 int isMoving = 0;
 int dxl_comm_result[2] = {COMM_TX_FAIL, COMM_TX_FAIL};            

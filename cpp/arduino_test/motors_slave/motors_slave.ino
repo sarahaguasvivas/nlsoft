@@ -3,10 +3,9 @@
  * Compatible with 3 pin AX- and 4 pin RX- series
 */
 #include <SPI.h>
-#include <DynamixelSDK.h>
 #include "dynamixel_functions.hpp"
 
-int m = 2;
+#define m 2
 
 byte storage [8];
 uint16_t buff[m];
@@ -24,7 +23,7 @@ void setup() {
   setup_dynamixels(m);
 }
 
-ISR(SPI_STC_vect)
+void ISR(uint16_t SPI_STC_vect)
 {
   byte gathered = SPDR;
   if( pos < sizeof storage)

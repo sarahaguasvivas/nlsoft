@@ -2,6 +2,7 @@
 
 void setup_dynamixel(int m)
 {
+  n_motors = m;
   portHandler = dynamixel::PortHandler::getPortHandler(DEVICENAME);
   packetHandler= dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
   portHandler->openPort();
@@ -15,7 +16,7 @@ void setup_dynamixel(int m)
 
 void actuate_motors(int * u){
 
-  for (int i=0 ; i< m; i++){
+  for (int i=0 ; i< n_motors; i++){
     
         int goal_position = u[i];
         
