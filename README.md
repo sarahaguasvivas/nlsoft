@@ -18,3 +18,7 @@ We have our paper here:
       primaryClass={cs.RO}
 }
 ```
+![alt text](https://github.com/sarahaguasvivas/nlsoft/blob/master/docs/neural_network_architecture.gif "Neural Network Architecture")
+
+
+![alt text](https://github.com/sarahaguasvivas/nlsoft/blob/master/docs/system_description.gif "Description of the System")
