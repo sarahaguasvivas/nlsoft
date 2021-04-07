@@ -6,8 +6,10 @@
 - Step 3: Configure Controller
 - Step 4: Run! 
 
-We have our paper here:
 
+**To cite this paper:**
+
+We encourage our users to cite the publication that we prepared for this work. Please find it at this direction:
 ```
 @misc{manzano2021highbandwidth,
       title={High-bandwidth nonlinear control for soft actuators with recursive network models}, 
@@ -18,6 +20,9 @@ We have our paper here:
       primaryClass={cs.RO}
 }
 ```
+
+**The model:** 
+The model is a hierarchical, recursive, neural network model that is capable of doing forward predictions by feeding back to itself the predictions from previous timesteps. Here $\mathbf{y}_{t}$ is the output of the system. 
 
 ![alt text](https://github.com/sarahaguasvivas/nlsoft/blob/master/docs/neural_network_architecture.gif "Neural Network Architecture")
 
