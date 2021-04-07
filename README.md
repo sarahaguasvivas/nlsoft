@@ -22,7 +22,7 @@ We encourage our users to cite the publication that we prepared for this work. P
 ```
 
 **The model:** 
-The model is a hierarchical, recursive, neural network model that is capable of doing forward predictions by feeding back to itself the predictions from previous timesteps. Here $\mathbf{y}_{t}$ is the output of the system. 
+The model is a hierarchical, recursive, neural network model that is capable of doing forward predictions by feeding back to itself the predictions from previous timesteps. Here ![formula](https://render.githubusercontent.com/render/math?math=\mathbf{y}_{t}) is the output of the system. 
 
 ![alt text](https://github.com/sarahaguasvivas/nlsoft/blob/master/docs/neural_network_architecture.gif "Neural Network Architecture")
 
