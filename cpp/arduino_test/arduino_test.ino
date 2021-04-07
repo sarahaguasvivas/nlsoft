@@ -7,14 +7,13 @@
 #define PI 3.1415926535897932384626433832795
 #define Ts 0.05
 
-int timestamp;
+unsigned long timestamp;
 float posish[3];
 unsigned long elapsed;
 
 void setup() {
   setup_motor();
   Serial.begin(115200);
-  setup_clock_divider();
   timestamp = 0;
 }
 
@@ -42,7 +41,7 @@ void build_input_vector(float * vector, float * u, float * signal_, float * posi
 
 void loop() {
   
-  elapsed = millis();
+  //elapsed = millis();
   
               float signal_calibration[NUM_SIGNAL] = {613., 134., 104., 200., 128., 146., 183., 1., 2., 7., 100.};
             int m = 2, n = 3, nd = 5, dd = 5, N = 5, Nc = 2;
@@ -167,7 +166,7 @@ void loop() {
             release(hessian);
             release(jacobian);
   
-  Serial.println(millis()-elapsed);
+  //Serial.println(millis()-elapsed);
 }
 
 float deg2rad(float deg)

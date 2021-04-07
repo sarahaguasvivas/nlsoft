@@ -5,12 +5,7 @@
  */
 
 void setup_motor(){
- digitalWrite(SS, HIGH);
- SPI.begin();
-}
-
-void setup_clock_divider(){
-  SPI.setClockDivider(SPI_CLOCK_DIV8);
+ Serial2.begin(115200, SERIAL_8N1, RXD2, TXD2);
 }
 
 uint8_t convert_mapped_values(float angle)
@@ -30,12 +25,14 @@ void step_motor(float * u, int m)
    *  u is the optimal control input matrix
    *  m is the number of motors
    */
-  uint8_t buff[m];
-  digitalWrite(SS, LOW);
-  for (int i = 0; i < m; i++) buff[i] = convert_mapped_values(u[i]);
-  SPI.transfer(buff, (uint32_t)(m*sizeof(uint16_t)));
-  digitalWrite(SS, HIGH);
-  
-  
-     
+  String to_send;
+  for ( int i = 0 ; i < m - 1; i++) {
+    to_send+= String(u[i]);
+    to_send+=",";
+  }
+  to_send+= String(u[m - 1]);
+  to_send+= "\n";
+
+  Serial.println(to_send);
+  Serial2.print(to_send);
 }

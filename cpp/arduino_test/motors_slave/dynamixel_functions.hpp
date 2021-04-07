@@ -2,7 +2,6 @@
 #define __DYNAMIXFUNCT_H_
 
 #include <DynamixelSDK.h>
-#include <SPI.h>
 
 #define ADDR_AX_TORQUE_ENABLE           24                
 #define ADDR_AX_GOAL_POSITION           30
@@ -17,9 +16,6 @@
 #define DXL_MAXIMUM_POSITION_VALUE      600               
 #define DXL_MOVING_STATUS_THRESHOLD     20                  
 #define ESC_ASCII_VALUE                 0x1b
-
-
-     
 
 
 void actuate_motors(int *);
