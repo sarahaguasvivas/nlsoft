@@ -8,7 +8,6 @@
 #define __MOTORS_H__
 
 #include <stdlib.h>
-#include <SPI.h>
 #include <Arduino.h>
 
 #define OLD_MIN -100

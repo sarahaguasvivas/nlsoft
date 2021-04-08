@@ -1,6 +1,7 @@
 #include "neural_network_utilities.hpp"
 #include "matrix.hpp"
 #include "motors.hpp"
+#include "signals.hpp"
 #include "figure_eight_target.hpp"
 
 #define NUM_SIGNAL  11
@@ -13,6 +14,7 @@ unsigned long elapsed;
 
 void setup() {
   setup_motor();
+  setup_signal_collector();
   Serial.begin(115200);
   timestamp = 0;
 }
@@ -41,9 +43,9 @@ void build_input_vector(float * vector, float * u, float * signal_, float * posi
 
 void loop() {
   
-  //elapsed = millis();
+  elapsed = millis();
   
-              float signal_calibration[NUM_SIGNAL] = {613., 134., 104., 200., 128., 146., 183., 1., 2., 7., 100.};
+            float signal_calibration[NUM_SIGNAL] = {613., 134., 104., 200., 128., 146., 183., 1., 2., 7., 100.};
             int m = 2, n = 3, nd = 5, dd = 5, N = 5, Nc = 2;
             float s = 1e-20, b = 1e-5, r = 4e3;
             int input_size = 36;
@@ -69,7 +71,7 @@ void loop() {
             float * nn_input = (float*)malloc((input_size)*sizeof(float));
             float * u = (float*)malloc((Nc*m)*sizeof(float));
             
-            collect_signal(signal_, signal_calibration);
+            collect_signal(signal_, signal_calibration, NUM_SIGNAL);
             build_input_vector(nn_input, u, signal_, posish, nd*m, dd*n, m, n);
             
             for (int i=0; i < Nc; i++) 
@@ -159,24 +161,19 @@ void loop() {
             step_motor(u_matrix.data, m);
         
             release(u_matrix);
-
+            
             timestamp++;
             //print_matrix(u_matrix);
             
             release(hessian);
             release(jacobian);
   
-  //Serial.println(millis()-elapsed);
+  Serial.println(millis()-elapsed);
 }
 
 float deg2rad(float deg)
 {
     return deg*PI/180.;
-}
-
-void collect_signal(float * signal_, float * signal_calibration)
-{
-    for (int i = 0; i < NUM_SIGNAL; i++) signal_[i] = analogRead(i)/signal_calibration[i];
 }
 
 void print_array(float * arr, int arr_size)

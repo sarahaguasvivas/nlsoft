@@ -5,7 +5,7 @@
  */
 
 void setup_motor(){
- Serial2.begin(115200, SERIAL_8N1, RXD2, TXD2);
+  Serial2.begin(115200, SERIAL_8N1, RXD2, TXD2);
 }
 
 uint8_t convert_mapped_values(float angle)
@@ -32,7 +32,5 @@ void step_motor(float * u, int m)
   }
   to_send+= String(u[m - 1]);
   to_send+= "\n";
-
-  Serial.println(to_send);
   Serial2.print(to_send);
 }
