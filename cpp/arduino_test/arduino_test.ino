@@ -23,11 +23,12 @@ void print_matrix(Matrix2 matrix)
 {
   for (int i=0; i< matrix.rows; i++){
     for (int j=0; j< matrix.cols; j++){
-      Serial.print(matrix.data[i*matrix.rows + j]);
+      Serial.print(matrix.data[i*matrix.rows + j], 10);
       Serial.print(",");
     }
     Serial.println();
   }
+  Serial.println();
 }
 
 void build_input_vector(float * vector, float * u, float * signal_, float * posish, int ndm, int ddn, int m, int n)
@@ -43,7 +44,7 @@ void build_input_vector(float * vector, float * u, float * signal_, float * posi
 
 void loop() {
   
-  elapsed = millis();
+  //elapsed = millis();
   
             float signal_calibration[NUM_SIGNAL] = {613., 134., 104., 200., 128., 146., 183., 1., 2., 7., 100.};
             int m = 2, n = 3, nd = 5, dd = 5, N = 5, Nc = 2;
@@ -64,6 +65,9 @@ void loop() {
             set(Lambda, m, m);
             set(target, N, 3);
             
+            set_to_zero(Q);
+            set_to_zero(Lambda);
+           
             for (int i = 0; i< n; i++) Q.data[i*Q.cols + i] = q_matrix[i];
             for (int i = 0; i< m; i++) Lambda.data[i*Lambda.cols + i] = lambda_matrix[i];
             
@@ -80,13 +84,14 @@ void loop() {
             
             spin_figure_eight_target(timestamp, 0, N, n, &target, ini_posish);
             Matrix2 prediction = nn_prediction(N, Nc, n, m, NUM_SIGNAL + nd*m + dd*n, nd, dd, nn_input, u);
+            
             Matrix2 first_derivative;
             Matrix2 second_derivative;
             set(first_derivative, n, m);
             set(second_derivative, n, m);
             nn_gradients(&first_derivative, &second_derivative, n, m, nd, input_size, nn_input);
-
-            for (int i = 0; i < n; i++) posish[i] = prediction.data[0*prediction.cols + i];
+            
+            for (int i = 0; i < n; i++) posish[i] = prediction.data[i*prediction.cols + (N-1)];
             
             // Getting Jacobian:
             Matrix2 jacobian;
@@ -99,11 +104,16 @@ void loop() {
             Matrix2 temp;
             temp = subtract(target, prediction);
             jacobian3 = multiply(temp, Q);
+           
             release(temp);
-            temp =multiply(u_matrix, Lambda);
+            temp = multiply(u_matrix, Lambda);
             Matrix2 temp1 = scale(2., temp);
+            
             release(temp);
+            
             jacobian = add(jacobian3, temp1);
+            print_matrix(jacobian);
+            
             release(temp1);
             release(jacobian3);
             jacobian.rows = Nc;
@@ -143,14 +153,14 @@ void loop() {
             {
                 for (int j = 0; j < m; j++)
                 {
-                for (int i= 0; i < m; i++)
-                {
-                    jacobian.data[i*jacobian.cols + j] += (-s / pow(u[j*m + i] + r / 2.0 - b, 3) + s / pow(r / 2.0 + b - u[j*m + i], 2));
-                    hessian.data[h*hessian.cols + h] += (2.*s / pow(u[j*m + i] + r / 2.0 - b, 3) + 2.0* s / pow(r / 2.0 + b - u[j*m + i], 3.));
-                }
+                  for (int i= 0; i < m; i++)
+                  {
+                      jacobian.data[i*jacobian.cols + j] += (-s / pow(u[j*m + i] + r / 2.0 - b, 3) + s / pow(r / 2.0 + b - u[j*m + i], 2));
+                      hessian.data[h*hessian.cols + h] += (2.*s / pow(u[j*m + i] + r / 2.0 - b, 3) + 2.0* s / pow(r / 2.0 + b - u[j*m + i], 3.));
+                  }
                 }
             }
-
+            
             release(prediction);
             free(u);
             free(nn_input);
@@ -159,16 +169,17 @@ void loop() {
             u_matrix = solve_matrix_eqn(hessian, jacobian);
 
             step_motor(u_matrix.data, m);
-        
-            release(u_matrix);
             
-            timestamp++;
             //print_matrix(u_matrix);
-            
+
+ 
+            timestamp++;
+            release(u_matrix);
             release(hessian);
             release(jacobian);
   
-  Serial.println(millis()-elapsed);
+  //Serial.println(millis()-elapsed);
+
 }
 
 float deg2rad(float deg)
