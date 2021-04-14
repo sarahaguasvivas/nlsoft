@@ -96,23 +96,32 @@ void loop() {
             // Getting Jacobian:
             Matrix2 jacobian;
             Matrix2 jacobian3;
-
             Matrix2 u_matrix;
+            
             set(u_matrix, Nc, m);
             
-            for (int i=0; i< Nc*m; i++) u_matrix.data[i] = u[i];
-            Matrix2 temp;
+            for (int i=0; i < Nc*m; i++) u_matrix.data[i] = u[i];
+            Matrix2 temp, temp_z;
             temp = subtract(target, prediction);
             jacobian3 = multiply(temp, Q);
-           
+            Serial.println("temp");
+            print_matrix(temp);
+            temp_z = transpose(temp);
+            Serial.println("temp_z");
+            print_matrix(temp_z);
+            jacobian3 = multiply(jacobian3, temp_z);
+            //print_matrix(jacobian3);
+            
             release(temp);
+            release(temp_z);
             temp = multiply(u_matrix, Lambda);
             Matrix2 temp1 = scale(2., temp);
             
             release(temp);
-            
+        
             jacobian = add(jacobian3, temp1);
-            print_matrix(jacobian);
+            
+            //print_matrix(jacobian);
             
             release(temp1);
             release(jacobian3);
