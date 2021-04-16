@@ -27,6 +27,3 @@ The model is a hierarchical, recursive, neural network model that is capable of 
 
 <img src="https://github.com/sarahaguasvivas/nlsoft/blob/master/docs/neural_network_architecture.gif" alt="drawing" width="500"/>
 
-**Description of the System:**
-
-<img src="https://github.com/sarahaguasvivas/nlsoft/blob/master/docs/system_description.gif" alt="drawing" width="500"/>
