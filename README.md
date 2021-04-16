@@ -25,5 +25,5 @@ We encourage our users to cite the publication that we prepared for this work. P
 The model is a hierarchical, recursive, neural network model that is capable of doing forward predictions by feeding back to itself the predictions from previous timesteps. Here is the output of the system. 
 
 
-<img src="https://github.com/sarahaguasvivas/nlsoft/blob/master/docs/neural_network_architecture.gif" alt="drawing" width="500"/>
+<img src="https://github.com/sarahaguasvivas/nlsoft/blob/master/docs/neural_network_architecture.gif" alt="drawing" width="500" align="center"/>
 
