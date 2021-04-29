@@ -29,18 +29,24 @@ struct Matrix2 scale(float scale, struct Matrix2 matrix)
 
 struct Matrix2 transpose(struct Matrix2 a)
 {
-    int size = a.rows * a.cols;
+    int size = a.rows*a.cols;
+    
     Matrix2 transp;
-    set(transp, a.cols, a.rows);
-    set_to_zero(transp);
+    set(transp, a.rows, a.cols);
 
-    for (int i = 0 ; i < a.cols; i++){
-      for (int j = 0; j < a.rows ; j++){
-        int forward_idx = j * a.rows + i;
-        int backward_idx = i * a.cols + j;
-        transp.data[backward_idx] = a.data[forward_idx];
-      }
+    for (int i = 0 ; i< a.rows; i++)
+    {
+        for (int j = 0; j< a.cols; j++)
+        {
+            int forward_idx = i * a.cols + j;
+            int transposed_idx = j * a.cols + i;
+            transp.data[forward_idx] = a.data[transposed_idx];
+        }
     }
+    int temp = a.rows;
+    transp.rows = a.cols;
+    transp.cols = a.rows;
+    
     return transp;
 }
 
@@ -61,6 +67,33 @@ struct Matrix2 add (struct Matrix2 a, struct Matrix2 b)
         }
     }
     return result;
+}
+
+struct Matrix2 sum_axis(struct Matrix2 a, int axis){
+  struct Matrix2 sum_axis;
+  
+  if (axis == 0){
+    set(sum_axis, 1, a.cols);
+    set_to_zero(sum_axis);
+    for (int i = 0 ; i < a.rows; i++){
+      for (int j = 0; j < a.cols; j++){
+        int index_original = i*a.cols + j;
+        sum_axis.data[j] += a.data[index_original];
+      }
+    }
+  } 
+  if (axis == 1){
+    set(sum_axis, a.rows, 1);
+    set_to_zero(sum_axis);
+    for (int i = 0; i < a.rows; i++){
+      for (int j = 0; j < a.cols; j++){
+        int index_original = i*a.cols+j;
+        int index_sum = i*a.cols;
+        sum_axis.data[index_sum] = a.data[index_original];
+      }
+    }
+  }
+  return sum_axis;
 }
 
 struct Matrix2 subtract (struct Matrix2 a, struct Matrix2 b)
