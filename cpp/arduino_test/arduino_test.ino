@@ -11,20 +11,8 @@
 unsigned long timestamp;
 float posish[3];
 unsigned long elapsed;
-
-float signal_calibration[NUM_SIGNAL] = {613., 134., 104., 200., 128., 146., 183., 1., 2., 7., 100.};
-int m = 2, n = 3, nd = 5, dd = 5, N = 5, Nc = 2;
-float s = 1e-20, b = 1e-5, r = 4e3;
-int input_size = 36;
-float ini_posish[3] = {0.05, 0.03, -0.06};
-float ini_motor[2] = {0.0, 0.0};
-float q_matrix[3] = {1e-3, 1e3, 1e3};
-float lambda_matrix[2] = {1., 1.};
-float signal_[NUM_SIGNAL];
-Matrix2 Q;
-Matrix2 Lambda;
-Matrix2 u_matrix;
-Matrix2 del_u;
+float u[2*2];
+float del_u[2*2];
 
 void setup() {
 
@@ -32,14 +20,6 @@ void setup() {
   setup_signal_collector();
   timestamp = 0;
 
-  set(Q, n, n);
-  set(Lambda, m, m);
-  set(u_matrix, Nc, m);
-  set(del_u, Nc, m);
-  set_to_zero(Q);
-  set_to_zero(Lambda);
-  for (int i = 0; i < n; i++) Q.data[i*n+i] = q_matrix[i];
-  for (int i = 0; i < m; i++) Lambda.data[i*m + i] = lambda_matrix[i];
   Serial.begin(115200);
   while(!Serial);
 }
@@ -68,13 +48,37 @@ void build_input_vector(float * vector, float * u, float * signal_, float * posi
 void loop() {
   
   elapsed = millis();
+  
+  float signal_calibration[NUM_SIGNAL] = {613., 134., 104., 200., 128., 146., 183., 1., 2., 7., 100.};
+  int m = 2, n = 3, nd = 5, dd = 5, N = 5, Nc = 2;
+  float s = 1e-20, b = 1e-5, r = 4e3;
+  int input_size = 36;
+  float ini_posish[3] = {0.05, 0.03, -0.06};
+  float ini_motor[2] = {0.0, 0.0};
+  float q_matrix[3] = {1e-3, 1e3, 1e3};
+  float lambda_matrix[2] = {1., 1.};
+  float signal_[NUM_SIGNAL];
+  
+  Matrix2 Q;
+  Matrix2 Lambda;
+  Matrix2 u_matrix;
+  Matrix2 del_u_matrix;
+  
+  set(Q, n, n);
+  set(Lambda, m, m);
+  set(u_matrix, Nc, m);
+  set(del_u_matrix, Nc, m);
+  set_to_zero(Q);
+  set_to_zero(Lambda);
+  for (int i = 0; i < n; i++) Q.data[i*n+i] = q_matrix[i];
+  for (int i = 0; i < m; i++) Lambda.data[i*m + i] = lambda_matrix[i];
+  
   Matrix2 del_y;
   Matrix2 target;
   set(del_y, N, n);
   set(target, N, n);
 
   float * nn_input = (float*)malloc((input_size)*sizeof(float));
-  float * u = (float*)malloc((Nc*m)*sizeof(float));
 
   if (timestamp == 0){
     for (int i = 0; i < n; i++) posish[i] = ini_posish[i];
@@ -82,13 +86,13 @@ void loop() {
         for (int j = 0; j < m; j++){
             u[i*m+j] = ini_motor[j];
             u_matrix.data[i*m+j] = ini_motor[j];
-            del_u.data[i*m+j] = 0.0;
+            del_u_matrix.data[i*m+j] = 0.0;
         }
     }
   } else{
     for (int i =0; i< Nc; i++){
       for (int j=0; j< m; j++){
-        u[i*m+j] = u_matrix.data[i*m+j]; 
+        u_matrix.data[i*m+j]= u[i*m+j]; 
       }
     }
   }
@@ -106,6 +110,7 @@ void loop() {
   del_y = subtract(target, prediction);
   release(prediction);
   release(target);
+  
   //////////////////////////////////
   ///     Jacobian
   //////////////////////////////////
@@ -118,7 +123,7 @@ void loop() {
   release(sub_sum);
   sub_sum = sum_axis(temp, 0);
   release(temp);
-  temp = multiply(del_u, Lambda);
+  temp = multiply(del_u_matrix, Lambda);
   jacobian = scale(2., temp);
   release(sub_sum);
   release(temp);
@@ -178,14 +183,22 @@ void loop() {
   
   u_matrix = solve_matrix_eqn(hessian1, jacobian);
   //print_matrix(u_matrix);
-  for(int i = 0; i < Nc*m; i++) u[i] = u_matrix.data[i];
+  for(int i = 0; i < Nc*m; i++) {
+    del_u[i] = - u[i]; // t
+    u[i] = u_matrix.data[i];
+  }
+  
   step_motor(u_matrix.data, m);
 
   release(hessian1);
   release(jacobian);
 
+  release(Q);
+  release(Lambda);
+  release(u_matrix);
+  release(del_u_matrix);
+   
   free(nn_input);
-  free(u);
   timestamp++;
 
   Serial.println(millis()-elapsed);
