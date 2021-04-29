@@ -156,7 +156,7 @@ void loop() {
       }
     }
   }
-  print_matrix(hessian);
+
  
   //u_matrix = solve_matrix_eqn(hessian, jacobian);
   //for(int i = 0; i < Nc*m; i++) u[i] = u_matrix.data[i];
