@@ -68,6 +68,7 @@ void loop() {
   Matrix2 u_matrix;
   Matrix2 del_u;
   Matrix2 target;
+  
   set(del_y, N, n);
   set(u_matrix, Nc, m);
   set(del_u, Nc, m);
@@ -84,6 +85,12 @@ void loop() {
             u_matrix.data[i*m+j] = ini_motor[j];
             del_u.data[i*m+j] = 0.0;
         }
+    }
+  } else{
+    for (int i =0; i< Nc; i++){
+      for (int j=0; j< m; j++){
+        u[i*m+j] = u_matrix.data[i*m+j]; 
+      }
     }
   }
   
@@ -106,7 +113,6 @@ void loop() {
   ///     Jacobian
   //////////////////////////////////
   Matrix2 jacobian;
-  
   Matrix2 sub_sum;
   set(sub_sum, Nc, m);
   sub_sum = multiply(del_y, Q);
@@ -117,6 +123,7 @@ void loop() {
   release(temp);
   temp = multiply(del_u, Lambda);
   jacobian = scale(2., temp);
+  release(sub_sum);
   release(temp);
   
   //////////////////////////////////
@@ -124,15 +131,18 @@ void loop() {
   //////////////////////////////////
   Matrix2 hessian;
   temp = hadamard(ynu, ynu);
+  release(ynu);
   Matrix2 temp1;
   temp1 = multiply(Q, temp);
   release(temp);
   temp = scale(2., temp1);
   release(temp1);
   temp1 = multiply(Q, dynu_du);
+  release(dynu_du);
   Matrix2 temp2;
   temp2 = multiply(del_y, temp1);
   release(temp1);
+  release(del_y);
   temp1 = scale(2., temp2);
   release(temp2);
   Matrix2 temp3;
@@ -142,32 +152,44 @@ void loop() {
   temp4 = sum_axis(temp1, 0);
   release(temp1);
   hessian = subtract(temp3, temp4);
+
   release(temp4);
   release(temp3);
+  Matrix2 hessian1;
+  set(hessian1, Nc, Nc);
+  set_to_zero(hessian1);
+  
+  /*for (int i = 0; i < m; i++){
+    for (int j = 0; j < Nc; j++){
+      hessian1.data[j*Nc+j] += hessian.data[i];
+    }
+  }*/
+  for (int i =0; i< Nc; i++) hessian1.data[i*Nc+i] = 1.0;
+  
+  release(hessian);
   
   for (int h = 0; h < Nc; h++)
   {
     for (int j = 0; j < m; j++)
     {
-      for (int i= 0; i < m; i++)
+      for (int i = 0; i < m; i++)
       {
         jacobian.data[i*jacobian.cols + j] += (-s / pow(u[j*m + i] + r / 2.0 - b, 3.) + s / pow(r / 2.0 + b - u[j*m + i], 2.));
-        hessian.data[h*hessian.cols + h] += (2.*s / pow(u[j*m + i] + r / 2.0 - b, 3.) + 2.0* s / pow(r / 2.0 + b - u[j*m + i], 3.));
+        hessian1.data[h*hessian1.cols + h] += (2.*s / pow(u[j*m + i] + r / 2.0 - b, 3.) + 2.0 * s / pow(r / 2.0 + b - u[j*m + i], 3.));
       }
     }
   }
+  print_matrix(hessian1);
+  u_matrix = solve_matrix_eqn(hessian1, jacobian);
+  for(int i = 0; i < Nc*m; i++) u[i] = u_matrix.data[i];
+  step_motor(u_matrix.data, m);
 
- 
-  //u_matrix = solve_matrix_eqn(hessian, jacobian);
-  //for(int i = 0; i < Nc*m; i++) u[i] = u_matrix.data[i];
-  //step_motor(u_matrix.data, m);
-
-  release(hessian);
+  
+  release(hessian1);
   release(jacobian);
-  release(ynu);
-  release(dynu_du);
   release(u_matrix);
-  release(del_y);
+  release(del_u);
+  
   free(nn_input);
   free(u);
   timestamp++;
