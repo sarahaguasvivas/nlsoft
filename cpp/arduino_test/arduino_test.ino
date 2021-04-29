@@ -23,6 +23,8 @@ float lambda_matrix[2] = {1., 1.};
 float signal_[NUM_SIGNAL];
 Matrix2 Q;
 Matrix2 Lambda;
+Matrix2 u_matrix;
+Matrix2 del_u;
 
 void setup() {
 
@@ -32,6 +34,8 @@ void setup() {
 
   set(Q, n, n);
   set(Lambda, m, m);
+  set(u_matrix, Nc, m);
+  set(del_u, Nc, m);
   set_to_zero(Q);
   set_to_zero(Lambda);
   for (int i = 0; i < n; i++) Q.data[i*n+i] = q_matrix[i];
@@ -65,13 +69,8 @@ void loop() {
   
   elapsed = millis();
   Matrix2 del_y;
-  Matrix2 u_matrix;
-  Matrix2 del_u;
   Matrix2 target;
-  
   set(del_y, N, n);
-  set(u_matrix, Nc, m);
-  set(del_u, Nc, m);
   set(target, N, n);
 
   float * nn_input = (float*)malloc((input_size)*sizeof(float));
@@ -103,9 +102,7 @@ void loop() {
   set(ynu, n, m);
   set(dynu_du, n, m);
   nn_gradients(&ynu, &dynu_du, n, m, nd, input_size, nn_input);
-
   spin_figure_eight_target(timestamp, 0, N, n, &target, ini_posish);
-  
   del_y = subtract(target, prediction);
   release(prediction);
   release(target);
@@ -152,7 +149,6 @@ void loop() {
   temp4 = sum_axis(temp1, 0);
   release(temp1);
   hessian = subtract(temp3, temp4);
-
   release(temp4);
   release(temp3);
   Matrix2 hessian1;
@@ -179,17 +175,15 @@ void loop() {
       }
     }
   }
-  print_matrix(hessian1);
+  
   u_matrix = solve_matrix_eqn(hessian1, jacobian);
+  //print_matrix(u_matrix);
   for(int i = 0; i < Nc*m; i++) u[i] = u_matrix.data[i];
   step_motor(u_matrix.data, m);
 
-  
   release(hessian1);
   release(jacobian);
-  release(u_matrix);
-  release(del_u);
-  
+
   free(nn_input);
   free(u);
   timestamp++;
