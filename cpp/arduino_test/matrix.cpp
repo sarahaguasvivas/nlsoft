@@ -315,19 +315,23 @@ struct Matrix2 solve_matrix_eqn(struct Matrix2 a, struct Matrix2 b)
     
     Matrix2 u; 
     set(u, a.rows, b.cols);
-    int m = b.cols;
-    float d;
-    int n = a.cols;
-    int *indx = (int*)malloc(n*sizeof(int));
-    float * col = (float*)malloc(a.rows * sizeof(float));
+    Matrix2 aa;
+    set(aa, a.rows, a.cols);
+    equal(aa, a);
     
-    ludcmp(a, indx, &d);
+    int m = b.cols;
+    
+    int n = aa.cols;
+    int *indx = (int*)malloc(n*sizeof(int));
+    float * col = (float*)malloc(aa.rows * sizeof(float));
     
     for (int j=0; j < m ; j++)
     {
-        for (int i = 0; i < a.rows; i++) col[i] = a.data[i *a.cols + j];
-        lubksb(a, indx, col);
-        for (int i = 0; i < a.rows; i++) u.data[i*m + j] = col[i]; 
+        float d;
+        ludcmp(aa, indx, &d);
+        for (int i = 0; i < b.rows; i++) col[i] = b.data[i * m + j];
+        lubksb(aa, indx, col);
+        for (int i = 0; i < aa.rows; i++) u.data[i*m + j] = col[i]; 
     }
     free(indx);
     free(col);
