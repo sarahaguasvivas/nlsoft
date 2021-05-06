@@ -142,20 +142,14 @@ void loop() {
     sub_sum = sum_axis(temp, 0);
     release(temp);
     temp = multiply(del_u_matrix, Lambda);
-
     release(del_u_matrix);
     temp1 = scale(2., temp);
     release(temp);
-    Serial.println("temp");
-    print_matrix(sub_sum);
     temp2 = repmat(sub_sum, Nc, 0);
-    Serial.println("temp_repmat");
-    print_matrix(temp2);
     release(sub_sum);
     jacobian = add(temp1,temp2);
     release(temp1);
     release(temp2);
-    
     print_matrix(jacobian);
     
     //////////////////////////////////
@@ -209,13 +203,12 @@ void loop() {
         }
       }
     }
-    print_matrix(hessian1);
    
     Matrix2 u_matrix; 
     u_matrix = solve_matrix_eqn(hessian1, jacobian);
 
     for(int i = 0; i < Nc*m; i++) {
-      del_u[i] = - u[i]; // t
+      del_u[i] = u_matrix.data[i] - u[i] - del_u[i]; 
       u[i] = u_matrix.data[i];
     }
     
