@@ -2,7 +2,6 @@
 #define __SIGNALS_H__
 
 #include <stdlib.h>
-#include <Arduino.h>
 #include <string>
 
 #define RXD2 16

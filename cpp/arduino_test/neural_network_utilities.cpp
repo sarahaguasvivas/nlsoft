@@ -1,11 +1,9 @@
 #include "neural_network_utilities.hpp"
 
-void roll_window(int start, int finish, int buffer_size, float * array)
+void roll_window(int buffer_size, float * vector)
 {
-    for (int i = finish - buffer_size; i >= start; i--) 
-    {
-        array[i + buffer_size] = array[i];
-    }
+    // offset by buffer size
+    vector = vector - buffer_size;
 }
 
 Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int dd, float * previous_input, float * u)
@@ -21,7 +19,7 @@ Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int d
         
         float * output_next;
         output_next = fwdNN(input_next);
-        roll_window(0, nd*m - 1, m, previous_input);
+        roll_window(m, previous_input);
         if (i < Nc)
         {
             for (int k = 0; k < m; k++)
@@ -36,7 +34,7 @@ Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int d
                previous_input[k] = u[(Nc-1)*m + k];
             }
         }
-        roll_window(nd*m, nd*m + dd*n - 1, n, previous_input);
+        roll_window(n, previous_input);
         for (int j = m*nd; j < m*nd + n; j++)
         { 
             previous_input[j] = output_next[j - m*nd];
@@ -61,8 +59,11 @@ void nn_gradients(Matrix2 * first_derivative, Matrix2 * second_derivative, int n
     set_to_zero(*first_derivative);
     set_to_zero(*second_derivative);
 
-
     buildLayers();
+
+    float * output;
+    float * output_minus_h; 
+    float * output_plus_h;
 
     int nn = 0; 
     for (int j=0; j < m; j++)
@@ -79,11 +80,7 @@ void nn_gradients(Matrix2 * first_derivative, Matrix2 * second_derivative, int n
 
             input_plus_h[nn] += epsilon;
             input_minus_h[nn] -= epsilon;
-            
-            float *output  = (float*)malloc(n*sizeof(float));
-            float *output_minus_h = (float*)malloc(n*sizeof(float));
-            float *output_plus_h = (float*)malloc(n*sizeof(float));       
-           
+                  
             output = fwdNN(input_center);
             output_plus_h = fwdNN(input_plus_h);
             output_minus_h = fwdNN(input_minus_h);
@@ -91,10 +88,10 @@ void nn_gradients(Matrix2 * first_derivative, Matrix2 * second_derivative, int n
             first_derivative->data[i*first_derivative->cols + j] += (output_plus_h[i] - output_minus_h[i]) / (2. * epsilon);
             second_derivative->data[i*second_derivative->cols + j] += (output_plus_h[i] - 2.*output[i] + output_minus_h[i]) / (epsilon * epsilon);    
             
+            nn++;
             free(output);
             free(output_minus_h);
             free(output_plus_h);
-            nn++;
         }
     }
 }

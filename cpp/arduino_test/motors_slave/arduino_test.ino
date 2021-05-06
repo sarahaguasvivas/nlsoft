@@ -48,9 +48,9 @@ void print_matrix(Matrix2 matrix)
 void build_input_vector(float * vector, float * u, float * prediction, float * signal_, float * posish, int ndm, int ddn, int m, int n)
 {
     Serial.println("here0");
-    roll_window(m, u);
+    roll_window(0, ndm, m, u);
     for (int i = 0; i < m; i++) vector[i] = u[i];
-    roll_window(n, prediction);
+    roll_window(ndm, ndm + ddn, n, prediction);
     for (int i = 0; i < n; i++) vector[i + ndm] = posish[i]; 
     for (int i = ndm + ddn; i < ndm + ddn + NUM_SIGNAL; i++) vector[i] = signal_[i];
     Serial.println("here5");
