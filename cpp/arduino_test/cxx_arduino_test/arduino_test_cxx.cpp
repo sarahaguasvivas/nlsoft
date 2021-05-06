@@ -16,7 +16,7 @@ float u[2*2];
 float del_u[2*2];
 float y[5*3];
 
-
+float signal_calibration[NUM_SIGNAL] = {613., 134., 104., 200., 128., 146., 183., 1., 2., 7., 100.};
 int m = 2, n = 3, nd = 5, dd = 5, N = 5, Nc = 2;
 float s = 1e-20, b = 1e-5, r = 4e3;
 int input_size = 36;
@@ -40,9 +40,7 @@ void build_input_vector(float * vector, float * u, float * prediction, float * s
   //elapsed = millis();
   int ii = 0;
   while(ii < 10){
-    float signal_calibration[NUM_SIGNAL] = {613., 134., 104., 200., 128., 146., 183., 1., 2., 7., 100.};
-    float current_position[3];
-    float signal_[NUM_SIGNAL];
+   float signal_[NUM_SIGNAL];
     Matrix2 Q;
     Matrix2 Lambda;
     Matrix2 del_u_matrix;
@@ -63,7 +61,6 @@ void build_input_vector(float * vector, float * u, float * prediction, float * s
     set(target, N, n);
 
     float * nn_input = (float*)malloc((input_size)*sizeof(float));
-    float * u1 = (float*)malloc((Nc*m)*sizeof(float));
     float *yy = (float*)malloc((N*n)*sizeof(float));
     
     if (timestamp == 0) {
@@ -78,34 +75,31 @@ void build_input_vector(float * vector, float * u, float * prediction, float * s
       for (int i = 0; i < Nc; i++){
           for (int j = 0; j < m; j++){
               u[i*m+j] = ini_motor[j];
-              u1[i*m+j] = ini_motor[j];
           }
       }
     } else{
       for (int i = 0; i < Nc; i++){
         for (int j = 0; j < m; j++){
           del_u_matrix.data[i*m+j] = del_u[i*m+j];
-          u1[i*m+j]= u[i*m+j]; 
         }
       }
     }
 
-    for (int i =0; i< n; i++) current_position[i] = posish[i];
-    
     collect_signal(signal_, signal_calibration, NUM_SIGNAL);
-    build_input_vector(nn_input, u1, yy, signal_, current_position, nd*m, dd*n, m, n);
+  
+    build_input_vector(nn_input, u, yy, signal_, posish, nd*m, dd*n, m, n);
     
     prediction = nn_prediction(N, Nc, n, m, NUM_SIGNAL + nd*m + dd*n, nd, dd, nn_input, u);
-    for (int i = 0; i < n; i++) 
+    
+    for (int i = 0; i < n; i++) {
         posish[i] = prediction.data[i];
-
+    }
     set(ynu, n, m);
     set(dynu_du, n, m);
     
     nn_gradients(&ynu, &dynu_du, n, m, nd, input_size, nn_input);
     spin_figure_eight_target(timestamp, 0, N, n, &target, ini_posish);
     del_y = subtract(target, prediction);
-    
     for (int i = 0; i < N; i++){
         for (int j = 0; j < n; j++){
           y[i*n+j] = prediction.data[i*n+j];
@@ -173,7 +167,6 @@ void build_input_vector(float * vector, float * u, float * prediction, float * s
         hessian1.data[j*Nc+j] += hessian.data[i];
       }
     }
-    for (int i =0; i< Nc; i++) hessian1.data[i*Nc+i] = 1.0;
     
     release(hessian);
     
@@ -197,6 +190,7 @@ void build_input_vector(float * vector, float * u, float * prediction, float * s
     }
     
     //step_motor(u_matrix.data, m);
+    //print_matrix(u_matrix);
     
     release(hessian1);
     release(jacobian);
@@ -207,8 +201,7 @@ void build_input_vector(float * vector, float * u, float * prediction, float * s
     
     free(nn_input);
     free(yy);
-    free(u1);
-    timestamp++;
+    timestamp++; 
     ii++;
   }
 //  Serial.println(millis()-elapsed);

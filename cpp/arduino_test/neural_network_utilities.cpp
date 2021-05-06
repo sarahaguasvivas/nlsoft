@@ -1,15 +1,25 @@
 #include "neural_network_utilities.hpp"
 
-void roll_window(int buffer_size, float * vector)
+/*void roll_window(int buffer_size, float * vector)
 {
     // offset by buffer size
     vector = vector - buffer_size;
+}*/
+
+void roll_window(int start, int finish, int buffer_size, float * array)
+{
+    for (int i = finish - buffer_size; i >= start; i--) 
+    {
+        array[i + buffer_size] = array[i];
+    }
 }
+
 
 Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int dd, float * previous_input, float * u)
 {
     Matrix2 y_output;
     set(y_output, N, n);
+    
     buildLayers();
 
     for (int i = 0; i < N; i++)
@@ -18,8 +28,10 @@ Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int d
         for (int j = 0; j < input_size; j++) input_next[j] = previous_input[j];
         
         float * output_next;
+        
         output_next = fwdNN(input_next);
-        roll_window(m, previous_input);
+        roll_window(0, nd*m - 1, m, previous_input);
+        
         if (i < Nc)
         {
             for (int k = 0; k < m; k++)
@@ -34,7 +46,7 @@ Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int d
                previous_input[k] = u[(Nc-1)*m + k];
             }
         }
-        roll_window(n, previous_input);
+        roll_window(nd*m, nd*m + dd*n - 1, n, previous_input);
         for (int j = m*nd; j < m*nd + n; j++)
         { 
             previous_input[j] = output_next[j - m*nd];
@@ -61,15 +73,15 @@ void nn_gradients(Matrix2 * first_derivative, Matrix2 * second_derivative, int n
 
     buildLayers();
 
-    float * output;
-    float * output_minus_h; 
-    float * output_plus_h;
-
     int nn = 0; 
     for (int j=0; j < m; j++)
     {
         for (int i = 0; i < n; i++) 
         {   
+            float * output;
+            float * output_minus_h; 
+            float * output_plus_h;
+            
             float * input_center = (float*)malloc(input_size*sizeof(float));
             float * input_plus_h = (float*)malloc(input_size*sizeof(float));
             float * input_minus_h = (float*)malloc(input_size*sizeof(float));
