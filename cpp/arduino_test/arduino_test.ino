@@ -107,7 +107,6 @@ void loop() {
     build_input_vector(nn_input, u, yy, signal_, posish, nd*m, dd*n, m, n);
     
     prediction = nn_prediction(N, Nc, n, m, NUM_SIGNAL + nd*m + dd*n, nd, dd, nn_input, u);
-    print_matrix(prediction);
     
     for (int i = 0; i < n; i++) {
         posish[i] = prediction.data[i];
@@ -118,9 +117,8 @@ void loop() {
     nn_gradients(&ynu, &dynu_du, n, m, nd, input_size, nn_input);
     spin_figure_eight_target(timestamp, 0, N, n, &target, ini_posish);
     del_y = subtract(target, prediction);
-    print_matrix(prediction);
-    print_matrix(ynu);
-    print_matrix(dynu_du);
+ 
+
     for (int i = 0; i < N; i++){
         for (int j = 0; j < n; j++){
           y[i*n+j] = prediction.data[i*n+j];
@@ -136,25 +134,34 @@ void loop() {
     Matrix2 sub_sum;
     Matrix2 temp;
     Matrix2 temp1;
-    
+    Matrix2 temp2;
+
     sub_sum = multiply(del_y, Q);
     temp = multiply(sub_sum, ynu);
     release(sub_sum);
     sub_sum = sum_axis(temp, 0);
     release(temp);
     temp = multiply(del_u_matrix, Lambda);
+
     release(del_u_matrix);
     temp1 = scale(2., temp);
     release(temp);
-    jacobian = add(temp1,sub_sum);
+    Serial.println("temp");
+    print_matrix(sub_sum);
+    temp2 = repmat(sub_sum, Nc, 0);
+    Serial.println("temp_repmat");
+    print_matrix(temp2);
     release(sub_sum);
+    jacobian = add(temp1,temp2);
     release(temp1);
+    release(temp2);
+    
+    print_matrix(jacobian);
     
     //////////////////////////////////
     ///     Hessian
     //////////////////////////////////
     Matrix2 hessian;
-    Matrix2 temp2;
     Matrix2 temp3;
     Matrix2 temp4;
     Matrix2 hessian1;
@@ -202,7 +209,8 @@ void loop() {
         }
       }
     }
-    print_matrix(jacobian);
+    print_matrix(hessian1);
+   
     Matrix2 u_matrix; 
     u_matrix = solve_matrix_eqn(hessian1, jacobian);
 

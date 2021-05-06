@@ -30,6 +30,7 @@ struct Matrix2 inverse (struct Matrix2);
 void release(struct Matrix2 & a);
 void lubksb(struct Matrix2, int *, float *);
 void ludcmp(struct Matrix2, int *, float *);
+struct Matrix2 repmat(struct Matrix2, int, int);
 void equal(struct Matrix2 &, struct Matrix2);
 struct Matrix2 nr_optimizer(struct Matrix2, struct Matrix2, struct Matrix2);
 struct Matrix2 solve_matrix_eqn(struct Matrix2, struct Matrix2);

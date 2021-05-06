@@ -27,6 +27,32 @@ struct Matrix2 scale(float scale, struct Matrix2 matrix)
     return scaled;
 }
 
+struct Matrix2 repmat(struct Matrix2 a, int rep, int axis){
+  Matrix2 repmat;
+
+  if (axis == 0){
+    set(repmat, a.rows*rep, a.cols);
+    for (int r = 0; r < rep; r++){
+      for (int i = 0; i < a.rows; i ++){
+        for (int j = 0; j < a.cols; j++){
+          repmat.data[(i+r*a.rows)*a.cols + j] = a.data[i*a.cols+j];
+        }
+      }
+    }
+  } else{
+    set(repmat, a.rows, a.cols*rep);
+    for (int r = 0; r < rep; r++){
+      for (int i = 0; i < a.rows; i ++){
+        for (int j = 0; j < a.cols; j++){
+          repmat.data[i*(rep*a.cols) + j + r*(a.cols)] = a.data[i*a.cols+j];
+        }
+      }
+    }
+  }
+  
+  return repmat;
+}
+
 struct Matrix2 transpose(struct Matrix2 a)
 {
     int size = a.rows*a.cols;
