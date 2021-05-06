@@ -150,7 +150,6 @@ void loop() {
     jacobian = add(temp1,temp2);
     release(temp1);
     release(temp2);
-    print_matrix(jacobian);
     
     //////////////////////////////////
     ///     Hessian
@@ -205,8 +204,18 @@ void loop() {
     }
    
     Matrix2 u_matrix; 
+    Matrix2 inv;
+    Matrix2 u_matrix2;
+    inv = inverse(hessian1);
+    print_matrix(inv);
+    print_matrix(hessian1);
+    print_matrix(jacobian);
     u_matrix = solve_matrix_eqn(hessian1, jacobian);
-
+    u_matrix2 = multiply(inv, jacobian);
+    release(inv);
+    print_matrix(u_matrix);
+    print_matrix(u_matrix2);
+    
     for(int i = 0; i < Nc*m; i++) {
       del_u[i] = u_matrix.data[i] - u[i] - del_u[i]; 
       u[i] = u_matrix.data[i];
