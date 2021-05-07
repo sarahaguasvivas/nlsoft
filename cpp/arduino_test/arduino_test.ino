@@ -78,7 +78,6 @@ void loop() {
     set(target, N, n);
 
     float * nn_input = (float*)malloc((input_size)*sizeof(float));
-    float *yy = (float*)malloc((N*n)*sizeof(float));
     
     if (timestamp == 0) {
       set_to_zero(del_u_matrix);
@@ -86,7 +85,6 @@ void loop() {
         for (int j = 0; j < N; j++){
           posish[i] = ini_posish[i];
           y[j*n+i] = ini_posish[i];
-          yy[j*n+i] = ini_posish[i];
         }
       }
       for (int i = 0; i < Nc; i++){
@@ -104,13 +102,14 @@ void loop() {
 
     collect_signal(signal_, signal_calibration, NUM_SIGNAL);
   
-    build_input_vector(nn_input, u, yy, signal_, posish, nd*m, dd*n, m, n);
+    build_input_vector(nn_input, u, y, signal_, posish, nd*m, dd*n, m, n);
     
     prediction = nn_prediction(N, Nc, n, m, NUM_SIGNAL + nd*m + dd*n, nd, dd, nn_input, u);
     
     for (int i = 0; i < n; i++) {
         posish[i] = prediction.data[i];
     }
+    
     set(ynu, n, m);
     set(dynu_du, n, m);
     
@@ -202,24 +201,22 @@ void loop() {
         }
       }
     }
-   
+
     Matrix2 u_matrix; 
     Matrix2 inv;
-    Matrix2 u_matrix2;
     inv = inverse(hessian1);
-    print_matrix(inv);
-    print_matrix(hessian1);
-    print_matrix(jacobian);
-    u_matrix = solve_matrix_eqn(hessian1, jacobian);
-    u_matrix2 = multiply(inv, jacobian);
+
+    //u_matrix = solve_matrix_eqn(hessian1, jacobian);
+    u_matrix = multiply(inv, jacobian);
     release(inv);
     print_matrix(u_matrix);
-    print_matrix(u_matrix2);
     
-    for(int i = 0; i < Nc*m; i++) {
-      del_u[i] = u_matrix.data[i] - u[i] - del_u[i]; 
+    for (int i = 0; i < Nc*m; i++) {
       u[i] = u_matrix.data[i];
+      Serial.print(u[i]);Serial.print(",");
+      del_u[i] = 0.0; 
     }
+    Serial.println();
     
     //step_motor(u_matrix.data, m);
     //print_matrix(u_matrix);
@@ -232,7 +229,6 @@ void loop() {
     release(u_matrix);
     
     free(nn_input);
-    free(yy);
     timestamp++;
 
   Serial.println(millis()-elapsed);

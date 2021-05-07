@@ -27,16 +27,25 @@ float lambda_matrix[2] = {1., 1.};
 
 void build_input_vector(float * vector, float * u, float * prediction, float * signal_, float * posish, int ndm, int ddn, int m, int n)
 {
-    roll_window(m, u);
+    roll_window(0, ndm, m, vector);
     for (int i = 0; i < m; i++) vector[i] = u[i];
-    roll_window(n, prediction);
+    roll_window(ndm, ndm + ddn, n, vector);
     for (int i = 0; i < n; i++) vector[i + ndm] = posish[i]; 
     for (int i = ndm + ddn; i < ndm + ddn + NUM_SIGNAL; i++) vector[i] = signal_[i];
 }
 
+void print_matrix(Matrix2 matrix)
+{
+  for (int i=0; i< matrix.rows; i++){
+    for (int j=0; j< matrix.cols; j++){
+      std::cout << matrix.data[i*matrix.rows + j] << ",";
+    }
+    std::cout << std::endl; 
+  }
+}
+
 //void loop() {
  int main(){
-   std::cout << "Here1" << std::endl; 
   //elapsed = millis();
   int ii = 0;
   while(ii < 10){
@@ -115,25 +124,32 @@ void build_input_vector(float * vector, float * u, float * prediction, float * s
     Matrix2 sub_sum;
     Matrix2 temp;
     Matrix2 temp1;
-    
+    Matrix2 temp2;
+
     sub_sum = multiply(del_y, Q);
     temp = multiply(sub_sum, ynu);
     release(sub_sum);
     sub_sum = sum_axis(temp, 0);
     release(temp);
     temp = multiply(del_u_matrix, Lambda);
+
     release(del_u_matrix);
     temp1 = scale(2., temp);
     release(temp);
-    jacobian = add(temp1,sub_sum);
+    print_matrix(sub_sum);
+    temp2 = repmat(sub_sum, Nc, 0);
+    print_matrix(temp2);
     release(sub_sum);
+    jacobian = add(temp1,temp2);
     release(temp1);
+    release(temp2);
+    
+    print_matrix(jacobian);
     
     //////////////////////////////////
     ///     Hessian
     //////////////////////////////////
     Matrix2 hessian;
-    Matrix2 temp2;
     Matrix2 temp3;
     Matrix2 temp4;
     Matrix2 hessian1;
