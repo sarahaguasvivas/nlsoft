@@ -11,7 +11,9 @@
 unsigned long timestamp;
 float posish[3];
 unsigned long elapsed;
+
 float u[2*2];
+float prev_u[2*2];
 float del_u[2*2];
 float y[5*3];
 
@@ -98,6 +100,7 @@ void loop() {
       for (int i = 0; i < Nc; i++){
           for (int j = 0; j < m; j++){
               u[i*m+j] = ini_motor[j];
+              prev_u[i*m + j] = ini_motor[j];
           }
       }
     } else{
@@ -220,11 +223,11 @@ void loop() {
     clip_action(u_matrix);
 
     for (int i = 0; i < Nc*m; i++) { 
-      //del_u[i] = 0.0;
+      prev_u[i] = (float)u[i];
       u[i] = u_matrix.data[i];
-      del_u[i] = 0.0;
+      del_u[i] = (float)u_matrix.data[i] - (float)prev_u[i];
     }
-
+    delay(1);
     print_matrix(u_matrix);
 
     //step_motor(u_matrix.data, m);
