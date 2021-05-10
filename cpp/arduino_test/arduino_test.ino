@@ -12,14 +12,14 @@ unsigned long timestamp;
 float posish[3];
 unsigned long elapsed;
 
-float u[2*2];
-float prev_u[2*2];
-float del_u[2*2];
-float y[5*3];
+float u[2*1];
+float prev_u[2*1];
+float del_u[2*1];
+float y[2*3];
 float past_nn_input[36];
 
 float signal_calibration[NUM_SIGNAL] = {613., 134., 104., 200., 128., 146., 183., 1., 2., 7., 100.};
-int m = 2, n = 3, nd = 5, dd = 5, N = 5, Nc = 2;
+int m = 2, n = 3, nd = 5, dd = 5, N = 2, Nc = 1;
 float s = 1e-20, b = 1e-5, r = 4e3;
 int input_size = 36;
 float ini_posish[3] = {0.05, 0.03, -0.06};
@@ -130,8 +130,6 @@ void loop() {
     for (int i = 0; i < input_size; i++) {
       nn_input[i] = past_nn_input[i];
     }
-
-    print_array(nn_input, input_size);
     
     collect_signal(&signal_[0], signal_calibration, NUM_SIGNAL);
     
@@ -269,7 +267,7 @@ void loop() {
     free(signal_);
     timestamp++;
 
-  //Serial.println(millis()-elapsed);
+  Serial.println(millis()-elapsed);
 }
 
 float deg2rad(float deg)
