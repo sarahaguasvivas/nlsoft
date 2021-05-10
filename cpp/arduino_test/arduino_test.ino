@@ -23,6 +23,7 @@ float ini_posish[3] = {0.05, 0.03, -0.06};
 float ini_motor[2] = {0.0, 0.0};
 float q_matrix[3] = {1e-3, 1e3, 1e3};
 float lambda_matrix[2] = {1., 1.};
+float min_max_input_saturation[2] = {-1.7453, 0.873};
 
 void setup() {
   setup_motor();
@@ -30,6 +31,13 @@ void setup() {
   timestamp = 0;
   Serial.begin(115200);
   while(!Serial);
+}
+
+void clip_action(Matrix2 &u_matrix){
+  for (int i = 0; i < Nc*m; i++){
+    u_matrix.data[i] = min(u_matrix.data[i], min_max_input_saturation[1]); // max
+    u_matrix.data[i] = max(u_matrix.data[i], min_max_input_saturation[0]); // min
+  }
 }
 
 void print_matrix(Matrix2 matrix)
@@ -41,7 +49,7 @@ void print_matrix(Matrix2 matrix)
     }
     Serial.println();
   }
-  Serial.println();
+  //Serial.println();
 }
 
 void build_input_vector(float * vector, float * u, float * prediction, float * signal_, float * posish, int ndm, int ddn, int m, int n)
@@ -187,7 +195,6 @@ void loop() {
         hessian1.data[j*Nc+j] += hessian.data[i];
       }
     }
-    
     release(hessian);
     
     for (int h = 0; h < Nc; h++)
@@ -201,23 +208,25 @@ void loop() {
         }
       }
     }
-
     Matrix2 u_matrix; 
     Matrix2 inv;
     inv = inverse(hessian1);
-
+    
     //u_matrix = solve_matrix_eqn(hessian1, jacobian);
     u_matrix = multiply(inv, jacobian);
     release(inv);
-    print_matrix(u_matrix);
-    
-    for (int i = 0; i < Nc*m; i++) {
+
+    // Clipping action:
+    clip_action(u_matrix);
+
+    for (int i = 0; i < Nc*m; i++) { 
+      //del_u[i] = 0.0;
       u[i] = u_matrix.data[i];
-      Serial.print(u[i]);Serial.print(",");
-      del_u[i] = 0.0; 
+      del_u[i] = 0.0;
     }
-    Serial.println();
-    
+
+    print_matrix(u_matrix);
+
     //step_motor(u_matrix.data, m);
     //print_matrix(u_matrix);
     
@@ -231,7 +240,7 @@ void loop() {
     free(nn_input);
     timestamp++;
 
-  Serial.println(millis()-elapsed);
+  //Serial.println(millis()-elapsed);
 }
 
 float deg2rad(float deg)
@@ -245,5 +254,5 @@ void print_array(float * arr, int arr_size)
       Serial.print(arr[i]);
       Serial.print(",");
     }
-    Serial.println();
+    //Serial.println();
 }
