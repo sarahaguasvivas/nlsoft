@@ -62,14 +62,14 @@ void build_input_vector(float * vector, float * u, float * prediction, float * s
     for (int i = 0; i < m; i++) vector[i] = u[i];
     roll_window(ndm, ndm + ddn, n, vector);
     for (int i = 0; i < n; i++) vector[i + ndm] = posish[i]; 
-    for (int i = ndm + ddn; i < ndm + ddn + NUM_SIGNAL; i++) vector[i] = signal_[i];
+    for (int i = ndm + ddn; i < input_size; i++) vector[i] = signal_[i - (ndm + ddn)];
 }
 
 void loop() {
   
   elapsed = millis();
 
-    float signal_[NUM_SIGNAL];
+    float * signal_ = (float*)malloc(NUM_SIGNAL*sizeof(float));
     Matrix2 Q;
     Matrix2 Lambda;
     Matrix2 del_u_matrix;
@@ -108,26 +108,38 @@ void loop() {
               }
           }
       }
+      collect_signal(&signal_[0], signal_calibration, NUM_SIGNAL);
       for (int k = 0; k < nd*m; k++){
-            past_nn_input[k] = ini_posish[k%nd];
+          past_nn_input[k] = ini_posish[k%nd];
       }
       for (int k = nd*m; k < nd*m + dd*n; k++){
           past_nn_input[k] = ini_posish[(k - nd*m)%dd];
       }
+      for (int k = nd*m + dd*n; k < input_size; k++){
+          past_nn_input[k] = signal_[k - (nd*m + dd*n)];
+      }
+     
     } else{
       for (int i = 0; i < Nc; i++){
         for (int j = 0; j < m; j++){
           del_u_matrix.data[i*m+j] = del_u[i*m+j];
         }
       }
-      for (int i = 0; i < input_size; i++) nn_input[i] = past_nn_input[i];
+    }
+    
+    for (int i = 0; i < input_size; i++) {
+      nn_input[i] = past_nn_input[i];
     }
 
-    collect_signal(signal_, signal_calibration, NUM_SIGNAL);
-  
-    build_input_vector(nn_input, u, y, signal_, posish, nd*m, dd*n, m, n);
+    print_array(nn_input, input_size);
     
-    print_array(nn_input, 36);
+    collect_signal(&signal_[0], signal_calibration, NUM_SIGNAL);
+    
+    if (timestamp > 0){
+      build_input_vector(nn_input, u, y, signal_, posish, nd*m, dd*n, m, n);
+    }
+    
+    for (int i = 0 ; i<input_size ; i++) past_nn_input[i] = nn_input[i];
     
     prediction = nn_prediction(N, Nc, n, m, NUM_SIGNAL + nd*m + dd*n, nd, dd, nn_input, u);
     
@@ -142,7 +154,6 @@ void loop() {
     spin_figure_eight_target(timestamp, 0, N, n, &target, ini_posish);
     del_y = subtract(target, prediction);
  
-
     for (int i = 0; i < N; i++){
         for (int j = 0; j < n; j++){
           y[i*n+j] = prediction.data[i*n+j];
@@ -241,6 +252,7 @@ void loop() {
       u[i] = u_matrix.data[i];
       del_u[i] = (float)u_matrix.data[i] - (float)prev_u[i];
     }
+    
     delay(1);
     //print_matrix(u_matrix);
     
@@ -254,6 +266,7 @@ void loop() {
     release(u_matrix);
     
     free(nn_input);
+    free(signal_);
     timestamp++;
 
   //Serial.println(millis()-elapsed);
