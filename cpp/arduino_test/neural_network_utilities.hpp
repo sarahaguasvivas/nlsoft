@@ -9,7 +9,7 @@ extern "C" {
 #include "matrix.hpp"
 
 
-void nn_gradients(Matrix2 *, Matrix2 *, int, int, int, int, float *);
+void nn_gradients(Matrix2 *, Matrix2 *, int, int, int, int, float *, float);
 
 void roll_window(int, int, int, float *);
 

@@ -62,9 +62,8 @@ Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int d
 }
 
 
-void nn_gradients(Matrix2 * first_derivative, Matrix2 * second_derivative, int n, int m, int nd, int input_size, float * input)
+void nn_gradients(Matrix2 * first_derivative, Matrix2 * second_derivative, int n, int m, int nd, int input_size, float * input, float epsilon)
 {
-    float epsilon = 8e-3;
     int size_first = first_derivative->rows * first_derivative->cols;
     int size_second = second_derivative->rows* second_derivative->cols;
 
