@@ -12,15 +12,15 @@ unsigned long timestamp;
 float posish[3];
 unsigned long elapsed;
 
-float u[2*2];
-float prev_u[2*2];
-float del_u[2*2];
-float y[2*5];
+float u[2*1];
+float prev_u[2*1];
+float del_u[2*1];
+float y[2*2];
 float past_nn_input[36];
 
 float epsilon = 5e-2;
 float signal_calibration[NUM_SIGNAL] = {613., 134., 104., 200., 128., 146., 183., 1., 2., 7., 100.};
-int m = 2, n = 3, nd = 5, dd = 5, N = 5, Nc = 2;
+int m = 2, n = 3, nd = 5, dd = 5, N = 2, Nc = 1;
 float s = 1e-20, b = 1e-5, r = 4e3;
 int input_size = 36;
 
@@ -57,6 +57,18 @@ void print_matrix(Matrix2 matrix)
   //Serial.println();
 }
 
+float kronecker_delta(int h, int j){
+  if (h == j){
+    return 1.;
+  } else{
+    return 0.;
+  }
+}
+
+float partial_delta_u_partial_u(int j, int h){
+  return kronecker_delta(h, j) - kronecker_delta(h, j-1);
+}
+
 void build_input_vector(float * vector, float * u, float * prediction, float * signal_, float * posish, int ndm, int ddn, int m, int n)
 {
     roll_window(0, ndm, m, vector);
@@ -68,7 +80,7 @@ void build_input_vector(float * vector, float * u, float * prediction, float * s
 
 void loop() {
   
-  elapsed = millis();
+  //elapsed = millis();
   
     float * signal_ = (float*)malloc(NUM_SIGNAL*sizeof(float));
     Matrix2 Q;
@@ -217,12 +229,14 @@ void loop() {
     
     set(hessian1, Nc, Nc);
     set_to_zero(hessian1);
-  
+
+    
     for (int i = 0; i < m; i++){
       for (int j = 0; j < Nc; j++){
-        hessian1.data[j*Nc+j] = hessian.data[i] + 4.;
+        hessian1.data[j*Nc+j] += hessian.data[i]+4;
       }
     }
+
     release(hessian);
     
     for (int h = 0; h < Nc; h++)
