@@ -80,7 +80,7 @@ void build_input_vector(float * vector, float * u, float * prediction, float * s
 
 void loop() {
   
-  //elapsed = millis();
+  elapsed = millis();
   
     float * signal_ = (float*)malloc(NUM_SIGNAL*sizeof(float));
     Matrix2 Q;
@@ -229,13 +229,37 @@ void loop() {
     
     set(hessian1, Nc, Nc);
     set_to_zero(hessian1);
+
+    Matrix2 second_y;
+    Matrix2 second_y1;
+    Matrix2 scale_1;
+    Matrix2 mult;
+    Matrix2 mult1;
+
+    set(second_y, 1, m);
+    set(second_y1, m, 1);
     
-    for (int i = 0; i < m; i++){
-      for (int j = 0; j < Nc; j++){
-        hessian1.data[j*Nc+j] += hessian.data[i]+4.;
+    for (int h = 0; h < Nc; h++)
+    {
+      for (int m = 0; m < Nc; m++)
+      {
+        int i = 0;
+        for (int j = 0; j < m ; j++)
+        {
+          second_y.data[i] = partial_delta_u_partial_u(j, m);
+          second_y1.data[i*m] = partial_delta_u_partial_u(j, h);
+        }
+        scale_1 = scale(2., Lambda);
+        mult = multiply(second_y, second_y1);
+        mult1 = multiply(scale_1, mult);
+        release(scale_1);
+        release(mult);
+        hessian1.data[h*Nc + m] += mult1.data[0];
       }
     }
-
+    release(second_y);
+    release(second_y1);
+    release(mult1);
     release(hessian);
     
     for (int h = 0; h < Nc; h++)
@@ -282,7 +306,7 @@ void loop() {
     free(signal_);
     timestamp++;
 
-  //Serial.println(millis()-elapsed);
+  Serial.println(millis()-elapsed);
 }
 
 float deg2rad(float deg)
