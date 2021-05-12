@@ -11,24 +11,27 @@
 #include "nn4mc.hpp"
 #include "dense.hpp"
 
-struct Dense dense_9;
-struct Dense dense_10;
+struct Dense dense_19;
+struct Dense dense_20;
 
-void buildLayers()
-{
+void buildLayers(){
+
    
-        dense_9 = build_layer_dense(&dense_9_W[0], dense_9_b, 36, 15, 0x06);
+        dense_19 = build_layer_dense(&dense_19_W[0], dense_19_b, 26, 8, 0x06);
 
-        dense_10 = build_layer_dense(&dense_10_W[0], dense_10_b, 15, 3, 0x07);
-
+        dense_20 = build_layer_dense(&dense_20_W[0], dense_20_b, 8, 3, 0x07);
+ 
 }
 
 
 float * fwdNN(float* data)
 {
-        data = fwd_dense(dense_9, data);
 
-        data = fwd_dense(dense_10, data);
+   
+        data = fwd_dense(dense_19, data);
+
+        data = fwd_dense(dense_20, data);
  
+
     return data;
 }

@@ -1,11 +1,7 @@
-
 /********************
     activations.h
-
     Code generated using nn4mc.
-
     This file defines possible activation functions.
-
 */
 
 #ifndef __ACTIVATION_H__

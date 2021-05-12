@@ -15,6 +15,7 @@ void roll_window(int, int, int, float *);
 
 Matrix2 nn_prediction(int, int, int, int, int, int, int, float*, float*);
 
+
 #ifdef __cplusplus
 }
 #endif

@@ -16,13 +16,13 @@ float u[2*1];
 float prev_u[2*1];
 float del_u[2*1];
 float y[2*2];
-float past_nn_input[36];
+float past_nn_input[26];
 
 float epsilon = 5e-2;
 float signal_calibration[NUM_SIGNAL] = {613., 134., 104., 200., 128., 146., 183., 1., 2., 7., 100.};
-int m = 2, n = 3, nd = 5, dd = 5, N = 2, Nc = 1;
+int m = 2, n = 3, nd = 2, dd = 2, N = 2, Nc = 1;
 float s = 1e-20, b = 1e-5, r = 4e3;
-int input_size = 36;
+int input_size = 26;
 
 float ini_posish[3] = {0.05, 0.03, -0.06};
 float ini_motor[2] = {-1.22173048, -0.872664626};
@@ -229,11 +229,10 @@ void loop() {
     
     set(hessian1, Nc, Nc);
     set_to_zero(hessian1);
-
     
     for (int i = 0; i < m; i++){
       for (int j = 0; j < Nc; j++){
-        hessian1.data[j*Nc+j] += hessian.data[i]+4;
+        hessian1.data[j*Nc+j] += hessian.data[i]+4.;
       }
     }
 
