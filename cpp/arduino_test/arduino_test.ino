@@ -20,7 +20,7 @@ float past_nn_input[26];
 
 float epsilon = 5e-2;
 float signal_calibration[NUM_SIGNAL] = {613., 134., 104., 200., 128., 146., 183., 1., 2., 7., 100.};
-int m = 2, n = 3, nd = 2, dd = 2, N = 2, Nc = 1;
+int m = 2, n = 3, nd = 3, dd = 3, N = 2, Nc = 1;
 float s = 1e-20, b = 1e-5, r = 4e3;
 int input_size = 26;
 
@@ -73,7 +73,7 @@ void build_input_vector(float * vector, float * u, float * prediction, float * s
 {
     roll_window(0, ndm, m, vector);
     for (int i = 0; i < m; i++) vector[i] = u[i];
-    roll_window(ndm, ndm + ddn, n, vector);
+    roll_window(ndm + 1, ndm + ddn, n, vector);
     for (int i = 0; i < n; i++) vector[i + ndm] = posish[i]; 
     for (int i = ndm + ddn; i < input_size; i++) vector[i] = signal_[i - (ndm + ddn)];
 }
@@ -235,6 +235,12 @@ void loop() {
     Matrix2 scale_1;
     Matrix2 mult;
     Matrix2 mult1;
+    Matrix2 sum1;
+    Matrix2 sum2;
+
+    sum1 = sum_axis(hessian, 0);
+    sum2 = sum_axis(sum1, 1);
+    release(sum1);
 
     set(second_y, 1, m);
     set(second_y1, m, 1);
@@ -243,11 +249,13 @@ void loop() {
     {
       for (int m = 0; m < Nc; m++)
       {
-        int i = 0;
+        hessian1.data[h*Nc+m] = sum2.data[0];
+        int i = 0 ;
         for (int j = 0; j < m ; j++)
         {
           second_y.data[i] = partial_delta_u_partial_u(j, m);
           second_y1.data[i*m] = partial_delta_u_partial_u(j, h);
+          i++;
         }
         scale_1 = scale(2., Lambda);
         mult = multiply(second_y, second_y1);
@@ -257,6 +265,7 @@ void loop() {
         hessian1.data[h*Nc + m] += mult1.data[0];
       }
     }
+    release(sum2);
     release(second_y);
     release(second_y1);
     release(mult1);
@@ -291,7 +300,7 @@ void loop() {
     }
     
     delay(1);
-    print_matrix(u_matrix);
+    //print_matrix(u_matrix);
 
     //step_motor(u_matrix.data, m);
     
@@ -306,7 +315,7 @@ void loop() {
     free(signal_);
     timestamp++;
 
-  Serial.println(millis()-elapsed);
+  //Serial.println(millis()-elapsed);
 }
 
 float deg2rad(float deg)

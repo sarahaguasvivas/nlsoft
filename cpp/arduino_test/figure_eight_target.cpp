@@ -10,6 +10,6 @@ void spin_figure_eight_target(int timestep, int n1, int n2, int dims, Matrix2 * 
   {
     target->data[i*target->cols + 0] = 0.001*sin((timestep+i) / (wavelength))* sin((timestep + i) / (wavelength));
     target->data[i*target->cols + 1] = a * sin((timestep + i) / wavelength);
-    target->data[i*target->cols + 2] = b * sin((timestep + i) / wavelength) *  cos((timestep + i)/wavelength); 
+    target->data[i*target->cols + 2] = b * sin((timestep + i) / wavelength) *  cos((timestep + i)/wavelength) + 8./1000.; 
   }
 }
