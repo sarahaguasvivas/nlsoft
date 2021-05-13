@@ -6,16 +6,15 @@
 
 #define NUM_SIGNAL  11
 #define PI 3.1415926535897932384626433832795
-#define Ts 0.05
 
 unsigned long timestamp;
-float posish[3];
+float posish[3] = {0.05, 0.03, -0.06} ;
 unsigned long elapsed;
 
-float u[2*1] = {-1.7453, 0.873};
-float prev_u[2*1] = {0, 0};
-float del_u[2*1] = {0., 0.};
-float y[3*2];
+float u[2*2] = {-1.7453, 0.873, -1.7453, 0.873};
+float prev_u[2*2] = {-1.7453, 0.873, -1.7453, 0.873};
+float del_u[2*2] = {-1.7453, 0.873, -1.7453, 0.873};
+float y[3*2] = {0.05, 0.03, -0.06, 0.05, 0.03, -0.06};
 float past_nn_input[26];
 
 float epsilon = 5e-2;
@@ -106,16 +105,9 @@ void loop() {
     
     if (timestamp == 0) {
       set_to_zero(del_u_matrix);
-      for (int i = 0; i < n; i++) {
-        for (int j = 0; j < N; j++){
-          posish[i] = ini_posish[i];
-          y[j*n+i] = ini_posish[i];
-        }
-      }
+    
       for (int i = 0; i < Nc; i++){
           for (int j = 0; j < m; j++){
-              u[i*m+j] = ini_motor[j];
-              prev_u[i*m + j] = ini_motor[j];
               for (int k = 0; k < nd; k++){
                 past_nn_input[i*k*input_size + j] = ini_motor[j];
               }
@@ -172,7 +164,6 @@ void loop() {
         }
     }
     
-    
     release(prediction);
     release(target);
     
@@ -184,7 +175,7 @@ void loop() {
     Matrix2 temp;
     Matrix2 temp1;
     Matrix2 temp2;
-
+ 
     sub_sum = multiply(del_y, Q);
     temp = multiply(sub_sum, ynu);
     release(sub_sum);
@@ -263,9 +254,15 @@ void loop() {
         mult = multiply(second_y, second_y1);
         
         mult1 = multiply(scale_1, mult);
+        Matrix2 multt;
+        Matrix2 multtt;
+        multt = sum_axis(mult1, 0);
+        multtt = sum_axis(multt, 1);
+        release(multt);
         release(scale_1);
         release(mult);
-        hessian1.data[h*Nc + mm] += mult1.data[0];
+        hessian1.data[h*Nc + mm] += multtt.data[0];
+        release(multtt);
       }
     }
 
@@ -286,9 +283,12 @@ void loop() {
         }
       }
     }
+    
     Matrix2 u_matrix; 
     Matrix2 inv;
+    
     inv = inverse(hessian1);
+    
     Matrix2 minusj;
 
     minusj = scale(-1., jacobian);
@@ -297,7 +297,7 @@ void loop() {
     release(inv);
     release(minusj);
 
-    // Clipping action:
+    
     for (int i = 0; i < Nc*m; i++) { 
       prev_u[i] = u[i];
       u_matrix.data[i] = u[i] - u_matrix.data[i];
@@ -305,11 +305,12 @@ void loop() {
       del_u[i] = 0.0; 
     }
     
-    clip_action(u_matrix);
+    // Clipping action:
+    //clip_action(u_matrix);
     
     delay(1);
     print_matrix(u_matrix);
-
+    
     //step_motor(u_matrix.data, m);
     
     release(hessian1);
