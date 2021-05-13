@@ -12,10 +12,10 @@ unsigned long timestamp;
 float posish[3];
 unsigned long elapsed;
 
-float u[2*1];
-float prev_u[2*1];
-float del_u[2*1];
-float y[2*2];
+float u[2*1] = {-1.7453, 0.873};
+float prev_u[2*1] = {0, 0};
+float del_u[2*1] = {0., 0.};
+float y[3*2];
 float past_nn_input[26];
 
 float epsilon = 5e-2;
@@ -163,6 +163,7 @@ void loop() {
     
     nn_gradients(&ynu, &dynu_du, n, m, nd, input_size, nn_input, epsilon);
     spin_figure_eight_target(timestamp, 0, N, n, &target, ini_posish);
+    
     del_y = subtract(target, prediction);
  
     for (int i = 0; i < N; i++){
@@ -170,6 +171,7 @@ void loop() {
           y[i*n+j] = prediction.data[i*n+j];
         }
     }
+    
     
     release(prediction);
     release(target);
@@ -247,24 +249,26 @@ void loop() {
     
     for (int h = 0; h < Nc; h++)
     {
-      for (int m = 0; m < Nc; m++)
+      for (int mm = 0; mm < Nc; mm++)
       {
-        hessian1.data[h*Nc+m] = sum2.data[0];
-        int i = 0 ;
+        hessian1.data[h*Nc+mm] = sum2.data[0];
+       
         for (int j = 0; j < m ; j++)
-        {
-          second_y.data[i] = partial_delta_u_partial_u(j, m);
-          second_y1.data[i*m] = partial_delta_u_partial_u(j, h);
-          i++;
+        { 
+          second_y.data[j] = partial_delta_u_partial_u(j, mm);
+          second_y1.data[j] = partial_delta_u_partial_u(j, h);
         }
+       
         scale_1 = scale(2., Lambda);
         mult = multiply(second_y, second_y1);
+        
         mult1 = multiply(scale_1, mult);
         release(scale_1);
         release(mult);
-        hessian1.data[h*Nc + m] += mult1.data[0];
+        hessian1.data[h*Nc + mm] += mult1.data[0];
       }
     }
+
     release(sum2);
     release(second_y);
     release(second_y1);
@@ -285,22 +289,26 @@ void loop() {
     Matrix2 u_matrix; 
     Matrix2 inv;
     inv = inverse(hessian1);
-    
+    Matrix2 minusj;
+
+    minusj = scale(-1., jacobian);
     //u_matrix = solve_matrix_eqn(hessian1, jacobian);
-    u_matrix = multiply(inv, jacobian);
+    u_matrix = multiply(inv, minusj); // du
     release(inv);
+    release(minusj);
 
     // Clipping action:
-    clip_action(u_matrix);
-
     for (int i = 0; i < Nc*m; i++) { 
       prev_u[i] = u[i];
+      u_matrix.data[i] = u[i] - u_matrix.data[i];
       u[i] = u_matrix.data[i];
-      del_u[i] = (float)u_matrix.data[i] - (float)prev_u[i];
+      del_u[i] = 0.0; 
     }
     
+    clip_action(u_matrix);
+    
     delay(1);
-    //print_matrix(u_matrix);
+    print_matrix(u_matrix);
 
     //step_motor(u_matrix.data, m);
     
