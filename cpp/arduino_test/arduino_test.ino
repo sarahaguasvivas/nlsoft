@@ -7,14 +7,15 @@
 #define NUM_SIGNAL  11
 #define PI 3.1415926535897932384626433832795
 
+float deg2rad(float);
 unsigned long timestamp;
-float posish[3] = {0.05, 0.03, -0.06} ;
+float posish[3] = {-0.06709795916817293, -0.047865542156502586, -0.016102764150255758} ;
 unsigned long elapsed;
 
-float u[2*2] = {-1.7453, 0.873, -1.7453, 0.873};
-float prev_u[2*2] = {-1.7453, 0.873, -1.7453, 0.873};
-float del_u[2*2] = {-1.7453, 0.873, -1.7453, 0.873};
-float y[3*2] = {0.05, 0.03, -0.06, 0.05, 0.03, -0.06};
+float u[2*1] = {deg2rad(-70), deg2rad(-50)};
+float prev_u[2*1] = {deg2rad(-70), deg2rad(-50)};
+float del_u[2*1] = {deg2rad(-70), deg2rad(-50)};
+float y[3*2] = {-0.06709795916817293, -0.047865542156502586, -0.016102764150255758, -0.06709795916817293, -0.047865542156502586, -0.016102764150255758};
 float past_nn_input[26];
 
 float epsilon = 5e-2;
@@ -23,11 +24,11 @@ int m = 2, n = 3, nd = 3, dd = 3, N = 2, Nc = 1;
 float s = 1e-20, b = 1e-5, r = 4e3;
 int input_size = 26;
 
-float ini_posish[3] = {0.05, 0.03, -0.06};
-float ini_motor[2] = {-1.22173048, -0.872664626};
+float ini_posish[3] = {-0.06709795916817293, -0.047865542156502586, -0.016102764150255758};
+float ini_motor[2] = {deg2rad(-70), deg2rad(-50)};
 float q_matrix[3] = {1e-3, 1e3, 1e3};
 float lambda_matrix[2] = {1., 1.};
-float min_max_input_saturation[2] = {-1.7453, 0.873};
+float min_max_input_saturation[2] = {deg2rad(-100), deg2rad(50.)};
 
 void setup() {
   setup_motor();
@@ -147,7 +148,7 @@ void loop() {
     prediction = nn_prediction(N, Nc, n, m, NUM_SIGNAL + nd*m + dd*n, nd, dd, nn_input, u);
     
     for (int i = 0; i < n; i++) {
-        posish[i] = prediction.data[i];
+        posish[i] = prediction.data[(N-1)*n + i];
     }
     
     set(ynu, n, m);
@@ -158,10 +159,8 @@ void loop() {
     
     del_y = subtract(target, prediction);
  
-    for (int i = 0; i < N; i++){
-        for (int j = 0; j < n; j++){
-          y[i*n+j] = prediction.data[i*n+j];
-        }
+    for (int i = 0; i < N*n; i++){
+       y[i] = prediction.data[i];
     }
     
     release(prediction);
@@ -292,22 +291,22 @@ void loop() {
     Matrix2 minusj;
 
     minusj = scale(-1., jacobian);
-    //u_matrix = solve_matrix_eqn(hessian1, jacobian);
-    u_matrix = multiply(inv, minusj); // du
+    del_u_matrix = multiply(inv, minusj); 
+    
     release(inv);
     release(minusj);
-
-    
+    set(u_matrix, del_u_matrix.rows, del_u_matrix.cols);
+   
     for (int i = 0; i < Nc*m; i++) { 
+      u_matrix.data[i] = u[i] - del_u_matrix.data[i];
       prev_u[i] = u[i];
-      u_matrix.data[i] = u[i] - u_matrix.data[i];
       u[i] = u_matrix.data[i];
-      del_u[i] = 0.0; 
+      del_u[i] = 0.0; //del_u_matrix.data[i];
     }
     
     // Clipping action:
-    //clip_action(u_matrix);
-    
+    clip_action(u_matrix);
+
     delay(1);
     print_matrix(u_matrix);
     

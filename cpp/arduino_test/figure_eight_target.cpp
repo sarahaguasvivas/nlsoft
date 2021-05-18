@@ -11,7 +11,7 @@ void spin_figure_eight_target(int timestep, int n1, int n2, int dims, Matrix2 * 
   Matrix2 rot_mat;
   set(temp, target->rows, target->cols);
   set(rot_mat, target->cols, target->cols);
-
+  set_to_zero(rot_mat);
   rot_mat.data[(n-1)*n + (n-1)] = 1.;
   rot_mat.data[0] = cos(0.5);
   rot_mat.data[1] = -sin(0.5);
@@ -22,7 +22,7 @@ void spin_figure_eight_target(int timestep, int n1, int n2, int dims, Matrix2 * 
   {
     temp.data[i*n + 0] = 0.001*sin((timestep+i) / (wavelength))* sin((timestep + i) / (wavelength));
     temp.data[i*n + 1] = a * sin((timestep + i) / wavelength);
-    temp.data[i*n + 2] = b * sin((timestep + i) / wavelength) *  cos((timestep + i)/wavelength) + 8./1000.; 
+    temp.data[i*n + 2] = b * sin((timestep + i) / wavelength) *  cos((timestep + i)/wavelength); 
   }
   
   Matrix2 temp1;
@@ -31,6 +31,7 @@ void spin_figure_eight_target(int timestep, int n1, int n2, int dims, Matrix2 * 
   temp2 = transpose(temp);
   temp1 = multiply(rot_mat, temp2);
   temp3 = transpose(temp1);
+  //equal(*target, temp3);
   for (int i = 0 ; i < target->rows*n; i++) target->data[i] = temp.data[i];
   release(temp1);
   release(temp3);
