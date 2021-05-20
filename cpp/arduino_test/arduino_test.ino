@@ -14,6 +14,8 @@ float partial_delta_u_partial_u(int, int);
 float kronecker_delta(int, int);
 Matrix2 get_jacobian(Matrix2, Matrix2, Matrix2, Matrix2, Matrix2, Matrix2, float *, float *);
 Matrix2 get_hessian(Matrix2, Matrix2, Matrix2, Matrix2, Matrix2, Matrix2, float *, float *);
+Matrix2 solve(Matrix2, Matrix2);
+void solve(Matrix2, Matrix2, Matrix2 &);
 
 unsigned long timestamp;
 float posish[3] = {-0.06709795916817293, -0.047865542156502586, -0.016102764150255758} ;
@@ -36,8 +38,6 @@ float ini_motor[2] = {deg2rad(-70), deg2rad(-50)};
 float q_matrix[3] = {1e-3, 1e3, 1e3};
 float lambda_matrix[2] = {1., 1.};
 float min_max_input_saturation[2] = {deg2rad(-100), deg2rad(50.)};
-
-
 
 void setup() {
   setup_motor();
@@ -131,16 +131,8 @@ void loop() {
     hessian = get_hessian(del_y, Q, Lambda, ynu, dynu_du, del_u_matrix, u, del_u);
 
     Matrix2 u_matrix; 
-    Matrix2 inv;
-   
-    inv = inverse(hessian);
+    solve(jacobian, hessian, del_u_matrix);
     
-    Matrix2 minusj;
-    minusj = scale(-1., jacobian);
-    del_u_matrix = multiply(inv, minusj); 
-    
-    release(inv);
-    release(minusj);
     set(u_matrix, del_u_matrix.rows, del_u_matrix.cols);
    
     for (int i = 0; i < Nc*m; i++) { 
@@ -151,11 +143,10 @@ void loop() {
     }
     
     // Clipping action:
-    //clip_action(u_matrix);
-
+    clip_action(u_matrix);
 
     delay(1);
-    //print_matrix(u_matrix);
+    print_matrix(u_matrix);
     
     //step_motor(u_matrix.data, m);
     
@@ -380,4 +371,14 @@ Matrix2 hessian;
       }
     }
     return hessian1;
+}
+
+void solve(Matrix2 jacobian, Matrix2 hessian, Matrix2 &del_u_matrix){
+    Matrix2 inv;
+    inv = inverse(hessian);
+    Matrix2 minusj;
+    minusj = scale(-1., jacobian);
+    del_u_matrix = multiply(inv, minusj); 
+    release(inv);
+    release(minusj);
 }
