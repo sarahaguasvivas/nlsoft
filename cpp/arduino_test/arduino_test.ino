@@ -75,7 +75,6 @@ void loop() {
     
     if (timestamp == 0) {
       set_to_zero(del_u_matrix);
-     
     } else{
       for (int i = 0; i < Nc; i++){
         for (int j = 0; j < m; j++){
@@ -98,6 +97,8 @@ void loop() {
     
     prediction = nn_prediction(N, Nc, n, m, NUM_SIGNAL + nd*m + dd*n, nd, dd, nn_input, u);
     
+    //print_matrix(prediction);
+    
     for (int i = 0; i < n; i++) {
         posish[i] = prediction.data[0*n + i];
     }
@@ -108,45 +109,41 @@ void loop() {
     spin_figure_eight_target(timestamp, 0, N, n, &target, ini_posish);
     
     del_y = subtract(target, prediction);
- 
+    
     for (int i = 0; i < N*n; i++){
        y[i] = prediction.data[i];
     }
     
     release(prediction);
     release(target);
-    
-    //////////////////////////////////
-    ///     Jacobian
-    //////////////////////////////////
 
+    // jacobian
     Matrix2 jacobian;
     jacobian = get_jacobian(del_y, Q, Lambda, ynu, dynu_du, del_u_matrix, u, del_u);
     
-    //////////////////////////////////
-    ///     Hessian
-    //////////////////////////////////
-
+    // hessian
     Matrix2 hessian;
     hessian = get_hessian(del_y, Q, Lambda, ynu, dynu_du, del_u_matrix, u, del_u);
-
+    
     Matrix2 u_matrix; 
     solve(jacobian, hessian, del_u_matrix);
-    
     set(u_matrix, del_u_matrix.rows, del_u_matrix.cols);
    
     for (int i = 0; i < Nc*m; i++) { 
       u_matrix.data[i] = u[i] - del_u_matrix.data[i];
-      prev_u[i] = u[i];
-      u[i] = u_matrix.data[i];
-      del_u[i] = 0.0; //del_u_matrix.data[i];
     }
     
     // Clipping action:
     clip_action(u_matrix);
 
     delay(1);
-    print_matrix(u_matrix);
+    //print_matrix(u_matrix);
+
+    for (int i = 0; i < Nc*m; i++) { 
+      prev_u[i] = u[i];
+      u[i] = u_matrix.data[i];
+      del_u[i] = 0.0; //del_u_matrix.data[i];
+    }
     
     //step_motor(u_matrix.data, m);
     
@@ -156,6 +153,7 @@ void loop() {
     release(Q);
     release(Lambda);
     release(u_matrix);
+    release(del_u_matrix);
     
     free(nn_input);
     free(signal_);

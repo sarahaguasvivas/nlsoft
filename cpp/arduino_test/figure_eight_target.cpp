@@ -31,8 +31,9 @@ void spin_figure_eight_target(int timestep, int n1, int n2, int dims, Matrix2 * 
   temp2 = transpose(temp);
   temp1 = multiply(rot_mat, temp2);
   temp3 = transpose(temp1);
-  //equal(*target, temp3);
-  for (int i = 0 ; i < target->rows*n; i++) target->data[i] = temp.data[i];
+  
+  for (int i = 0 ; i < target->rows*n; i++) target->data[i] = temp3.data[i];
+  
   release(temp1);
   release(temp3);
   release(temp2);
