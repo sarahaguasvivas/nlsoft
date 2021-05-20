@@ -18,7 +18,7 @@ Matrix2 solve(Matrix2, Matrix2);
 void solve(Matrix2, Matrix2, Matrix2 &);
 
 unsigned long timestamp;
-float posish[3] = {-0.06709795916817293, -0.047865542156502586, -0.016102764150255758} ;
+float posish[3] = {-0.06709795916817293, -0.047865542156502586, -0.016102764150255758};
 unsigned long elapsed;
 
 float u[2*1] = {deg2rad(-70), deg2rad(-50)};
@@ -49,8 +49,7 @@ void setup() {
 
 void loop() {
   
-    elapsed = millis();
-  
+    //elapsed = millis();
     float * signal_ = (float*)malloc(NUM_SIGNAL*sizeof(float));
     Matrix2 Q;
     Matrix2 Lambda;
@@ -72,7 +71,6 @@ void loop() {
     set(target, N, n);
 
     float * nn_input = (float*)malloc((input_size)*sizeof(float));
-    
     if (timestamp == 0) {
       set_to_zero(del_u_matrix);
     } else{
@@ -100,7 +98,7 @@ void loop() {
     //print_matrix(prediction);
     
     for (int i = 0; i < n; i++) {
-        posish[i] = prediction.data[0*n + i];
+        posish[i] = prediction.data[(N-1)*n + i];
     }
     
     set(ynu, n, m);
@@ -124,6 +122,8 @@ void loop() {
     // hessian
     Matrix2 hessian;
     hessian = get_hessian(del_y, Q, Lambda, ynu, dynu_du, del_u_matrix, u, del_u);
+
+    print_matrix(jacobian);
     
     Matrix2 u_matrix; 
     solve(jacobian, hessian, del_u_matrix);
@@ -134,9 +134,9 @@ void loop() {
     }
     
     // Clipping action:
-    clip_action(u_matrix);
+    //clip_action(u_matrix);
 
-    delay(1);
+    //delay(1);
     //print_matrix(u_matrix);
 
     for (int i = 0; i < Nc*m; i++) { 
@@ -149,7 +149,6 @@ void loop() {
     
     release(hessian);
     release(jacobian);
-
     release(Q);
     release(Lambda);
     release(u_matrix);
@@ -159,7 +158,7 @@ void loop() {
     free(signal_);
     timestamp++;
 
-    Serial.println(millis()-elapsed);
+    //Serial.println(millis()-elapsed);
 }
 
 float deg2rad(float deg)
@@ -182,8 +181,6 @@ void clip_action(Matrix2 &u_matrix){
     u_matrix.data[i] = max(u_matrix.data[i], min_max_input_saturation[0]); // min
   }
 }
-
-
 
 void print_matrix(Matrix2 matrix)
 {
@@ -213,7 +210,7 @@ void build_input_vector(float * vector, float * u, float * prediction, float * s
 {
     roll_window(0, ndm, m, vector);
     for (int i = 0; i < m; i++) vector[i] = u[i];
-    roll_window(ndm + 1, ndm + ddn, n, vector);
+    roll_window(ndm, ndm + ddn, n, vector);
     for (int i = 0; i < n; i++) vector[i + ndm] = posish[i]; 
     for (int i = ndm + ddn; i < input_size; i++) vector[i] = signal_[i - (ndm + ddn)];
 }
@@ -273,8 +270,9 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matr
     }
     return jacobian;
 }
+
 Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matrix2 dynu_du, Matrix2 del_u_matrix, float * u, float * del_u){
-Matrix2 hessian;
+    Matrix2 hessian;
     Matrix2 temp3;
     Matrix2 temp4;
     Matrix2 temp1;
@@ -351,7 +349,7 @@ Matrix2 hessian;
         release(multtt);
       }
     }
-
+    hessian1.data[0] *= 10000;
     release(sum2);
     release(second_y);
     release(second_y1);
