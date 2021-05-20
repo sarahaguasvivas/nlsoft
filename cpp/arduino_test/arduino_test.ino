@@ -123,6 +123,7 @@ void loop() {
     release(del_y);
     
     Matrix2 u_matrix; 
+    
     solve(jacobian, hessian, del_u_matrix);
     set(u_matrix, del_u_matrix.rows, del_u_matrix.cols);
    
@@ -131,10 +132,10 @@ void loop() {
     }
    
     // Clipping action:
-    clip_action(u_matrix);
+    //clip_action(u_matrix);
 
-    //delay(1);
-    //print_matrix(u_matrix);
+    delay(5);
+    print_matrix(u_matrix);
 
     for (int i = 0; i < Nc*m; i++) { 
       prev_u[i] = u[i];
