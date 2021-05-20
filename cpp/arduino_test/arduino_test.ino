@@ -9,7 +9,6 @@
 
 float deg2rad(float);
 void clip_action(Matrix2 &);
-void build_input_vector(float *, float * u, float * prediction, float * signal_, float * posish, int ndm, int ddn, int m, int n);
 float partial_delta_u_partial_u(int, int);
 float kronecker_delta(int, int);
 Matrix2 get_jacobian(Matrix2, Matrix2, Matrix2, Matrix2, Matrix2, Matrix2, float *, float *);
@@ -48,8 +47,8 @@ void setup() {
 }
 
 void loop() {
-  
-    //elapsed = millis();
+   
+    elapsed = millis();
     float * signal_ = (float*)malloc(NUM_SIGNAL*sizeof(float));
     Matrix2 Q;
     Matrix2 Lambda;
@@ -88,14 +87,12 @@ void loop() {
     collect_signal(&signal_[0], signal_calibration, NUM_SIGNAL);
     
     if (timestamp > 0){
-      build_input_vector(nn_input, u, y, signal_, posish, nd*m, dd*n, m, n);
+      build_input_vector(nn_input, u, signal_, posish, nd*m, dd*n, m, n);
     }
     
     for (int i = 0 ; i < input_size ; i++) past_nn_input[i] = nn_input[i];
-    
+   
     prediction = nn_prediction(N, Nc, n, m, NUM_SIGNAL + nd*m + dd*n, nd, dd, nn_input, u);
-    
-    //print_matrix(prediction);
     
     for (int i = 0; i < n; i++) {
         posish[i] = prediction.data[(N-1)*n + i];
@@ -105,36 +102,33 @@ void loop() {
     set(dynu_du, n, m);
     nn_gradients(&ynu, &dynu_du, n, m, nd, input_size, nn_input, epsilon);
     spin_figure_eight_target(timestamp, 0, N, n, &target, ini_posish);
-    
+  
     del_y = subtract(target, prediction);
-    
     for (int i = 0; i < N*n; i++){
        y[i] = prediction.data[i];
     }
-    
     release(prediction);
     release(target);
-
-    // jacobian
+   
+    // jacobian ////////////////////////////////////////////////////////////////////
     Matrix2 jacobian;
     jacobian = get_jacobian(del_y, Q, Lambda, ynu, dynu_du, del_u_matrix, u, del_u);
-    
-    // hessian
+   
+    // hessian /////////////////////////////////////////////////////////////////////
     Matrix2 hessian;
     hessian = get_hessian(del_y, Q, Lambda, ynu, dynu_du, del_u_matrix, u, del_u);
-
-    print_matrix(jacobian);
     
     Matrix2 u_matrix; 
     solve(jacobian, hessian, del_u_matrix);
+    
     set(u_matrix, del_u_matrix.rows, del_u_matrix.cols);
    
     for (int i = 0; i < Nc*m; i++) { 
       u_matrix.data[i] = u[i] - del_u_matrix.data[i];
     }
-    
+   
     // Clipping action:
-    //clip_action(u_matrix);
+    clip_action(u_matrix);
 
     //delay(1);
     //print_matrix(u_matrix);
@@ -146,7 +140,7 @@ void loop() {
     }
     
     //step_motor(u_matrix.data, m);
-    
+
     release(hessian);
     release(jacobian);
     release(Q);
@@ -157,8 +151,8 @@ void loop() {
     free(nn_input);
     free(signal_);
     timestamp++;
-
-    //Serial.println(millis()-elapsed);
+  
+    Serial.println(millis()-elapsed);
 }
 
 float deg2rad(float deg)
@@ -169,7 +163,7 @@ float deg2rad(float deg)
 void print_array(float * arr, int arr_size)
 {
     for (int i = 0; i < arr_size; i++) {
-      Serial.print(arr[i]);
+      Serial.print(arr[i], 10);
       Serial.print(",");
     }
     Serial.println();
@@ -206,17 +200,10 @@ float partial_delta_u_partial_u(int j, int h){
   return kronecker_delta(h, j) - kronecker_delta(h, j-1);
 }
 
-void build_input_vector(float * vector, float * u, float * prediction, float * signal_, float * posish, int ndm, int ddn, int m, int n)
-{
-    roll_window(0, ndm, m, vector);
-    for (int i = 0; i < m; i++) vector[i] = u[i];
-    roll_window(ndm, ndm + ddn, n, vector);
-    for (int i = 0; i < n; i++) vector[i + ndm] = posish[i]; 
-    for (int i = ndm + ddn; i < input_size; i++) vector[i] = signal_[i - (ndm + ddn)];
-}
+
 
 Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matrix2 dynu_du, Matrix2 del_u_matrix, float * u, float * del_u){
-
+     
     Matrix2 jacobian;
     Matrix2 sub_sum;
     Matrix2 temp;
@@ -232,6 +219,7 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matr
     release(sub_sum);
     sub_sum = sum_axis(temp, 0);
     release(temp);
+    
     temp = multiply(del_u_matrix, Lambda);
     release(del_u_matrix);
     temp1 = scale(2., temp);
@@ -268,6 +256,7 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matr
         }
       }
     }
+   
     return jacobian;
 }
 
@@ -280,6 +269,9 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matri
     Matrix2 temp2;
     Matrix2 hessian1;
     Matrix2 trn;
+    Matrix2 trn1;
+    Matrix2 trn2;
+    set(hessian, Nc, Nc);
     
     temp = hadamard(ynu, ynu);
     release(ynu);
@@ -293,20 +285,26 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matri
     release(temp1);
     release(del_y);
     trn = scale(2., temp2);
+    release(temp2);
     temp1 = transpose(trn);
     release(trn);
-    release(temp2);
     temp3 = sum_axis(temp, 0);
     release(temp);
+    trn1 = sum_axis(temp3, 1);
+    release(temp3);
     temp4 = sum_axis(temp1, 0);
     release(temp1);
-    hessian = subtract(temp3, temp4);
+    trn2 = sum_axis(temp4, 1);
     release(temp4);
-    release(temp3);
     
+    for (int i = 0 ; i < Nc*Nc; i++)
+      hessian.data[i] = trn1.data[0] - trn2.data[0]; //  subtract(temp3, temp4);
+    release(trn1);
+    release(trn2);
+ 
     set(hessian1, Nc, Nc);
     set_to_zero(hessian1);
-
+   
     Matrix2 second_y;
     Matrix2 second_y1;
     Matrix2 scale_1;
@@ -314,7 +312,7 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matri
     Matrix2 mult1;
     Matrix2 sum1;
     Matrix2 sum2;
-
+    
     sum1 = sum_axis(hessian, 0);
     sum2 = sum_axis(sum1, 1);
     release(sum1);
@@ -347,25 +345,22 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matri
         release(mult);
         hessian1.data[h*Nc + mm] += multtt.data[0];
         release(multtt);
+        
+         for (int jj = 0; jj < m; jj++)
+        {
+          for (int i = 0; i < m; i++)
+          {
+            hessian1.data[h*hessian1.cols + mm] += 2.0* s / pow((u[jj*m + i] + r / 2. - b), 3.0) + 2.0 * s / pow(r/2. + b - u[jj*m + i], 3.0);
+          }
+        }
       }
     }
-    hessian1.data[0] *= 10000;
+  
     release(sum2);
     release(second_y);
     release(second_y1);
     release(mult1);
     release(hessian);
-    
-    for (int h = 0; h < Nc; h++)
-    {
-      for (int j = 0; j < m; j++)
-      {
-        for (int i = 0; i < m; i++)
-        {
-          hessian1.data[h*hessian1.cols + h] += 2.0* s / pow((u[j*m + i] + r / 2. - b), 3.0) + 2.0 * s / pow(r/2. + b - u[j*m + i], 3.0);
-        }
-      }
-    }
     return hessian1;
 }
 
