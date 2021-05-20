@@ -9,9 +9,11 @@
 
 float deg2rad(float);
 void clip_action(Matrix2 &);
-void build_input_vector(float * vector, float * u, float * prediction, float * signal_, float * posish, int ndm, int ddn, int m, int n);
-float partial_delta_u_partial_u(int j, int h);
-float kronecker_delta(int h, int j);
+void build_input_vector(float *, float * u, float * prediction, float * signal_, float * posish, int ndm, int ddn, int m, int n);
+float partial_delta_u_partial_u(int, int);
+float kronecker_delta(int, int);
+Matrix2 get_jacobian(Matrix2, Matrix2, Matrix2, Matrix2, Matrix2, Matrix2, float *, float *);
+Matrix2 get_hessian(Matrix2, Matrix2, Matrix2, Matrix2, Matrix2, Matrix2, float *, float *);
 
 unsigned long timestamp;
 float posish[3] = {-0.06709795916817293, -0.047865542156502586, -0.016102764150255758} ;
@@ -21,7 +23,7 @@ float u[2*1] = {deg2rad(-70), deg2rad(-50)};
 float prev_u[2*1] = {deg2rad(-70), deg2rad(-50)};
 float del_u[2*1] = {deg2rad(-70), deg2rad(-50)};
 float y[3*2] = {-0.06709795916817293, -0.047865542156502586, -0.016102764150255758, -0.06709795916817293, -0.047865542156502586, -0.016102764150255758};
-float past_nn_input[26];
+float past_nn_input[26] = {deg2rad(-70), deg2rad(-50), deg2rad(-70), deg2rad(-50), deg2rad(-70), deg2rad(-50), -0.06709795916817293, -0.047865542156502586, -0.016102764150255758, -0.06709795916817293, -0.047865542156502586, -0.016102764150255758, -0.06709795916817293, -0.047865542156502586, -0.016102764150255758, 0, 0., 0,0,0,0,0,0,0,0,0};
 
 float epsilon = 5e-2;
 float signal_calibration[NUM_SIGNAL] = {613., 134., 104., 200., 128., 146., 183., 1., 2., 7., 100.};
@@ -35,6 +37,8 @@ float q_matrix[3] = {1e-3, 1e3, 1e3};
 float lambda_matrix[2] = {1., 1.};
 float min_max_input_saturation[2] = {deg2rad(-100), deg2rad(50.)};
 
+
+
 void setup() {
   setup_motor();
   setup_signal_collector();
@@ -45,7 +49,7 @@ void setup() {
 
 void loop() {
   
-    //elapsed = millis();
+    elapsed = millis();
   
     float * signal_ = (float*)malloc(NUM_SIGNAL*sizeof(float));
     Matrix2 Q;
@@ -71,24 +75,6 @@ void loop() {
     
     if (timestamp == 0) {
       set_to_zero(del_u_matrix);
-    
-      for (int i = 0; i < Nc; i++){
-          for (int j = 0; j < m; j++){
-              for (int k = 0; k < nd; k++){
-                past_nn_input[i*k*input_size + j] = ini_motor[j];
-              }
-          }
-      }
-      collect_signal(&signal_[0], signal_calibration, NUM_SIGNAL);
-      for (int k = 0; k < nd*m; k++){
-          past_nn_input[k] = ini_posish[k%nd];
-      }
-      for (int k = nd*m; k < nd*m + dd*n; k++) {
-          past_nn_input[k] = ini_posish[(k - nd*m)%dd];
-      }
-      for (int k = nd*m + dd*n; k < input_size; k++){
-          past_nn_input[k] = signal_[k - (nd*m + dd*n)];
-      }
      
     } else{
       for (int i = 0; i < Nc; i++){
@@ -133,6 +119,118 @@ void loop() {
     //////////////////////////////////
     ///     Jacobian
     //////////////////////////////////
+
+    Matrix2 jacobian;
+    jacobian = get_jacobian(del_y, Q, Lambda, ynu, dynu_du, del_u_matrix, u, del_u);
+    
+    //////////////////////////////////
+    ///     Hessian
+    //////////////////////////////////
+
+    Matrix2 hessian;
+    hessian = get_hessian(del_y, Q, Lambda, ynu, dynu_du, del_u_matrix, u, del_u);
+
+    Matrix2 u_matrix; 
+    Matrix2 inv;
+   
+    inv = inverse(hessian);
+    
+    Matrix2 minusj;
+    minusj = scale(-1., jacobian);
+    del_u_matrix = multiply(inv, minusj); 
+    
+    release(inv);
+    release(minusj);
+    set(u_matrix, del_u_matrix.rows, del_u_matrix.cols);
+   
+    for (int i = 0; i < Nc*m; i++) { 
+      u_matrix.data[i] = u[i] - del_u_matrix.data[i];
+      prev_u[i] = u[i];
+      u[i] = u_matrix.data[i];
+      del_u[i] = 0.0; //del_u_matrix.data[i];
+    }
+    
+    // Clipping action:
+    //clip_action(u_matrix);
+
+
+    delay(1);
+    //print_matrix(u_matrix);
+    
+    //step_motor(u_matrix.data, m);
+    
+    release(hessian);
+    release(jacobian);
+
+    release(Q);
+    release(Lambda);
+    release(u_matrix);
+    
+    free(nn_input);
+    free(signal_);
+    timestamp++;
+
+    Serial.println(millis()-elapsed);
+}
+
+float deg2rad(float deg)
+{
+    return deg*PI/180.;
+}
+
+void print_array(float * arr, int arr_size)
+{
+    for (int i = 0; i < arr_size; i++) {
+      Serial.print(arr[i]);
+      Serial.print(",");
+    }
+    Serial.println();
+}
+
+void clip_action(Matrix2 &u_matrix){
+  for (int i = 0; i < Nc*m; i++){
+    u_matrix.data[i] = min(u_matrix.data[i], min_max_input_saturation[1]); // max
+    u_matrix.data[i] = max(u_matrix.data[i], min_max_input_saturation[0]); // min
+  }
+}
+
+
+
+void print_matrix(Matrix2 matrix)
+{
+  for (int i=0; i< matrix.rows; i++){
+    for (int j=0; j< matrix.cols; j++){
+      Serial.print(matrix.data[i*matrix.cols + j], 10);
+      Serial.print(",");
+    }
+    Serial.println();
+  }
+  //Serial.println();
+}
+
+float kronecker_delta(int h, int j){
+  if (h == j){
+    return 1.;
+  } else{
+    return 0.;
+  }
+}
+
+float partial_delta_u_partial_u(int j, int h){
+  return kronecker_delta(h, j) - kronecker_delta(h, j-1);
+}
+
+void build_input_vector(float * vector, float * u, float * prediction, float * signal_, float * posish, int ndm, int ddn, int m, int n)
+{
+    roll_window(0, ndm, m, vector);
+    for (int i = 0; i < m; i++) vector[i] = u[i];
+    roll_window(ndm + 1, ndm + ddn, n, vector);
+    for (int i = 0; i < n; i++) vector[i + ndm] = posish[i]; 
+    for (int i = ndm + ddn; i < input_size; i++) vector[i] = signal_[i - (ndm + ddn)];
+}
+
+Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matrix2 dynu_du, Matrix2 del_u_matrix, float * u, float * del_u){
+
     Matrix2 jacobian;
     Matrix2 sub_sum;
     Matrix2 temp;
@@ -173,14 +271,28 @@ void loop() {
     jacobian = add(accum,temp2);
     release(temp2);
     release(accum);
-    
-    //////////////////////////////////
-    ///     Hessian
-    //////////////////////////////////
-    Matrix2 hessian;
+
+    for (int h = 0; h < Nc; h++)
+    {
+      for (int j = 0; j < m; j++)
+      {
+        for (int i = 0; i < m; i++)
+        {
+          jacobian.data[i*jacobian.cols + j] += -s / pow(u[j*m + i] + r / 2.0 - b, 2) +  s / pow(r / 2.0 + b - u[j*m + i], 2.0);
+        }
+      }
+    }
+    return jacobian;
+}
+Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matrix2 dynu_du, Matrix2 del_u_matrix, float * u, float * del_u){
+Matrix2 hessian;
     Matrix2 temp3;
     Matrix2 temp4;
+    Matrix2 temp1;
+    Matrix2 temp;
+    Matrix2 temp2;
     Matrix2 hessian1;
+    Matrix2 trn;
     
     temp = hadamard(ynu, ynu);
     release(ynu);
@@ -193,7 +305,9 @@ void loop() {
     temp2 = multiply(del_y, temp1);
     release(temp1);
     release(del_y);
-    temp1 = scale(2., temp2);
+    trn = scale(2., temp2);
+    temp1 = transpose(trn);
+    release(trn);
     release(temp2);
     temp3 = sum_axis(temp, 0);
     release(temp);
@@ -261,108 +375,9 @@ void loop() {
       {
         for (int i = 0; i < m; i++)
         {
-          jacobian.data[i*jacobian.cols + j] += -s / pow(u[j*m + i] + r / 2.0 - b, 2) +  s / pow(r / 2.0 + b - u[j*m + i], 2.0);
           hessian1.data[h*hessian1.cols + h] += 2.0* s / pow((u[j*m + i] + r / 2. - b), 3.0) + 2.0 * s / pow(r/2. + b - u[j*m + i], 3.0);
         }
       }
     }
-    hessian1.data[0] = 1e-5;
-    
-    Matrix2 u_matrix; 
-    Matrix2 inv;
-    
-    inv = inverse(hessian1);
-    
-    Matrix2 minusj;
-    minusj = scale(-1., jacobian);
-    del_u_matrix = multiply(inv, minusj); 
-    
-    release(inv);
-    release(minusj);
-    set(u_matrix, del_u_matrix.rows, del_u_matrix.cols);
-   
-    for (int i = 0; i < Nc*m; i++) { 
-      u_matrix.data[i] = u[i] - del_u_matrix.data[i];
-      prev_u[i] = u[i];
-      u[i] = u_matrix.data[i];
-      del_u[i] = 0.0; //del_u_matrix.data[i];
-    }
-    
-    // Clipping action:
-    //clip_action(u_matrix);
-
-
-    delay(1);
-    print_matrix(u_matrix);
-    
-    //step_motor(u_matrix.data, m);
-    
-    release(hessian1);
-    release(jacobian);
-
-    release(Q);
-    release(Lambda);
-    release(u_matrix);
-    
-    free(nn_input);
-    free(signal_);
-    timestamp++;
-
-    //Serial.println(millis()-elapsed);
-}
-
-float deg2rad(float deg)
-{
-    return deg*PI/180.;
-}
-
-void print_array(float * arr, int arr_size)
-{
-    for (int i = 0; i < arr_size; i++) {
-      Serial.print(arr[i]);
-      Serial.print(",");
-    }
-    Serial.println();
-}
-
-void clip_action(Matrix2 &u_matrix){
-  for (int i = 0; i < Nc*m; i++){
-    u_matrix.data[i] = min(u_matrix.data[i], min_max_input_saturation[1]); // max
-    u_matrix.data[i] = max(u_matrix.data[i], min_max_input_saturation[0]); // min
-  }
-}
-
-
-
-void print_matrix(Matrix2 matrix)
-{
-  for (int i=0; i< matrix.rows; i++){
-    for (int j=0; j< matrix.cols; j++){
-      Serial.print(matrix.data[i*matrix.cols + j], 10);
-      Serial.print(",");
-    }
-    Serial.println();
-  }
-  //Serial.println();
-}
-
-float kronecker_delta(int h, int j){
-  if (h == j){
-    return 1.;
-  } else{
-    return 0.;
-  }
-}
-
-float partial_delta_u_partial_u(int j, int h){
-  return kronecker_delta(h, j) - kronecker_delta(h, j-1);
-}
-
-void build_input_vector(float * vector, float * u, float * prediction, float * signal_, float * posish, int ndm, int ddn, int m, int n)
-{
-    roll_window(0, ndm, m, vector);
-    for (int i = 0; i < m; i++) vector[i] = u[i];
-    roll_window(ndm + 1, ndm + ddn, n, vector);
-    for (int i = 0; i < n; i++) vector[i + ndm] = posish[i]; 
-    for (int i = ndm + ddn; i < input_size; i++) vector[i] = signal_[i - (ndm + ddn)];
+    return hessian1;
 }
