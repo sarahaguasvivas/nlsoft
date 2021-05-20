@@ -102,25 +102,28 @@ void loop() {
     set(dynu_du, n, m);
     nn_gradients(&ynu, &dynu_du, n, m, nd, input_size, nn_input, epsilon);
     spin_figure_eight_target(timestamp, 0, N, n, &target, ini_posish);
-  
+
     del_y = subtract(target, prediction);
+  
     for (int i = 0; i < N*n; i++){
        y[i] = prediction.data[i];
     }
     release(prediction);
     release(target);
-   
+    
     // jacobian ////////////////////////////////////////////////////////////////////
     Matrix2 jacobian;
     jacobian = get_jacobian(del_y, Q, Lambda, ynu, dynu_du, del_u_matrix, u, del_u);
-   
+    
     // hessian /////////////////////////////////////////////////////////////////////
     Matrix2 hessian;
     hessian = get_hessian(del_y, Q, Lambda, ynu, dynu_du, del_u_matrix, u, del_u);
     
+    ////////////////////////////////////////////////////////////////////////////////
+    release(del_y);
+    
     Matrix2 u_matrix; 
     solve(jacobian, hessian, del_u_matrix);
-    
     set(u_matrix, del_u_matrix.rows, del_u_matrix.cols);
    
     for (int i = 0; i < Nc*m; i++) { 
@@ -136,7 +139,7 @@ void loop() {
     for (int i = 0; i < Nc*m; i++) { 
       prev_u[i] = u[i];
       u[i] = u_matrix.data[i];
-      del_u[i] = 0.0; //del_u_matrix.data[i];
+      del_u[i] = del_u_matrix.data[i];
     }
     
     //step_motor(u_matrix.data, m);
@@ -231,13 +234,12 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matr
         Matrix2 accum2;
         accum1 = scale(partial_delta_u_partial_u(h, j), temp1);
         accum2 = add(accum, accum1);
+        for (int i = 0; i < accum2.rows*accum2.cols; i++) accum.data[i] += accum2.data[i];
         release(accum1);
-        release(accum);
-        set(accum, Nc, m);
-        equal(accum, accum2);
         release(accum2);
       }
     }
+    
     release(temp1);
     temp2 = repmat(sub_sum, Nc, 0);
     release(sub_sum);
@@ -256,7 +258,7 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matr
         }
       }
     }
-   
+    
     return jacobian;
 }
 
@@ -283,7 +285,6 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matri
     release(dynu_du);
     temp2 = multiply(del_y, temp1);
     release(temp1);
-    release(del_y);
     trn = scale(2., temp2);
     release(temp2);
     temp1 = transpose(trn);
@@ -297,8 +298,7 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matri
     trn2 = sum_axis(temp4, 1);
     release(temp4);
     
-    for (int i = 0 ; i < Nc*Nc; i++)
-      hessian.data[i] = trn1.data[0] - trn2.data[0]; //  subtract(temp3, temp4);
+    for (int i = 0 ; i < Nc*Nc; i++) hessian.data[i] = trn1.data[0] - trn2.data[0]; //  subtract(temp3, temp4);
     release(trn1);
     release(trn2);
  
@@ -347,11 +347,11 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matri
         release(multtt);
         
          for (int jj = 0; jj < m; jj++)
-        {
-          for (int i = 0; i < m; i++)
-          {
-            hessian1.data[h*hessian1.cols + mm] += 2.0* s / pow((u[jj*m + i] + r / 2. - b), 3.0) + 2.0 * s / pow(r/2. + b - u[jj*m + i], 3.0);
-          }
+         {
+            for (int i = 0; i < m; i++)
+            {
+              hessian1.data[h*hessian1.cols + mm] += 2.0* s / pow((u[jj*m + i] + r / 2. - b), 3.0) + 2.0 * s / pow(r/2. + b - u[jj*m + i], 3.0);
+            }
         }
       }
     }
