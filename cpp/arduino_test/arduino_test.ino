@@ -77,7 +77,7 @@ void loop() {
                                 controller.nd, controller.dd, nn_input, controller.u);
     
     for (int i = 0; i < controller.n; i++) {
-        current_position[i] = prediction.data[(controller.N-1)*controller.n + i];
+        current_position[i] = prediction.data[(controller.N - 1)*controller.n + i];
     }
     
     set(ynu, controller.n, controller.m);
@@ -116,14 +116,14 @@ void loop() {
     set(u_matrix, del_u_matrix.rows, del_u_matrix.cols);
    
     for (int i = 0; i < controller.Nc*controller.m; i++) { 
-      u_matrix.data[i] = controller.u[i] - del_u_matrix.data[i];
+      u_matrix.data[i] = controller.u[i] + del_u_matrix.data[i];
     }
    
     // Clipping action:
     //clip_action(u_matrix);
 
     delay(5);
-    //print_matrix(u_matrix);
+    print_matrix(u_matrix);
 
     for (int i = 0; i < controller.Nc*controller.m; i++) { 
       controller.prev_u[i] = controller.u[i];
@@ -144,7 +144,7 @@ void loop() {
     free(signal_);
     timestamp++;
   
-    Serial.println(millis()-elapsed);
+    //Serial.println(millis()-elapsed);
 }
 
 float deg2rad(float deg)

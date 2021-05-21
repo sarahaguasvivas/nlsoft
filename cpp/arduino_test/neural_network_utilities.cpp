@@ -21,10 +21,10 @@ void build_input_vector(float * vector, float * u,  float * signal_, float * pos
 
    // FIXME
    int input_size = ndm + ddn + num_sig;
-   roll_window(0, ndm, m, vector);
+   roll_window(0, ndm + 1, m, vector);
    for (int i = 0; i < m; i++) vector[i] = u[i];
-   roll_window(ndm, ndm + ddn + n, n, vector);
-   for (int i = 0; i < n; i++) vector[i + ndm - 1] = posish[i];
+   roll_window(ndm, ndm + ddn + n - 1, n, vector);
+   for (int i = 0; i < n; i++) vector[i + ndm] = posish[i];
    for (int i = ndm + ddn; i < input_size; i++) vector[i] = signal_[i - (ndm + ddn)];
 }
 
