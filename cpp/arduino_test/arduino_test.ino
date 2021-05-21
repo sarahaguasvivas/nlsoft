@@ -13,30 +13,31 @@ float partial_delta_u_partial_u(int, int);
 float kronecker_delta(int, int);
 Matrix2 get_jacobian(Matrix2, Matrix2, Matrix2, Matrix2, Matrix2, Matrix2, float *, float *);
 Matrix2 get_hessian(Matrix2, Matrix2, Matrix2, Matrix2, Matrix2, Matrix2, float *, float *);
-Matrix2 solve(Matrix2, Matrix2);
 void solve(Matrix2, Matrix2, Matrix2 &);
 
 unsigned long timestamp;
 float posish[3] = {-0.06709795916817293, -0.047865542156502586, -0.016102764150255758};
 unsigned long elapsed;
 
-float u[2*1] = {deg2rad(-70), deg2rad(-50)};
-float prev_u[2*1] = {deg2rad(-70), deg2rad(-50)};
-float del_u[2*1] = {deg2rad(-70), deg2rad(-50)};
-float y[3*2] = {-0.06709795916817293, -0.047865542156502586, -0.016102764150255758, -0.06709795916817293, -0.047865542156502586, -0.016102764150255758};
-float past_nn_input[26] = {deg2rad(-70), deg2rad(-50), deg2rad(-70), deg2rad(-50), deg2rad(-70), deg2rad(-50), -0.06709795916817293, -0.047865542156502586, -0.016102764150255758, -0.06709795916817293, -0.047865542156502586, -0.016102764150255758, -0.06709795916817293, -0.047865542156502586, -0.016102764150255758, 0, 0., 0,0,0,0,0,0,0,0,0};
+struct Controller{
+  float epsilon = 5e-2;
+  float signal_calibration[NUM_SIGNAL] = {613., 134., 104., 200., 128., 146., 183., 1., 2., 7., 100.};
+  int m = 2, n = 3, nd = 3, dd = 3, N = 2, Nc = 1;
+  float s = 1e-20, b = 1e-5, r = 4e3;
+  int input_size = 26;
+  float ini_posish[3] = {-0.06709795916817293, -0.047865542156502586, -0.016102764150255758};
+  float ini_motor[2] = {deg2rad(-70), deg2rad(-50)};
+  float q_matrix[3] = {1e-3, 1e3, 1e3};
+  float lambda_matrix[2] = {1., 1.};
+  float min_max_input_saturation[2] = {deg2rad(-100), deg2rad(50.)};
+  float u[2*1] = {deg2rad(-70), deg2rad(-50)};
+  float prev_u[2*1] = {deg2rad(-70), deg2rad(-50)};
+  float del_u[2*1] = {deg2rad(-70), deg2rad(-50)};
+  float y[3*2] = {-0.06709795916817293, -0.047865542156502586, -0.016102764150255758, -0.06709795916817293, -0.047865542156502586, -0.016102764150255758};
+  float past_nn_input[26] = {deg2rad(-70), deg2rad(-50), deg2rad(-70), deg2rad(-50), deg2rad(-70), deg2rad(-50), -0.06709795916817293, -0.047865542156502586, -0.016102764150255758, -0.06709795916817293, -0.047865542156502586, -0.016102764150255758, -0.06709795916817293, -0.047865542156502586, -0.016102764150255758, 0, 0., 0,0,0,0,0,0,0,0,0};
+};
 
-float epsilon = 5e-2;
-float signal_calibration[NUM_SIGNAL] = {613., 134., 104., 200., 128., 146., 183., 1., 2., 7., 100.};
-int m = 2, n = 3, nd = 3, dd = 3, N = 2, Nc = 1;
-float s = 1e-20, b = 1e-5, r = 4e3;
-int input_size = 26;
-
-float ini_posish[3] = {-0.06709795916817293, -0.047865542156502586, -0.016102764150255758};
-float ini_motor[2] = {deg2rad(-70), deg2rad(-50)};
-float q_matrix[3] = {1e-3, 1e3, 1e3};
-float lambda_matrix[2] = {1., 1.};
-float min_max_input_saturation[2] = {deg2rad(-100), deg2rad(50.)};
+Controller controller;
 
 void setup() {
   setup_motor();
@@ -59,65 +60,65 @@ void loop() {
     Matrix2 ynu;
     Matrix2 dynu_du;
     
-    set(Q, n, n);
-    set(Lambda, m, m);
-    set(del_u_matrix, Nc, m);
+    set(Q, controller.n, controller.n);
+    set(Lambda, controller.m, controller.m);
+    set(del_u_matrix, controller.Nc, controller.m);
     set_to_zero(Q);
     set_to_zero(Lambda);
     
-    for (int i = 0; i < n; i++) Q.data[i*n+i] = q_matrix[i];
-    for (int i = 0; i < m; i++) Lambda.data[i*m + i] = lambda_matrix[i];
-    set(target, N, n);
+    for (int i = 0; i < controller.n; i++) Q.data[i*controller.n+i] = controller.q_matrix[i];
+    for (int i = 0; i < controller.m; i++) Lambda.data[i*controller.m + i] = controller.lambda_matrix[i];
+    set(target, controller.N, controller.n);
 
-    float * nn_input = (float*)malloc((input_size)*sizeof(float));
+    float * nn_input = (float*)malloc((controller.input_size)*sizeof(float));
     if (timestamp == 0) {
       set_to_zero(del_u_matrix);
     } else{
-      for (int i = 0; i < Nc; i++){
-        for (int j = 0; j < m; j++){
-          del_u_matrix.data[i*m+j] = del_u[i*m+j];
+      for (int i = 0; i < controller.Nc; i++){
+        for (int j = 0; j < controller.m; j++){
+          del_u_matrix.data[i*controller.m+j] = controller.del_u[i*controller.m+j];
         }
       }
     }
     
-    for (int i = 0; i < input_size; i++) {
-      nn_input[i] = past_nn_input[i];
+    for (int i = 0; i < controller.input_size; i++) {
+      nn_input[i] = controller.past_nn_input[i];
     }
     
-    collect_signal(&signal_[0], signal_calibration, NUM_SIGNAL);
+    collect_signal(&signal_[0], controller.signal_calibration, NUM_SIGNAL);
     
     if (timestamp > 0){
-      build_input_vector(nn_input, u, signal_, posish, nd*m, dd*n, m, n);
+      build_input_vector(nn_input, controller.u, signal_, posish, controller.nd*controller.m, controller.dd*controller.n, controller.m, controller.n);
     }
     
-    for (int i = 0 ; i < input_size ; i++) past_nn_input[i] = nn_input[i];
+    for (int i = 0 ; i < controller.input_size ; i++) controller.past_nn_input[i] = nn_input[i];
    
-    prediction = nn_prediction(N, Nc, n, m, NUM_SIGNAL + nd*m + dd*n, nd, dd, nn_input, u);
+    prediction = nn_prediction(controller.N, controller.Nc, controller.n, controller.m, NUM_SIGNAL + controller.nd*controller.m + controller.dd*controller.n, controller.nd, controller.dd, nn_input, controller.u);
     
-    for (int i = 0; i < n; i++) {
-        posish[i] = prediction.data[(N-1)*n + i];
+    for (int i = 0; i < controller.n; i++) {
+        posish[i] = prediction.data[(controller.N-1)*controller.n + i];
     }
     
-    set(ynu, n, m);
-    set(dynu_du, n, m);
-    nn_gradients(&ynu, &dynu_du, n, m, nd, input_size, nn_input, epsilon);
-    spin_figure_eight_target(timestamp, 0, N, n, &target, ini_posish);
+    set(ynu, controller.n, controller.m);
+    set(dynu_du, controller.n, controller.m);
+    nn_gradients(&ynu, &dynu_du, controller.n, controller.m, controller.nd, controller.input_size, nn_input, controller.epsilon);
+    spin_figure_eight_target(timestamp, 0, controller.N, controller.n, &target, controller.ini_posish);
 
     del_y = subtract(target, prediction);
   
-    for (int i = 0; i < N*n; i++){
-       y[i] = prediction.data[i];
+    for (int i = 0; i < controller.N*controller.n; i++){
+       controller.y[i] = prediction.data[i];
     }
     release(prediction);
     release(target);
     
     // jacobian ////////////////////////////////////////////////////////////////////
     Matrix2 jacobian;
-    jacobian = get_jacobian(del_y, Q, Lambda, ynu, dynu_du, del_u_matrix, u, del_u);
+    jacobian = get_jacobian(del_y, Q, Lambda, ynu, dynu_du, del_u_matrix, controller.u, controller.del_u);
     
     // hessian /////////////////////////////////////////////////////////////////////
     Matrix2 hessian;
-    hessian = get_hessian(del_y, Q, Lambda, ynu, dynu_du, del_u_matrix, u, del_u);
+    hessian = get_hessian(del_y, Q, Lambda, ynu, dynu_du, del_u_matrix, controller.u, controller.del_u);
     
     ////////////////////////////////////////////////////////////////////////////////
     release(del_y);
@@ -127,8 +128,8 @@ void loop() {
     solve(jacobian, hessian, del_u_matrix);
     set(u_matrix, del_u_matrix.rows, del_u_matrix.cols);
    
-    for (int i = 0; i < Nc*m; i++) { 
-      u_matrix.data[i] = u[i] - del_u_matrix.data[i];
+    for (int i = 0; i < controller.Nc*controller.m; i++) { 
+      u_matrix.data[i] = controller.u[i] - del_u_matrix.data[i];
     }
    
     // Clipping action:
@@ -137,10 +138,10 @@ void loop() {
     delay(5);
     print_matrix(u_matrix);
 
-    for (int i = 0; i < Nc*m; i++) { 
-      prev_u[i] = u[i];
-      u[i] = u_matrix.data[i];
-      del_u[i] = del_u_matrix.data[i];
+    for (int i = 0; i < controller.Nc*controller.m; i++) { 
+      controller.prev_u[i] = controller.u[i];
+      controller.u[i] = u_matrix.data[i];
+      controller.del_u[i] = del_u_matrix.data[i];
     }
     
     //step_motor(u_matrix.data, m);
@@ -174,9 +175,9 @@ void print_array(float * arr, int arr_size)
 }
 
 void clip_action(Matrix2 &u_matrix){
-  for (int i = 0; i < Nc*m; i++){
-    u_matrix.data[i] = min(u_matrix.data[i], min_max_input_saturation[1]); // max
-    u_matrix.data[i] = max(u_matrix.data[i], min_max_input_saturation[0]); // min
+  for (int i = 0; i < controller.Nc*controller.m; i++){
+    u_matrix.data[i] = min(u_matrix.data[i], controller.min_max_input_saturation[1]); // max
+    u_matrix.data[i] = max(u_matrix.data[i], controller.min_max_input_saturation[0]); // min
   }
 }
 
@@ -204,8 +205,6 @@ float partial_delta_u_partial_u(int j, int h){
   return kronecker_delta(h, j) - kronecker_delta(h, j-1);
 }
 
-
-
 Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matrix2 dynu_du, Matrix2 del_u_matrix, float * u, float * del_u){
      
     Matrix2 jacobian;
@@ -215,7 +214,7 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matr
     Matrix2 temp2;
     Matrix2 accum;
 
-    set(accum, Nc, m);
+    set(accum, controller.Nc, controller.m);
     set_to_zero(accum);
     
     sub_sum = multiply(del_y, Q);
@@ -229,8 +228,8 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matr
     temp1 = scale(2., temp);
     release(temp);
     
-    for (int h = 0; h < Nc; h++){
-      for (int j = 0; j < Nc; j++){
+    for (int h = 0; h < controller.Nc; h++){
+      for (int j = 0; j < controller.Nc; j++){
         Matrix2 accum1;
         Matrix2 accum2;
         accum1 = scale(partial_delta_u_partial_u(h, j), temp1);
@@ -242,20 +241,20 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matr
     }
     
     release(temp1);
-    temp2 = repmat(sub_sum, Nc, 0);
+    temp2 = repmat(sub_sum, controller.Nc, 0);
     release(sub_sum);
    
     jacobian = add(accum,temp2);
     release(temp2);
     release(accum);
 
-    for (int h = 0; h < Nc; h++)
+    for (int h = 0; h < controller.Nc; h++)
     {
-      for (int j = 0; j < m; j++)
+      for (int j = 0; j < controller.m; j++)
       {
-        for (int i = 0; i < m; i++)
+        for (int i = 0; i < controller.m; i++)
         {
-          jacobian.data[i*jacobian.cols + j] += -s / pow(u[j*m + i] + r / 2.0 - b, 2) +  s / pow(r / 2.0 + b - u[j*m + i], 2.0);
+          jacobian.data[i*jacobian.cols + j] += -controller.s / pow(u[j*controller.m + i] + controller.r / 2.0 - controller.b, 2) +  controller.s / pow(controller.r / 2.0 + controller.b - u[j*controller.m + i], 2.0);
         }
       }
     }
@@ -274,7 +273,7 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matri
     Matrix2 trn;
     Matrix2 trn1;
     Matrix2 trn2;
-    set(hessian, Nc, Nc);
+    set(hessian, controller.Nc, controller.Nc);
     
     temp = hadamard(ynu, ynu);
     release(ynu);
@@ -299,11 +298,11 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matri
     trn2 = sum_axis(temp4, 1);
     release(temp4);
     
-    for (int i = 0 ; i < Nc*Nc; i++) hessian.data[i] = trn1.data[0] - trn2.data[0]; //  subtract(temp3, temp4);
+    for (int i = 0 ; i < controller.Nc*controller.Nc; i++) hessian.data[i] = trn1.data[0] - trn2.data[0]; //  subtract(temp3, temp4);
     release(trn1);
     release(trn2);
  
-    set(hessian1, Nc, Nc);
+    set(hessian1, controller.Nc, controller.Nc);
     set_to_zero(hessian1);
    
     Matrix2 second_y;
@@ -318,16 +317,16 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matri
     sum2 = sum_axis(sum1, 1);
     release(sum1);
 
-    set(second_y, 1, m);
-    set(second_y1, m, 1);
+    set(second_y, 1, controller.m);
+    set(second_y1, controller.m, 1);
     
-    for (int h = 0; h < Nc; h++)
+    for (int h = 0; h < controller.Nc; h++)
     {
-      for (int mm = 0; mm < Nc; mm++)
+      for (int mm = 0; mm < controller.Nc; mm++)
       {
-        hessian1.data[h*Nc+mm] = sum2.data[0];
+        hessian1.data[h*controller.Nc+mm] = sum2.data[0];
        
-        for (int j = 0; j < m ; j++)
+        for (int j = 0; j < controller.m ; j++)
         { 
           second_y.data[j] = partial_delta_u_partial_u(j, mm);
           second_y1.data[j] = partial_delta_u_partial_u(j, h);
@@ -344,14 +343,14 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matri
         release(multt);
         release(scale_1);
         release(mult);
-        hessian1.data[h*Nc + mm] += multtt.data[0];
+        hessian1.data[h*controller.Nc + mm] += multtt.data[0];
         release(multtt);
         
-         for (int jj = 0; jj < m; jj++)
+         for (int jj = 0; jj < controller.m; jj++)
          {
-            for (int i = 0; i < m; i++)
+            for (int i = 0; i < controller.m; i++)
             {
-              hessian1.data[h*hessian1.cols + mm] += 2.0* s / pow((u[jj*m + i] + r / 2. - b), 3.0) + 2.0 * s / pow(r/2. + b - u[jj*m + i], 3.0);
+              hessian1.data[h*hessian1.cols + mm] += 2.0* controller.s / pow((u[jj*controller.m + i] + controller.r / 2. - controller.b), 3.0) + 2.0 * controller.s / pow(controller.r/2. + controller.b - u[jj*controller.m + i], 3.0);
             }
         }
       }
