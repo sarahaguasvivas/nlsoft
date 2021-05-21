@@ -62,19 +62,20 @@ void loop() {
     collect_signal(&signal_[0], controller.signal_calibration, NUM_SIGNAL);
     
     if (timestamp > 0){
-      print_array(current_position, controller.n);
       build_input_vector(nn_input, controller.u, signal_, current_position, 
                         controller.nd*controller.m, controller.dd*controller.n, 
                         controller.m, controller.n, NUM_SIGNAL);
+      print_array(nn_input, controller.input_size);
     }
 
-    print_array(nn_input, controller.input_size);
     
     for (int i = 0 ; i < controller.input_size ; i++) controller.past_nn_input[i] = nn_input[i];
    
     prediction = nn_prediction(controller.N, controller.Nc, controller.n, controller.m, 
                                 NUM_SIGNAL + controller.nd*controller.m + controller.dd*controller.n, 
                                 controller.nd, controller.dd, nn_input, controller.u);
+
+    print_matrix(prediction);
     
     for (int i = 0; i < controller.n; i++) {
         current_position[i] = prediction.data[(controller.N - 1)*controller.n + i];
@@ -116,7 +117,7 @@ void loop() {
     set(u_matrix, del_u_matrix.rows, del_u_matrix.cols);
    
     for (int i = 0; i < controller.Nc*controller.m; i++) { 
-      u_matrix.data[i] = controller.u[i] + del_u_matrix.data[i];
+      u_matrix.data[i] = controller.u[i] - del_u_matrix.data[i];
     }
    
     // Clipping action:
