@@ -62,12 +62,15 @@ void loop() {
     collect_signal(&signal_[0], controller.signal_calibration, NUM_SIGNAL);
     
     if (timestamp > 0){
-      build_input_vector(nn_input, controller.u, signal_, posish, controller.nd*controller.m, controller.dd*controller.n, controller.m, controller.n);
+      build_input_vector(nn_input, controller.u, signal_, posish, 
+                        controller.nd*controller.m, controller.dd*controller.n, controller.m, controller.n);
     }
     
     for (int i = 0 ; i < controller.input_size ; i++) controller.past_nn_input[i] = nn_input[i];
    
-    prediction = nn_prediction(controller.N, controller.Nc, controller.n, controller.m, NUM_SIGNAL + controller.nd*controller.m + controller.dd*controller.n, controller.nd, controller.dd, nn_input, controller.u);
+    prediction = nn_prediction(controller.N, controller.Nc, controller.n, controller.m, 
+                                        NUM_SIGNAL + controller.nd*controller.m + controller.dd*controller.n, 
+                                        controller.nd, controller.dd, nn_input, controller.u);
     
     for (int i = 0; i < controller.n; i++) {
         posish[i] = prediction.data[(controller.N-1)*controller.n + i];
@@ -75,8 +78,10 @@ void loop() {
     
     set(ynu, controller.n, controller.m);
     set(dynu_du, controller.n, controller.m);
-    nn_gradients(&ynu, &dynu_du, controller.n, controller.m, controller.nd, controller.input_size, nn_input, controller.epsilon);
-    spin_figure_eight_target(timestamp, 0, controller.N, controller.n, &target, controller.ini_posish);
+    nn_gradients(&ynu, &dynu_du, controller.n, controller.m, 
+                              controller.nd, controller.input_size, nn_input, controller.epsilon);
+    spin_figure_eight_target(timestamp, 0, controller.N, 
+                              controller.n, &target, controller.neutral_point);
 
     del_y = subtract(target, prediction);
   
@@ -88,11 +93,15 @@ void loop() {
     
     // jacobian ////////////////////////////////////////////////////////////////////
     Matrix2 jacobian;
-    jacobian = get_jacobian(del_y, Q, Lambda, ynu, dynu_du, del_u_matrix, controller.u, controller.del_u, controller);
+    jacobian = get_jacobian(del_y, Q, Lambda, ynu, 
+                              dynu_du, del_u_matrix, controller.u, 
+                              controller.del_u, controller);
     
     // hessian /////////////////////////////////////////////////////////////////////
     Matrix2 hessian;
-    hessian = get_hessian(del_y, Q, Lambda, ynu, dynu_du, del_u_matrix, controller.u, controller.del_u, controller);
+    hessian = get_hessian(del_y, Q, Lambda, ynu, dynu_du, 
+                            del_u_matrix, controller.u, 
+                              controller.del_u, controller);
     
     ////////////////////////////////////////////////////////////////////////////////
     release(del_y);

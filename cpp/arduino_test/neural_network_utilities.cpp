@@ -75,7 +75,8 @@ Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int d
 }
 
 
-void nn_gradients(Matrix2 * first_derivative, Matrix2 * second_derivative, int n, int m, int nd, int input_size, float * input, float epsilon)
+void nn_gradients(Matrix2 * first_derivative, Matrix2 * second_derivative, 
+                      int n, int m, int nd, int input_size, float * input, float epsilon)
 {
     int size_first = first_derivative->rows * first_derivative->cols;
     int size_second = second_derivative->rows* second_derivative->cols;
@@ -108,8 +109,10 @@ void nn_gradients(Matrix2 * first_derivative, Matrix2 * second_derivative, int n
             output_minus_h = fwdNN(input_minus_h);
             
             for (int i = 0 ; i < n; i++){
-              first_derivative->data[i*first_derivative->cols + j] += (output_plus_h[i] - output_minus_h[i]) / (2. * epsilon);
-              second_derivative->data[i*second_derivative->cols + j] += (output_plus_h[i] - 2.*output[i] + output_minus_h[i]) / (epsilon * epsilon);    
+              first_derivative->data[i*first_derivative->cols + j] += 
+                                     (output_plus_h[i] - output_minus_h[i]) / (2. * epsilon);
+              second_derivative->data[i*second_derivative->cols + j] += 
+                                    (output_plus_h[i] - 2.*output[i] + output_minus_h[i]) / (epsilon * epsilon);    
             }
             
             free(output);
@@ -131,7 +134,9 @@ float partial_delta_u_partial_u(int j, int h){
   return kronecker_delta(h, j) - kronecker_delta(h, j-1);
 }
 
-Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matrix2 dynu_du, Matrix2 del_u_matrix, float * u, float * del_u, struct Controller controller){
+Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, 
+                        Matrix2 dynu_du, Matrix2 del_u_matrix, float * u, 
+                          float * del_u, struct Controller controller){
      
     Matrix2 jacobian;
     Matrix2 sub_sum;
@@ -180,7 +185,9 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matr
       {
         for (int i = 0; i < controller.m; i++)
         {
-          jacobian.data[i*jacobian.cols + j] += -controller.s / pow(u[j*controller.m + i] + controller.r / 2.0 - controller.b, 2) +  controller.s / pow(controller.r / 2.0 + controller.b - u[j*controller.m + i], 2.0);
+          jacobian.data[i*jacobian.cols + j] += -controller.s / pow(u[j*controller.m + i] + 
+                                                  controller.r / 2.0 - controller.b, 2) +  controller.s / 
+                                                  pow(controller.r / 2.0 + controller.b - u[j*controller.m + i], 2.0);
         }
       }
     }
@@ -188,7 +195,9 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matr
     return jacobian;
 }
 
-Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matrix2 dynu_du, Matrix2 del_u_matrix, float * u, float * del_u, struct Controller controller){
+Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, 
+                          Matrix2 dynu_du, Matrix2 del_u_matrix, float * u, float * del_u, 
+                            struct Controller controller){
     Matrix2 hessian;
     Matrix2 temp3;
     Matrix2 temp4;
@@ -224,7 +233,8 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matri
     trn2 = sum_axis(temp4, 1);
     release(temp4);
     
-    for (int i = 0 ; i < controller.Nc*controller.Nc; i++) hessian.data[i] = trn1.data[0] - trn2.data[0]; //  subtract(temp3, temp4);
+    for (int i = 0 ; i < controller.Nc*controller.Nc; i++) hessian.data[i] = 
+                                          trn1.data[0] - trn2.data[0]; //  subtract(temp3, temp4);
     release(trn1);
     release(trn2);
  
@@ -276,7 +286,9 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, Matri
          {
             for (int i = 0; i < controller.m; i++)
             {
-              hessian1.data[h*hessian1.cols + mm] += 2.0* controller.s / pow((u[jj*controller.m + i] + controller.r / 2. - controller.b), 3.0) + 2.0 * controller.s / pow(controller.r/2. + controller.b - u[jj*controller.m + i], 3.0);
+              hessian1.data[h*hessian1.cols + mm] += 2.0* controller.s / 
+                                                            pow((u[jj*controller.m + i] + controller.r / 2. - controller.b), 3.0) + 
+                                                             2.0 * controller.s / pow(controller.r/2. + controller.b - u[jj*controller.m + i], 3.0);
             }
         }
       }
