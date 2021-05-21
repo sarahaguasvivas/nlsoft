@@ -8,17 +8,16 @@
 #define PI 3.1415926535897932384626433832795
 
 unsigned long timestamp;
-float posish[3] = {-0.06709795916817293, -0.047865542156502586, -0.016102764150255758};
+float current_position[3] = {-0.06709795916817293, -0.047865542156502586, -0.016102764150255758};
 unsigned long elapsed;
 
-Controller controller;
+Controller controller; // controller struct
 
 void setup() {
   setup_motor();
   setup_signal_collector();
   timestamp = 0;
   Serial.begin(115200);
-  while(!Serial);
 }
 
 void loop() {
@@ -42,9 +41,10 @@ void loop() {
     
     for (int i = 0; i < controller.n; i++) Q.data[i*controller.n+i] = controller.q_matrix[i];
     for (int i = 0; i < controller.m; i++) Lambda.data[i*controller.m + i] = controller.lambda_matrix[i];
+    
     set(target, controller.N, controller.n);
-
     float * nn_input = (float*)malloc((controller.input_size)*sizeof(float));
+    
     if (timestamp == 0) {
       set_to_zero(del_u_matrix);
     } else{
@@ -62,18 +62,21 @@ void loop() {
     collect_signal(&signal_[0], controller.signal_calibration, NUM_SIGNAL);
     
     if (timestamp > 0){
-      build_input_vector(nn_input, controller.u, signal_, posish, 
-                        controller.nd*controller.m, controller.dd*controller.n, controller.m, controller.n);
+      build_input_vector(nn_input, controller.u, signal_, current_position, 
+                        controller.nd*controller.m, controller.dd*controller.n, 
+                        controller.m, controller.n);
     }
+
+    print_array(nn_input, controller.input_size);
     
     for (int i = 0 ; i < controller.input_size ; i++) controller.past_nn_input[i] = nn_input[i];
    
     prediction = nn_prediction(controller.N, controller.Nc, controller.n, controller.m, 
-                                        NUM_SIGNAL + controller.nd*controller.m + controller.dd*controller.n, 
-                                        controller.nd, controller.dd, nn_input, controller.u);
+                                NUM_SIGNAL + controller.nd*controller.m + controller.dd*controller.n, 
+                                controller.nd, controller.dd, nn_input, controller.u);
     
     for (int i = 0; i < controller.n; i++) {
-        posish[i] = prediction.data[(controller.N-1)*controller.n + i];
+        current_position[i] = prediction.data[(controller.N-1)*controller.n + i];
     }
     
     set(ynu, controller.n, controller.m);
@@ -119,7 +122,7 @@ void loop() {
     //clip_action(u_matrix);
 
     delay(5);
-    print_matrix(u_matrix);
+    //print_matrix(u_matrix);
 
     for (int i = 0; i < controller.Nc*controller.m; i++) { 
       controller.prev_u[i] = controller.u[i];

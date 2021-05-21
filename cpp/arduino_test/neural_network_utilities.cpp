@@ -9,21 +9,22 @@
 void build_input_vector(float * vector, float * u,  float * signal_, float * posish, int ndm, int ddn, int m, int n)
 {
     int input_size = ndm+ddn + (int)(sizeof(signal_)/sizeof(signal_[0]));
-    roll_window(0, ndm, m, vector);
+    roll_window(0, ndm - 1, m, vector);
     for (int i = 0; i < m; i++) vector[i] = u[i];
-    roll_window(ndm + 1, ndm + ddn, n, vector);
-    for (int i = 0; i < n; i++) vector[i + ndm] = posish[i]; 
+    roll_window(ndm, ndm + ddn - 1, n, vector);
+    for (int i = ndm; i < ndm + n; i++) vector[i] = posish[i - ndm]; // this line introduces the error
     for (int i = ndm + ddn; i < input_size; i++) vector[i] = signal_[i - (ndm + ddn)];
 }
 
 void roll_window(int start, int finish, int buffer_size, float * array)
 {
-    for (int i = finish - buffer_size; i >= start; i--) 
-    {
-        array[i + buffer_size] = array[i];
+    if (finish - buffer_size > start){
+        for (int i = finish - buffer_size; i >= start; i--) 
+        {
+            array[i] = array[i - buffer_size];
+        }
     }
 }
-
 
 Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int dd, float * previous_input, float * u)
 {
