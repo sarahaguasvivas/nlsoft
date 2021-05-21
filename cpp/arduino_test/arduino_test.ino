@@ -62,9 +62,10 @@ void loop() {
     collect_signal(&signal_[0], controller.signal_calibration, NUM_SIGNAL);
     
     if (timestamp > 0){
+      print_array(current_position, controller.n);
       build_input_vector(nn_input, controller.u, signal_, current_position, 
                         controller.nd*controller.m, controller.dd*controller.n, 
-                        controller.m, controller.n);
+                        controller.m, controller.n, NUM_SIGNAL);
     }
 
     print_array(nn_input, controller.input_size);

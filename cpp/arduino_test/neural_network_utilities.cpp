@@ -6,16 +6,6 @@
     vector = vector - buffer_size;
 }*/
 
-void build_input_vector(float * vector, float * u,  float * signal_, float * posish, int ndm, int ddn, int m, int n)
-{
-    int input_size = ndm+ddn + (int)(sizeof(signal_)/sizeof(signal_[0]));
-    roll_window(0, ndm - 1, m, vector);
-    for (int i = 0; i < m; i++) vector[i] = u[i];
-    roll_window(ndm, ndm + ddn - 1, n, vector);
-    for (int i = ndm; i < ndm + n; i++) vector[i] = posish[i - ndm]; // this line introduces the error
-    for (int i = ndm + ddn; i < input_size; i++) vector[i] = signal_[i - (ndm + ddn)];
-}
-
 void roll_window(int start, int finish, int buffer_size, float * array)
 {
     if (finish - buffer_size > start){
@@ -24,6 +14,18 @@ void roll_window(int start, int finish, int buffer_size, float * array)
             array[i] = array[i - buffer_size];
         }
     }
+}
+
+void build_input_vector(float * vector, float * u,  float * signal_, float * posish, int ndm, int ddn, int m, int n, int num_sig)
+{
+
+   // FIXME
+   int input_size = ndm + ddn + num_sig;
+   roll_window(0, ndm, m, vector);
+   for (int i = 0; i < m; i++) vector[i] = u[i];
+   roll_window(ndm, ndm + ddn + n, n, vector);
+   for (int i = 0; i < n; i++) vector[i + ndm - 1] = posish[i];
+   for (int i = ndm + ddn; i < input_size; i++) vector[i] = signal_[i - (ndm + ddn)];
 }
 
 Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int dd, float * previous_input, float * u)
@@ -62,7 +64,7 @@ Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int d
             }
         }
         
-        build_input_vector(previous_input, motor_input, signals, output_next, nd*m, dd*n, m, n);
+        build_input_vector(previous_input, motor_input, signals, output_next, nd*m, dd*n, m, n, num_signal);
         
         for (int j = 0; j < n; j++)
         {
