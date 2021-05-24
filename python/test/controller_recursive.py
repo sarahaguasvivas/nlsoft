@@ -1,12 +1,13 @@
 import os, sys
-sys.path.append(os.path.join(os.environ['HOME'], 'gpc_controller/python'))
-from controller.soloway_nr import *
-from block_gym.block_gym import *
+sys.path.append(os.path.join(os.environ['HOME'], 'nlsoft', 'python'))
+from python.controller.soloway_nr import *
+from python.block_gym.block_gym import *
+from python.controller.recursive_model import *
 import time, os
-from logger.logger import Logger
-from utilities.util import *
-from test.training_recnn import thousand_mse
-from target.target import FigureEight, FixedTarget, Diagonal, Pringle
+from python.logger.logger import Logger
+from python.utilities.util import *
+from python.test.training_recnn import thousand_mse
+from python.target.target import FigureEight, FixedTarget, Diagonal, Pringle
 import numpy as np
 
 model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id.hdf5'
@@ -34,12 +35,10 @@ NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
 log = Logger()
-
 Block.step(action = NNP.u0)
 time.sleep(1)
 neutral_point = Block.get_state()
 NNP.y0 = neutral_point
-
 
 #target = FixedTarget(a = 10. / 1000., b = -10./1000., center = neutral_point)
 #target = FigureEight(a = 8./1000., b = 15./1000., wavelength = 400., center = neutral_point)

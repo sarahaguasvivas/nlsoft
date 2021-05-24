@@ -2,7 +2,7 @@ from .functions import *
 from .cost import NN_Cost
 from .constraints import *
 from typing import List
-from test.training_recnn import thousand_mse
+from python.test.training_recnn import thousand_mse
 import tensorflow as tf
 import tensorflow.keras.backend as K
 import keras.losses as klosses

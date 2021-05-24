@@ -1,5 +1,5 @@
 import numpy as np
-from controller.recursive_model import *
+from python.controller.recursive_model import *
 from scipy import optimize
 import copy
 import scipy.sparse.linalg as splinalg

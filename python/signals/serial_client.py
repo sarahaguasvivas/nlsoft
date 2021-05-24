@@ -29,11 +29,11 @@ class OpticalSignal:
             x = self.serial_.readline()
             try:
                 x = x.decode('utf-8')
+                x = x.strip('\n')
                 array_string = x.split(",")
                 self.data = [int(i) for i in array_string]
             except:
                 continue
-
         return self.data
 
     def close_network(self):

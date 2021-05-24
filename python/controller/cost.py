@@ -1,5 +1,5 @@
-from controller.recursive_model import *
-import controller.constraints as constraints
+from python.controller.recursive_model import *
+import python.controller.constraints as constraints
 import numpy as np
 
 class NN_Cost:

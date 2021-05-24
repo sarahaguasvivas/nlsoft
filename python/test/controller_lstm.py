@@ -1,5 +1,5 @@
 import os, sys
-sys.path.append(os.path.join(os.environ['HOME'], 'gpc_controller/python'))
+os.path.append(os.path.join(os.environ['HOME'], 'nlsoft/python'))
 from controller.soloway_nr import *
 from block_gym.block_gym import *
 import time, os

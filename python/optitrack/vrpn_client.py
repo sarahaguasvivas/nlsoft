@@ -52,7 +52,6 @@ class BlockState():
     def get_observation(self):
         head = self.head.get_observation()
         base = self.base.get_observation()
-
         head_o = head[:3]
         base_o = base[:3]
         #base_orientation = np.array([-np.pi/2., -np.pi/2., np.pi/2.])

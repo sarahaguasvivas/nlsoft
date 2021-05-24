@@ -65,7 +65,7 @@ void loop() {
       build_input_vector(nn_input, controller.u, signal_, current_position, 
                         controller.nd*controller.m, controller.dd*controller.n, 
                         controller.m, controller.n, NUM_SIGNAL);
-      print_array(nn_input, controller.input_size);
+     // print_array(nn_input, controller.input_size);
     }
 
     
@@ -124,7 +124,7 @@ void loop() {
     //clip_action(u_matrix);
 
     delay(5);
-    print_matrix(u_matrix);
+    //print_matrix(u_matrix);
 
     for (int i = 0; i < controller.Nc*controller.m; i++) { 
       controller.prev_u[i] = controller.u[i];

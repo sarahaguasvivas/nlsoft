@@ -1,6 +1,6 @@
-from optitrack.vrpn_client import *
-from signals.serial_client import *
-from dynamixels.dynamixels import *
+from python.optitrack.vrpn_client import *
+from python.signals.serial_client import *
+from python.dynamixels.dynamixels import *
 
 class BlockGym():
     def __init__(self, sensor_port= "/dev/ttyACM0",  \
@@ -25,8 +25,9 @@ class BlockGym():
         print("Gym Environment created!")
 
     def step(self, action = [0, 0]):
+        print("here")
         obs = self.get_observation()
-
+        print("here1")
         self.calibration_max = np.maximum(self.calibration_max,obs)
         # return observation, reward, done, info
         self.motors.step(action = action)

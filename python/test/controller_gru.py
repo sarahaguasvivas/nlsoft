@@ -1,20 +1,20 @@
 import os, sys
-sys.path.append(os.path.join(os.environ['HOME'], 'gpc_controller/python'))
-from controller.soloway_nr import *
-from block_gym.block_gym import *
-import time, os
-from logger.logger import Logger
-from utilities.util import *
-from test.training_recnn import thousand_mse
-from target.target import FigureEight, FixedTarget, Pringle, Diagonal
+sys.path.append(os.path.join(os.environ['HOME'], 'nlsoft', 'python'))
+from python.controller.soloway_nr import *
+from python.block_gym.block_gym import *
+import time
+from python.controller.recursive_model import *
+from python.logger.logger import Logger
+from python.utilities.util import *
+from python.test.training_recnn import thousand_mse
+from python.target.target import FigureEight, FixedTarget, Pringle, Diagonal
 import numpy as np
 
-model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id_GRU.hdf5'
-
-NUM_EXPERIMENTS = 10
+model_filename = str(os.environ['HOME']) + '/nlsoft/python/test/sys_id_GRU.hdf5'
+NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 3000
 FILENAME = 'gru_log_output_figure8.json'
-verbose = None
+verbose = 0
 savelog = True
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
@@ -76,94 +76,93 @@ log.log({'metadata' : {'neutral_point' : neutral_point,
 
 u_deque = deque()
 y_deque = deque()
+#try:
+for e in range(NUM_EXPERIMENTS):
+    log.log({str(e) : {'predicted' : [], 'actual' : [], 'yn' : [],
+            'elapsed' : [], 'u' : []}})
+    print(e)
+    Block.step(action = NNP.u0)
+    time.sleep(5)
+    NNP.y0 = Block.get_state()
 
-try:
-    for e in range(NUM_EXPERIMENTS):
-        log.log({str(e) : {'predicted' : [], 'actual' : [], 'yn' : [],
-                'elapsed' : [], 'u' : []}})
-        print(e)
-        Block.step(action = NNP.u0)
-        time.sleep(5)
-        NNP.y0 = Block.get_state()
+    log.log_dictionary['metadata']['neutral_point'] = NNP.y0
 
-        log.log_dictionary['metadata']['neutral_point'] = NNP.y0
+    u_deque.clear()
+    y_deque.clear()
 
-        u_deque.clear()
-        y_deque.clear()
+    u_deque, y_deque = first_load_deques(NNP.y0, NNP.u0, NNP.nd, NNP.dd)
+    u_action, predicted_states = np.array(NNP.u0), np.array(NNP.y0)
 
-        u_deque, y_deque = first_load_deques(NNP.y0, NNP.u0, NNP.nd, NNP.dd)
-        u_action, predicted_states = np.array(NNP.u0), np.array(NNP.y0)
+    target.center = NNP.y0
+    for n in range(NUM_TIMESTEPS):
+        seconds = time.time()
+        signal = np.divide(Block.get_observation(), Block.calibration_max,
+                            dtype = np.float64).tolist()
 
-        target.center = NNP.y0
-        for n in range(NUM_TIMESTEPS):
-            seconds = time.time()
-            signal = np.divide(Block.get_observation(), Block.calibration_max,
-                                dtype = np.float64).tolist()
+        NNP.yn = []
+        ydeq = y_deque.copy()
+        for k in range(NNP.K):
+            neural_network_input = np.array((np.array(list(u_deque))/np.pi).flatten().tolist() + \
+                            np.array(list(ydeq)).flatten().tolist() + signal).reshape(1, 1, -1)
+            predicted_states = NNP.predict(neural_network_input).flatten()
+            NNP.yn += [(NNP.C @ predicted_states).tolist()]
+            ydeq = roll_deque(ydeq, predicted_states.tolist())
 
-            NNP.yn = []
-            ydeq = y_deque.copy()
-            for k in range(NNP.K):
-                neural_network_input = np.array((np.array(list(u_deque))/np.pi).flatten().tolist() + \
-                                np.array(list(ydeq)).flatten().tolist() + signal).reshape(1, 1, -1)
-                predicted_states = NNP.predict(neural_network_input).flatten()
-                NNP.yn += [(NNP.C @ predicted_states).tolist()]
-                ydeq = roll_deque(ydeq, predicted_states.tolist())
+        y_deque = roll_deque(y_deque, predicted_states.tolist())
+        NNP.last_model_input = neural_network_input
+        target_path = target.spin(n, 0, NNP.K, 3)
+        NNP.ym = (NNP.C @ target_path.T).reshape(NNP.ny, -1).T.tolist()
 
-            y_deque = roll_deque(y_deque, predicted_states.tolist())
-            NNP.last_model_input = neural_network_input
-            target_path = target.spin(n, 0, NNP.K, 3)
-            NNP.ym = (NNP.C @ target_path.T).reshape(NNP.ny, -1).T.tolist()
+        u_optimal, del_u, _ = NR_opt.optimize(u = u_optimal_old, delu = del_u,
+                                    maxit = 1, rtol = 1e-4, verbose = False)
 
-            u_optimal, del_u, _ = NR_opt.optimize(u = u_optimal_old, delu = del_u,
-                                        maxit = 1, rtol = 1e-4, verbose = False)
+        u_action = u_optimal[0, :].tolist()
+        del_u_action = del_u[0, :].tolist()
 
-            u_action = u_optimal[0, :].tolist()
-            del_u_action = del_u[0, :].tolist()
+        u_action[0] = np.clip(1.*(np.rad2deg(u_action[0]) + 50.) - 50. - 14., -100., 50.)
+        u_action[1] = np.clip(1.*(np.rad2deg(u_action[1]) + 50.) - 50. - 3., -100., 50.)
 
-            u_action[0] = np.clip(1.*(np.rad2deg(u_action[0]) + 50.) - 50. - 14., -100., 50.)
-            u_action[1] = np.clip(1.*(np.rad2deg(u_action[1]) + 50.) - 50. - 3., -100., 50.)
+        #u_action[0] = ((1.+np.cos(2.* np.pi / 1000. * n))/2. * 150. - 100.)
+        #u_action[1] = ((1.+np.sin(2.* np.pi / 1000. * n))/2. * 150. - 100.)
 
-            #u_action[0] = ((1.+np.cos(2.* np.pi / 1000. * n))/2. * 150. - 100.)
-            #u_action[1] = ((1.+np.sin(2.* np.pi / 1000. * n))/2. * 150. - 100.)
+        Block.step(action = u_action)
 
-            Block.step(action = u_action)
+        NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action,
+                    predicted_states.tolist(), target_path[0, :].tolist())
 
-            NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action,
-                        predicted_states.tolist(), target_path[0, :].tolist())
+        u_optimal_old = u_optimal
+        u_deque = roll_deque(u_deque, u_optimal[0, :].tolist())
+        elapsed = time.time()-seconds
+        actual_ = np.array(Block.get_state()).tolist()
 
-            u_optimal_old = u_optimal
-            u_deque = roll_deque(u_deque, u_optimal[0, :].tolist())
-            elapsed = time.time()-seconds
-            actual_ = np.array(Block.get_state()).tolist()
+        if verbose is not None:
+            if verbose == 0:
+                log.verbose( actual = actual_,
+                            yn = predicted_states, ym = target_path[0, :],
+                            elapsed = elapsed, u = u_action)
+            if verbose == 1:
+                log.verbose(u_action = u_action, elapsed = time.time() - seconds)
 
-            if verbose is not None:
-                if verbose == 0:
-                    log.verbose( actual = actual_,
-                                yn = predicted_states, ym = target_path[0, :],
-                                elapsed = elapsed, u = u_action)
-                if verbose == 1:
-                    log.verbose(u_action = u_action, elapsed = time.time() - seconds)
+        log.log({str(e) : {'actual' : actual_,
+                        'yn' : predicted_states.tolist(),
+                        'elapsed' : elapsed,
+                        'u' : [u_action],
+                        'signal' : signal}})
+        if e==0:
+            log.log({'metadata' : {'ym' : target_path[0, :].tolist()}})
 
-            log.log({str(e) : {'actual' : actual_,
-                            'yn' : predicted_states.tolist(),
-                            'elapsed' : elapsed,
-                            'u' : [u_action],
-                            'signal' : signal}})
-            if e==0:
-                log.log({'metadata' : {'ym' : target_path[0, :].tolist()}})
-
-        u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
-        Block.reset()
-
-    Block.step([-80., -50.])
-    if savelog:
-        log.save_log(filename=FILENAME)
-    log.plot_log()
-
-
-except Exception as e1:
-    print(str(e1))
-    print("Closing all connections!")
+    u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
     Block.reset()
-    Block.motors.close_connection()
+
+Block.step([-80., -50.])
+if savelog:
+    log.save_log(filename=FILENAME)
+log.plot_log()
+
+
+#except Exception as e1:
+#    print(str(e1))
+#    print("Closing all connections!")
+#    Block.reset()
+#    Block.motors.close_connection()
 
