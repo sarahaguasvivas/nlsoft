@@ -25,9 +25,7 @@ class BlockGym():
         print("Gym Environment created!")
 
     def step(self, action = [0, 0]):
-        print("here")
         obs = self.get_observation()
-        print("here1")
         self.calibration_max = np.maximum(self.calibration_max,obs)
         # return observation, reward, done, info
         self.motors.step(action = action)

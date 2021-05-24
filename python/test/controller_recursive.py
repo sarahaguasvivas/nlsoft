@@ -15,7 +15,7 @@ model_filename = str(os.environ['HOME']) + '/gpc_controller/python/test/sys_id.h
 NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 3000
 FILENAME = 'rnn_log_output_figure8.json'
-verbose = None
+verbose = 1
 savelog = False
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,

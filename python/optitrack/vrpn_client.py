@@ -55,9 +55,9 @@ class BlockState():
         head_o = head[:3]
         base_o = base[:3]
         #base_orientation = np.array([-np.pi/2., -np.pi/2., np.pi/2.])
-        base_orientation = np.array([3.*np.pi/2., -np.pi/2., np.pi/2.])
-        Rot = R.from_rotvec(base_orientation)
-        v = Rot.apply(np.array(head_o) - np.array(base_o))
+        #base_orientation = np.array([3.*np.pi/2., -np.pi/2., np.pi/2.])
+        #Rot = R.from_rotvec(base_orientation)
+        v = np.array(head_o) - np.array(base_o)
         return v.tolist()
 
     def get_target(self):
