@@ -23,6 +23,7 @@ class OpticalSignal:
         x = []
         array_string = []
         self.data = []
+        x = self.serial_.readline()
         while len(x) < 25 or x[0] == "," or len(array_string) != self.num_sensors \
                 or len(self.data) != self.num_sensors or max(self.data) > 700:
             x = self.serial_.readline()
