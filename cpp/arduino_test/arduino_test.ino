@@ -16,12 +16,12 @@ Controller controller; // controller struct
 void setup() {
   setup_motor();
   setup_signal_collector();
+  setup_nn_utils();
   timestamp = 0;
   Serial.begin(115200);
 }
 
 void loop() {
-   
     elapsed = millis();
     float * signal_ = (float*)malloc(NUM_SIGNAL*sizeof(float));
     Matrix2 Q;
@@ -65,17 +65,16 @@ void loop() {
       build_input_vector(nn_input, controller.u, signal_, current_position, 
                         controller.nd*controller.m, controller.dd*controller.n, 
                         controller.m, controller.n, NUM_SIGNAL);
-     // print_array(nn_input, controller.input_size);
     }
 
-    
     for (int i = 0 ; i < controller.input_size ; i++) controller.past_nn_input[i] = nn_input[i];
    
     prediction = nn_prediction(controller.N, controller.Nc, controller.n, controller.m, 
                                 NUM_SIGNAL + controller.nd*controller.m + controller.dd*controller.n, 
                                 controller.nd, controller.dd, nn_input, controller.u);
 
-    print_matrix(prediction);
+    //print_matrix(prediction);
+    //Serial.println();
     
     for (int i = 0; i < controller.n; i++) {
         current_position[i] = prediction.data[(controller.N - 1)*controller.n + i];
@@ -121,10 +120,10 @@ void loop() {
     }
    
     // Clipping action:
-    //clip_action(u_matrix);
+    clip_action(u_matrix);
 
-    delay(5);
-    //print_matrix(u_matrix);
+    //delay(5);
+    print_matrix(u_matrix);
 
     for (int i = 0; i < controller.Nc*controller.m; i++) { 
       controller.prev_u[i] = controller.u[i];

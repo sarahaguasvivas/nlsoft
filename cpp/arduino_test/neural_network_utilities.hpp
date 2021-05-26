@@ -1,7 +1,8 @@
 #ifndef __NNUTIL_H__
 #define __NNUTIL_H__
 
-#include <Arduino.h>
+//#include <Arduino.h>
+#include <iostream>
 
 #ifdef __cplusplus
 extern "C" {
@@ -10,6 +11,8 @@ extern "C" {
 #include "nn4mc.hpp"
 #include "matrix.hpp"
 #include "controller.hpp"
+
+void setup_nn_utils();
 
 void nn_gradients(Matrix2 *, Matrix2 *, int, int, int, int, float *, float);
 

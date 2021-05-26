@@ -12,10 +12,11 @@ void spin_figure_eight_target(int timestep, int n1, int n2, int dims, Matrix2 * 
   set(temp, target->rows, target->cols);
   set(rot_mat, target->cols, target->cols);
   set_to_zero(rot_mat);
-  rot_mat.data[(n-1)*n + (n-1)] = 1.;
+
+  rot_mat.data[2*n + 2] = 1.;
   rot_mat.data[0] = cos(0.5);
   rot_mat.data[1] = -sin(0.5);
-  rot_mat.data[1*n] = sin(0.5);
+  rot_mat.data[1*n + 0] = sin(0.5);
   rot_mat.data[1*n + 1] = cos(0.5);
   
   for (int i = n1; i < n2; i++)
@@ -28,12 +29,20 @@ void spin_figure_eight_target(int timestep, int n1, int n2, int dims, Matrix2 * 
   Matrix2 temp1;
   Matrix2 temp2;
   Matrix2 temp3;
+
   temp2 = transpose(temp);
   temp1 = multiply(rot_mat, temp2);
   temp3 = transpose(temp1);
-  
+    
+  for (int i = n1; i < n2; i++)
+  {
+    temp3.data[i*n + 0] += center[0]; 
+    temp3.data[i*n + 1] += center[1];
+    temp3.data[i*n + 2] += center[2]; 
+  }
+
   for (int i = 0 ; i < target->rows*n; i++) target->data[i] = temp3.data[i];
-  
+
   release(temp1);
   release(temp3);
   release(temp2);

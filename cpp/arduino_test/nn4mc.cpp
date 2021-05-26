@@ -27,11 +27,8 @@ void buildLayers(){
 float * fwdNN(float* data)
 {
 
-   
         data = fwd_dense(dense_19, data);
 
         data = fwd_dense(dense_20, data);
- 
-
     return data;
 }
