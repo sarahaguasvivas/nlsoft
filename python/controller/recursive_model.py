@@ -9,8 +9,7 @@ import keras.losses as klosses
 import numpy as np
 from collections import deque
 import time
-if (tf.__version__ <= 2.0.0):
-    tf.enable_eager_execution()
+tf.enable_eager_execution()
 klosses.custom_loss = thousand_mse
 
 class ModelException(Exception):
@@ -382,7 +381,7 @@ class RecursiveNeuralNetworkPredictor():
                 ynu1 = np.array(ynu1)
                 sum_output += 2. * np.squeeze(np.array(del_u) @ self.Lambda) * ynu1
 
-                sub_sum = np.array([0.0, 0.0])
+                sub_sum = np.array([0.0]*self.m)
                 for i in range(self.m):
                     sub_sum[i] += (-self.s / np.power(u[j, i] + \
                                 self.r / 2.0 - self.b, 2) + \

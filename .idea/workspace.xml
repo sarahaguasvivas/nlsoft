@@ -25,6 +25,13 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -37,10 +44,16 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/python/run_all_training.sh" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/python/block_gym" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
-  <component name="RunManager" selected="Python.controller_gru">
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/python/block_gym" />
+      <recent name="$PROJECT_DIR$/python/test" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.controller_gru_vani">
     <configuration name="controller_gru" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="nlsoft" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -62,7 +75,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="controller_recursive" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="controller_gru_vani" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="nlsoft" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -74,7 +87,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/python/test/controller_recursive.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/python/test/controller_gru_vani.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -104,6 +117,27 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="magnetic_sensor_signals" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="nlsoft" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/python/signals" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/python/signals/magnetic_sensor_signals.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="reset" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="nlsoft" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -125,7 +159,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="training_gru" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="vanis_target_swirl" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="nlsoft" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -133,32 +167,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/python/test" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/python/target" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/python/test/training_gru.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="training_lstm" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="nlsoft" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/python/test" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/python/test/training_lstm.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/python/target/vanis_target_swirl.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -181,22 +194,22 @@
     <list>
       <item itemvalue="Python.data_collect" />
       <item itemvalue="Python.controller_gru" />
-      <item itemvalue="Python.controller_recursive" />
       <item itemvalue="Python.reset" />
-      <item itemvalue="Python.training_gru" />
-      <item itemvalue="Python.training_lstm" />
+      <item itemvalue="Python.controller_gru_vani" />
+      <item itemvalue="Python.magnetic_sensor_signals" />
+      <item itemvalue="Python.vanis_target_swirl" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.controller_gru_vani" />
+        <item itemvalue="Python.vanis_target_swirl" />
+        <item itemvalue="Python.magnetic_sensor_signals" />
         <item itemvalue="Python.controller_gru" />
         <item itemvalue="Python.reset" />
-        <item itemvalue="Python.training_lstm" />
-        <item itemvalue="Python.training_gru" />
-        <item itemvalue="Python.controller_recursive" />
       </list>
     </recent_temporary>
   </component>
-  <component name="SpellCheckerSettings" BundledDictionaries="0" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" Dictionaries="0" CorrectionsLimit="5" DefaultDictionary="application-level" UseSingleDictionary="true" />
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="SvnConfiguration">
     <configuration />
   </component>
@@ -232,30 +245,40 @@
       <screen x="0" y="0" width="1920" height="1056" />
     </state>
     <state x="474" y="200" key="#com.intellij.execution.impl.EditConfigurationsDialog/1920.0.1920.1080/0.0.1920.1056@0.0.1920.1056" timestamp="1621964007664" />
-    <state x="799" y="300" width="430" height="482" key="FileChooserDialogImpl" timestamp="1621963961013">
-      <screen x="0" y="0" width="1920" height="1056" />
+    <state x="591" y="355" width="800" height="403" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1622063871175">
+      <screen x="72" y="27" width="1848" height="1053" />
+    </state>
+    <state x="591" y="355" width="800" height="403" key="#com.intellij.fileTypes.FileTypeChooser/72.27.1848.1053/1920.0.1920.1080@72.27.1848.1053" timestamp="1622063871175" />
+    <state x="841" y="326" width="430" height="482" key="FileChooserDialogImpl" timestamp="1622058392284">
+      <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state x="799" y="300" width="430" height="482" key="FileChooserDialogImpl/1920.0.1920.1080/0.0.1920.1056@0.0.1920.1056" timestamp="1621963961013" />
-    <state width="1897" height="289" key="GridCell.Tab.0.bottom" timestamp="1622049718194">
-      <screen x="0" y="0" width="1920" height="1056" />
+    <state x="841" y="326" key="FileChooserDialogImpl/72.27.1848.1053/1920.0.1920.1080@72.27.1848.1053" timestamp="1622058392284" />
+    <state width="1825" height="275" key="GridCell.Tab.0.bottom" timestamp="1622067627976">
+      <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state width="1897" height="289" key="GridCell.Tab.0.bottom/1920.0.1920.1080/0.0.1920.1056@0.0.1920.1056" timestamp="1622049718194" />
-    <state width="1897" height="289" key="GridCell.Tab.0.center" timestamp="1622049718194">
-      <screen x="0" y="0" width="1920" height="1056" />
+    <state width="1825" height="275" key="GridCell.Tab.0.bottom/72.27.1848.1053/1920.0.1920.1080@72.27.1848.1053" timestamp="1622067627976" />
+    <state width="1825" height="275" key="GridCell.Tab.0.center" timestamp="1622067627976">
+      <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state width="1897" height="289" key="GridCell.Tab.0.center/1920.0.1920.1080/0.0.1920.1056@0.0.1920.1056" timestamp="1622049718194" />
-    <state width="1897" height="289" key="GridCell.Tab.0.left" timestamp="1622049718193">
-      <screen x="0" y="0" width="1920" height="1056" />
+    <state width="1825" height="275" key="GridCell.Tab.0.center/72.27.1848.1053/1920.0.1920.1080@72.27.1848.1053" timestamp="1622067627976" />
+    <state width="1825" height="275" key="GridCell.Tab.0.left" timestamp="1622067627975">
+      <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state width="1897" height="289" key="GridCell.Tab.0.left/1920.0.1920.1080/0.0.1920.1056@0.0.1920.1056" timestamp="1622049718193" />
-    <state width="1897" height="289" key="GridCell.Tab.0.right" timestamp="1622049718194">
-      <screen x="0" y="0" width="1920" height="1056" />
+    <state width="1825" height="275" key="GridCell.Tab.0.left/72.27.1848.1053/1920.0.1920.1080@72.27.1848.1053" timestamp="1622067627975" />
+    <state width="1825" height="275" key="GridCell.Tab.0.right" timestamp="1622067627976">
+      <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state width="1897" height="289" key="GridCell.Tab.0.right/1920.0.1920.1080/0.0.1920.1056@0.0.1920.1056" timestamp="1622049718194" />
-    <state x="464" y="176" key="SettingsEditor" timestamp="1621867451267">
-      <screen x="0" y="0" width="1920" height="1056" />
+    <state width="1825" height="275" key="GridCell.Tab.0.right/72.27.1848.1053/1920.0.1920.1080@72.27.1848.1053" timestamp="1622067627976" />
+    <state x="677" y="114" width="1022" height="737" key="SettingsEditor" timestamp="1622060142458">
+      <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state x="464" y="176" key="SettingsEditor/1920.0.1920.1080/0.0.1920.1056@0.0.1920.1056" timestamp="1621867451267" />
+    <state x="677" y="114" width="1022" height="737" key="SettingsEditor/72.27.1848.1053/1920.0.1920.1080@72.27.1848.1053" timestamp="1622060142458" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

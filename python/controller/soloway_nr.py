@@ -35,7 +35,7 @@ class SolowayNR:
         u = np.array(u0).copy()
         del_u = np.zeros(u.shape)
         norm0 = self.previous_norm
-        enorm_last = np.linalg.norm(u - np.array([1,1]))
+        enorm_last = np.linalg.norm(u - np.array([1]*len(u.tolist())))
         for i in range(maxit):
             Fu = -self.d_model.jacobian(u, del_u)
             du = np.linalg.solve(self.d_model.hessian(u, del_u), Fu)

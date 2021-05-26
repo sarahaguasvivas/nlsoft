@@ -19,7 +19,7 @@ import random
 NUM_DATA_RUNS = 200
 TRAIN = True
 
-plt.style.use('seaborn')
+#plt.style.use('seaborn')
 filename = str(os.environ["HOME"]) + "/nlsoft/python/test/data_May_24_2021.csv"
 
 font = FontProperties()
