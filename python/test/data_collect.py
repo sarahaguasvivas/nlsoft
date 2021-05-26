@@ -1,5 +1,5 @@
 import os, sys
-sys.path.append(os.path.join(os.environ['HOME'], 'gpc_controller'))
+sys.path.append(os.path.join(os.environ['HOME'], 'nlsoft', 'python'))
 from python.block_gym.block_gym import *
 from datetime import date
 import numpy as np

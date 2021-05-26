@@ -1,5 +1,5 @@
 import os, sys
-sys.path.append(os.path.join(os.environ['HOME'], 'gpc_controller/python'))
+sys.path.append(os.path.join(os.environ['HOME'], 'nlsoft/python'))
 import numpy as np
 import os
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
@@ -20,7 +20,7 @@ NUM_DATA_RUNS = 200
 TRAIN = True
 
 plt.style.use('seaborn')
-filename = str(os.environ["HOME"]) + "/gpc_controller/python/data/data_Dec_07_2020.csv"
+filename = str(os.environ["HOME"]) + "/nlsoft/python/test/data_May_24_2021.csv"
 
 font = FontProperties()
 font.set_family('serif')
