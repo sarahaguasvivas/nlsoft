@@ -12,30 +12,35 @@ model_filename = str(os.environ['HOME']) + '/github_repos/nlsoft/python/models/f
 sensor_signal_model_filename = str(os.environ['HOME']) + '/github_repos/nlsoft/python/models/model_signals_may_25_2021.hdf5'
 target_filename = str(os.environ['HOME']) + '/github_repos/nlsoft/python/models/ref_data.mat'
 NUM_EXPERIMENTS = 1
-NUM_TIMESTEPS = 1130
+NUM_TIMESTEPS = 1130 - 5
 FILENAME = 'gru_log_output_swirl.json'
 verbose = 1
 savelog = False
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
-                                      nd = 2, dd = 2, K = 1,
-                                      Q = np.array([[1e3, 0., 0],
-                                                    [0., 8e3, 0.],
-                                                    [0., 0., 1e3]]),
-                                      Lambda = np.eye(6),
-                                      s = 1e-20, b = 1e-5, r = 4e3,
+                                      nd = 2, dd = 2, K = 2,
+                                      Q = np.array([[1e-2, 0., 0],
+                                                    [0., 1e-2, 0.],
+                                                    [0., 0., 1e-2]]),
+                                      Lambda = np.array([[1, 0, 0, 0, 0, 0],
+                                                             [0, 1, 0, 0, 0, 0],
+                                                             [0, 0, 1, 0, 0, 0],
+                                                             [0, 0, 0, 1, 0, 0],
+                                                             [0, 0, 0, 0, 1, 0],
+                                                             [0, 0, 0, 0, 0, 1]]),
+                                      s = 1e-20, b = 1., r = 4.,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [0.]*6,
-                                      step_size = 8e-2)
+                                      step_size = 5e-2)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGymVani(signal_simulator_model=sensor_signal_model_filename)
 
 log = Logger()
 Block.step(NNP.u0)
 time.sleep(10)
-neutral_point = [0.01290038, -0.00257767, 0.05012653]
+neutral_point = [0.]*3 #[0.01290038, -0.00257767, 0.05012653]
 
 NNP.y0 = neutral_point
 motors_calibration = [800]*6
@@ -70,6 +75,11 @@ for e in range(NUM_EXPERIMENTS):
     u_action, predicted_states = np.array(NNP.u0), np.array(NNP.y0)
 
     target.center = NNP.y0
+
+    log.log({str(e) : {'predicted' : NNP.y0, 'actual' : NNP.y0,
+                       'yn' : NNP.y0, 'elapsed' : 0.0, 'u' : NNP.u0}})
+    if (e == 0):
+        log.log({'metadata': {'ym': [0., 0., 0.]}})
     for n in range(NUM_TIMESTEPS):
         seconds = time.time()
         signal = np.divide(Block.get_observation(u_optimal_old), Block.calibration_max,
@@ -106,17 +116,16 @@ for e in range(NUM_EXPERIMENTS):
         u_optimal_old = u_optimal
         u_deque = roll_deque(u_deque, u_optimal[0, :].tolist())
         elapsed = time.time()-seconds
-        actual_ = np.array(Block.get_state()).tolist()
+        actual_ = np.array(predicted_states.tolist()).tolist()
 
         if verbose is not None:
             if verbose == 0:
-                log.verbose( actual = actual_,
-                            yn = predicted_states, ym = target_path[0, :],
+                log.verbose( yn = predicted_states, ym = target_path[0, :],
                             elapsed = elapsed, u = u_action)
             if verbose == 1:
                 log.verbose(u_action = u_action, elapsed = time.time() - seconds)
 
-        log.log({str(e) : {'actual' : actual_,
+        log.log({str(e) : { 'actual' : actual_,
                         'yn' : predicted_states.tolist(),
                         'elapsed' : elapsed,
                         'u' : [u_action],

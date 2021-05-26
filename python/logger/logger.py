@@ -38,7 +38,7 @@ class Logger:
 
         plt.rcParams["font.family"] = "Times New Roman"
 
-        plt.style.use('seaborn')
+        #plt.style.use('seaborn')
 
         yn = []
         predicted_ = []
@@ -81,7 +81,7 @@ class Logger:
         u_optimal_list = np.reshape(u_optimal_list, (NUM_EXPERIMENTS, -1, 2))
         error_mm = actual_ - ym
         error_pred = yn - actual_
-        signal = np.reshape(signal, (NUM_EXPERIMENTS, -1, 11))
+        signal = np.reshape(signal, (NUM_EXPERIMENTS, -1, 6))
 
         # Zeroing each state:
         max_target = np.max(ym, axis = 0)
