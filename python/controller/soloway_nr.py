@@ -44,7 +44,7 @@ class SolowayNR:
 
             norm = np.linalg.norm(Fu)
             if verbose:
-                enorm = np.linalg.norm(u[0, :] - np.array([1, 1]))
+                enorm = np.linalg.norm(u[0, :] - np.array([1]*len(u.tolist())))
                 print('Newton {:d} anorm {:6.2e} rnorm {:6.2e} eratio {:6.2f}'.
                                 format(i+1, norm, norm/norm0, enorm/enorm_last**2))
                 enorm_last = enorm

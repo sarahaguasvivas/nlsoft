@@ -8,7 +8,7 @@ from python.utilities.util import *
 from python.target.vanis_target_swirl import VanisSwirl
 import numpy as np
 
-model_filename = str(os.environ['HOME']) + '/github_repos/nlsoft/python/models/forward_kinematics_may_25_2021.hdf5'
+model_filename = str(os.environ['HOME']) + '/github_repos/nlsoft/python/models/forward_kinematics_may_27_2021.hdf5'
 sensor_signal_model_filename = str(os.environ['HOME']) + '/github_repos/nlsoft/python/models/model_signals_may_25_2021.hdf5'
 target_filename = str(os.environ['HOME']) + '/github_repos/nlsoft/python/models/ref_data.mat'
 NUM_EXPERIMENTS = 1
@@ -18,34 +18,33 @@ verbose = 1
 savelog = False
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
-                                      N1 = 0, N2 = 1, Nu = 1,
-                                      nd = 2, dd = 2, K = 2,
-                                      Q = np.array([[1e-2, 0., 0],
-                                                    [0., 1e-2, 0.],
-                                                    [0., 0., 1e-2]]),
-                                      Lambda = np.array([[1, 0, 0, 0, 0, 0],
-                                                             [0, 1, 0, 0, 0, 0],
-                                                             [0, 0, 1, 0, 0, 0],
-                                                             [0, 0, 0, 1, 0, 0],
-                                                             [0, 0, 0, 0, 1, 0],
-                                                             [0, 0, 0, 0, 0, 1]]),
-                                      s = 1e-20, b = 1., r = 4.,
+                                      N1 = 0, N2 = 1, Nu= 1,
+                                      nd = 2, dd = 2, K = 1,
+                                      Q = np.array([[1e5, 0., 0.],
+                                                    [0., 5e4, 0.],
+                                                    [0., 0., 5e3]]),
+                                      Lambda = np.array([[8e-1, 0, 0, 0, 0, 0],
+                                                        [0, 8e-1, 0, 0, 0, 0],
+                                                        [0, 0, 8e-1, 0, 0, 0],
+                                                        [0, 0, 0, 1., 0, 0],
+                                                        [0, 0, 0, 0, 1., 0],
+                                                        [0, 0, 0, 0, 0, 1.]]),
+                                      s = 1e-20, b = 1e-7, r = 4e5,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [0.]*6,
-                                      step_size = 5e-2)
-
+                                      step_size = 1e-1)
+print(NNP.model.summary())
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGymVani(signal_simulator_model=sensor_signal_model_filename)
 
 log = Logger()
 Block.step(NNP.u0)
-time.sleep(10)
-neutral_point = [0.]*3 #[0.01290038, -0.00257767, 0.05012653]
+neutral_point = [0.01290038, -0.00257767, 0.05012653]
 
 NNP.y0 = neutral_point
 motors_calibration = [800]*6
 Block.calibration_max = [9552., 19038., 19075., 19075., 19089., 19127.]
-target = VanisSwirl(source_filename=target_filename)
+target = VanisSwirl(source_filename = target_filename, neutral_point= neutral_point)
 
 u_optimal_old = np.reshape([NNP.u0] * NNP.nu, (-1, 6))
 del_u = np.zeros(u_optimal_old.shape)
@@ -62,8 +61,7 @@ for e in range(NUM_EXPERIMENTS):
     log.log({str(e) : {'predicted' : [], 'actual' : [], 'yn' : [],
             'elapsed' : [], 'u' : []}})
     print(e)
-    Block.step(action = NNP.u0)
-    time.sleep(5)
+    #Block.step(action = NNP.u0)
     NNP.y0 = neutral_point
 
     log.log_dictionary['metadata']['neutral_point'] = NNP.y0
@@ -79,12 +77,11 @@ for e in range(NUM_EXPERIMENTS):
     log.log({str(e) : {'predicted' : NNP.y0, 'actual' : NNP.y0,
                        'yn' : NNP.y0, 'elapsed' : 0.0, 'u' : NNP.u0}})
     if (e == 0):
-        log.log({'metadata': {'ym': [0., 0., 0.]}})
+        log.log({'metadata': {'ym': neutral_point}})
     for n in range(NUM_TIMESTEPS):
         seconds = time.time()
         signal = np.divide(Block.get_observation(u_optimal_old), Block.calibration_max,
                             dtype = np.float64).tolist()
-
         NNP.yn = []
         ydeq = y_deque.copy()
         for k in range(NNP.K):
@@ -102,13 +99,10 @@ for e in range(NUM_EXPERIMENTS):
         u_optimal, del_u, _ = NR_opt.optimize(u = u_optimal_old, delu = del_u,
                                     maxit = 1, rtol = 1e-4, verbose = False)
 
+        #u_optimal = np.clip(u_optimal, 0, 1.04875)
+
         u_action = u_optimal[0, :].tolist()
         del_u_action = del_u[0, :].tolist()
-
-        #u_action[0] = ((1.+np.cos(2.* np.pi / 1000. * n))/2. * 150. - 100.)
-        #u_action[1] = ((1.+np.sin(2.* np.pi / 1000. * n))/2. * 150. - 100.)
-
-        #Block.step(action = u_action)
 
         NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action,
                     predicted_states.tolist(), target_path[0, :].tolist())
@@ -133,10 +127,10 @@ for e in range(NUM_EXPERIMENTS):
         if e==0:
             log.log({'metadata' : {'ym' : target_path[0, :].tolist()}})
 
-    u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
+    u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 6))
     Block.reset()
 
-Block.step([-80., -50.])
+#Block.step([-80., -50.])
 if savelog:
     log.save_log(filename=FILENAME)
 log.plot_log()
