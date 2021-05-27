@@ -20,26 +20,26 @@ savelog = False
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu= 1,
                                       nd = 2, dd = 2, K = 1,
-                                      Q = np.array([[1e5, 0., 0.],
-                                                    [0., 5e4, 0.],
-                                                    [0., 0., 5e3]]),
-                                      Lambda = np.array([[8e-1, 0, 0, 0, 0, 0],
-                                                        [0, 8e-1, 0, 0, 0, 0],
-                                                        [0, 0, 8e-1, 0, 0, 0],
+                                      Q = np.array([[1e5, 1e-3, 0.],
+                                                    [1e-3, 1e5, 0.],
+                                                    [0., 0., 1e5]]),
+                                      Lambda = np.array([[1., 0, 0, 0, 0, 0],
+                                                        [0, 1., 0, 0, 0, 0],
+                                                        [0, 0, 1., 0, 0, 0],
                                                         [0, 0, 0, 1., 0, 0],
                                                         [0, 0, 0, 0, 1., 0],
                                                         [0, 0, 0, 0, 0, 1.]]),
-                                      s = 1e-20, b = 1e-7, r = 4e5,
+                                      s = 1e-20, b = 1e7, r = 4e-5,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [0.]*6,
-                                      step_size = 1e-1)
+                                      step_size = 1e-2)
 print(NNP.model.summary())
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGymVani(signal_simulator_model=sensor_signal_model_filename)
 
 log = Logger()
 Block.step(NNP.u0)
-neutral_point = [0.01290038, -0.00257767, 0.05012653]
+neutral_point = [0.0, 0.0, 0.0]
 
 NNP.y0 = neutral_point
 motors_calibration = [800]*6
@@ -75,9 +75,10 @@ for e in range(NUM_EXPERIMENTS):
     target.center = NNP.y0
 
     log.log({str(e) : {'predicted' : NNP.y0, 'actual' : NNP.y0,
-                       'yn' : NNP.y0, 'elapsed' : 0.0, 'u' : NNP.u0}})
+                       'yn' : NNP.y0, 'elapsed' : 0.0, 'u' : [NNP.u0]}})
     if (e == 0):
-        log.log({'metadata': {'ym': neutral_point}})
+        log.log({'metadata': {'ym': neutral_point, 'num_signals' : 6, 'm' : NNP.m,
+                                                                'n' : NNP.nx}})
     for n in range(NUM_TIMESTEPS):
         seconds = time.time()
         signal = np.divide(Block.get_observation(u_optimal_old), Block.calibration_max,
@@ -99,7 +100,7 @@ for e in range(NUM_EXPERIMENTS):
         u_optimal, del_u, _ = NR_opt.optimize(u = u_optimal_old, delu = del_u,
                                     maxit = 1, rtol = 1e-4, verbose = False)
 
-        #u_optimal = np.clip(u_optimal, 0, 1.04875)
+        #u_optimal = np.clip(u_optimal, -1.04875/2., 1.04875/2.)
 
         u_action = u_optimal[0, :].tolist()
         del_u_action = del_u[0, :].tolist()
@@ -127,7 +128,7 @@ for e in range(NUM_EXPERIMENTS):
         if e==0:
             log.log({'metadata' : {'ym' : target_path[0, :].tolist()}})
 
-    u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 6))
+    u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, NNP.m))
     Block.reset()
 
 #Block.step([-80., -50.])

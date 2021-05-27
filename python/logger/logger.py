@@ -60,13 +60,16 @@ class Logger:
         NUM_EXPERIMENTS = self.log_dictionary['metadata']['num_experiments']
         #NUM_TIMESTEPS = self.log_dictionary['metadata']['num_timesteps']
         neutral_point = self.log_dictionary['metadata']['neutral_point']
+        m = self.log_dictionary['metadata']['m'][0]
+        n = self.log_dictionary['metadata']['n'][0]
+        num_sig = self.log_dictionary['metadata']['num_signals'][0]
         ym = self.log_dictionary['metadata']['ym']
 
         print("Average control loop time in seconds:  ", np.mean(np.abs(elapsed)))
 
-        ym = 1000*np.reshape(ym, (-1, 3))
-        yn = 1000*np.reshape(yn, (NUM_EXPERIMENTS, -1, 3))
-        actual_ = 1000*np.reshape(actual_, (NUM_EXPERIMENTS,-1, 3))
+        ym = 1000*np.reshape(ym, (-1, n))
+        yn = 1000*np.reshape(yn, (NUM_EXPERIMENTS, -1, n))
+        actual_ = 1000*np.reshape(actual_, (NUM_EXPERIMENTS,-1, n))
         elapsed_ = np.reshape(elapsed, (NUM_EXPERIMENTS, -1, 1))
         #np.sqrt(((predictions - targets) ** 2).mean())
         error_p= np.sqrt(((yn - actual_) **2).mean(axis = -1))
@@ -77,11 +80,11 @@ class Logger:
 
         print("Standard error prediction: ", np.std(error_p, ddof=0))
         print("Standard error control: ", np.std(error_e,  ddof=0))
-
-        u_optimal_list = np.reshape(u_optimal_list, (NUM_EXPERIMENTS, -1, 2))
+        print(np.array(u_optimal_list).shape)
+        u_optimal_list = np.reshape(u_optimal_list, (NUM_EXPERIMENTS, -1, m))
         error_mm = actual_ - ym
         error_pred = yn - actual_
-        signal = np.reshape(signal, (NUM_EXPERIMENTS, -1, 6))
+        signal = np.reshape(signal, (NUM_EXPERIMENTS, -1, num_sig))
 
         # Zeroing each state:
         max_target = np.max(ym, axis = 0)
@@ -93,8 +96,8 @@ class Logger:
         plt.figure()
         AXIS = 0
         timesteps = range(max(yn.shape))
-        for i in range(3):
-            plt.subplot(3, 1, i+1)
+        for i in range(n):
+            plt.subplot(n, 1, i+1)
             plt.plot(ym[:, i] - shift[i], color = color_palette[-1], linestyle = 'dashed', label =r"$" + labels[i] + "_{target}$")
             plt.plot(np.mean(yn, axis = AXIS)[:, i] - shift[i], color_palette[0], label = r"$\hat{" + labels[i] + "}$" )
             plt.fill_between(timesteps, np.mean(yn, axis = AXIS)[:, i] - np.std(yn, axis = AXIS)[:, i] - shift[i],
@@ -122,8 +125,8 @@ class Logger:
         color_palette1= ['#272838', '#F3DE8A', '#F3DE8A', '#F3DE8A']
 
         plt.figure()
-        for i in range(2):
-            plt.subplot(2, 1, i+1)
+        for i in range(m):
+            plt.subplot(m, 1, i+1)
             plt.plot(np.mean(u_optimal_list, axis =AXIS)[:, i], color = color_palette1[0], label = r'$u_{' + str(i) + "}$" )
             plt.fill_between(timesteps, np.mean(u_optimal_list, axis = AXIS)[:, i] -  np.std(u_optimal_list, axis = AXIS)[:, i],\
                                             np.mean(u_optimal_list, axis = AXIS)[:, i] + np.std(u_optimal_list, axis = AXIS)[:, i],\
