@@ -8,38 +8,39 @@ from python.utilities.util import *
 from python.target.vanis_target_swirl import VanisSwirl
 import numpy as np
 
-model_filename = str(os.environ['HOME']) + '/github_repos/nlsoft/python/models/forward_kinematics_may_27_2021.hdf5'
+model_filename = str(os.environ['HOME']) + '/github_repos/nlsoft/python/models/forward_kinematics_may_29_2021.hdf5'
 sensor_signal_model_filename = str(os.environ['HOME']) + '/github_repos/nlsoft/python/models/model_signals_may_25_2021.hdf5'
 target_filename = str(os.environ['HOME']) + '/github_repos/nlsoft/python/models/ref_data.mat'
 NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 1130 - 5
-FILENAME = 'gru_log_output_swirl.json'
+FILENAME = 'gru_log_output_vani_swirl.json'
 verbose = 1
-savelog = False
+savelog = True
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu= 1,
-                                      nd = 2, dd = 2, K = 1,
-                                      Q = np.array([[1e5, 1e-3, 0.],
-                                                    [1e-3, 1e5, 0.],
-                                                    [0., 0., 1e5]]),
+                                      nd = 2, dd = 2, K = 2,
+                                      Q = np.array([[1., 0., 0.],
+                                                    [0., 1., 0.],
+                                                    [0., 0., 1.]]),
                                       Lambda = np.array([[1., 0, 0, 0, 0, 0],
                                                         [0, 1., 0, 0, 0, 0],
-                                                        [0, 0, 1., 0, 0, 0],
+                                                        [0, 0, 1e-3, 0, 0, 0],
                                                         [0, 0, 0, 1., 0, 0],
-                                                        [0, 0, 0, 0, 1., 0],
+                                                        [0, 0, 0, 0, 1e-3, 0],
                                                         [0, 0, 0, 0, 0, 1.]]),
-                                      s = 1e-20, b = 1e7, r = 4e-5,
+                                      s = 1e-20, b = 1e-5, r = 4e3,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
-                                      u0 = [0.]*6,
+                                      u0 = [0., 0., 0., 0., 0., 0.],
                                       step_size = 1e-2)
-print(NNP.model.summary())
+
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGymVani(signal_simulator_model=sensor_signal_model_filename)
 
 log = Logger()
 Block.step(NNP.u0)
-neutral_point = [0.0, 0.0, 0.0]
+#neutral_point_swirl = [ 0.01290038, -0.00257767, 0.05512653]
+neutral_point = [0.]*3
 
 NNP.y0 = neutral_point
 motors_calibration = [800]*6
@@ -83,26 +84,29 @@ for e in range(NUM_EXPERIMENTS):
         seconds = time.time()
         signal = np.divide(Block.get_observation(u_optimal_old), Block.calibration_max,
                             dtype = np.float64).tolist()
+        signal = [0.]*6
         NNP.yn = []
         ydeq = y_deque.copy()
         for k in range(NNP.K):
             neural_network_input = np.array((np.array(list(u_deque))).flatten().tolist() + \
                             np.array(list(ydeq)).flatten().tolist() + signal).reshape(1, 1, -1)
+            print(neural_network_input)
             predicted_states = NNP.predict(neural_network_input).flatten()
             NNP.yn += [(NNP.C @ predicted_states).tolist()]
             ydeq = roll_deque(ydeq, predicted_states.tolist())
-
+            print(predicted_states)
         y_deque = roll_deque(y_deque, predicted_states.tolist())
         NNP.last_model_input = neural_network_input
-        target_path = target.spin(n, 0, NNP.K, 3)
+        target_path = target.spin(n, 0, NNP.K, NNP.nx)
         NNP.ym = (NNP.C @ target_path.T).reshape(NNP.ny, -1).T.tolist()
 
         u_optimal, del_u, _ = NR_opt.optimize(u = u_optimal_old, delu = del_u,
                                     maxit = 1, rtol = 1e-4, verbose = False)
 
         #u_optimal = np.clip(u_optimal, -1.04875/2., 1.04875/2.)
-
+        u_optimal = np.zeros(u_optimal.shape)
         u_action = u_optimal[0, :].tolist()
+
         del_u_action = del_u[0, :].tolist()
 
         NNP.update_dynamics(u_optimal[0, :].tolist(), del_u_action,
