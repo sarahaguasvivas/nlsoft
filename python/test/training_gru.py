@@ -21,7 +21,7 @@ TRAIN = True
 from typing import List, Tuple
 
 plt.style.use('seaborn')
-filename = str(os.environ["HOME"]) + "/nlsoft/python/test/data_May_24_2021.csv"
+filename = str(os.environ["HOME"]) + "/nlsoft/python/test/data_May_28_2021.csv"
 
 font = FontProperties()
 font.set_family('serif')
@@ -49,9 +49,9 @@ keras.losses.custom_loss = custom_loss
 
 def create_network(x_train_shape : Tuple[int]):
     model = Sequential()
-    model.add(GRU(units = 5, input_shape = (1,x_train_shape[-1])))
+    model.add(GRU(units = 10, input_shape = (1,x_train_shape[-1])))
     #model.add(Flatten())
-    model.add(Dense(3, activation = 'tanh', kernel_initializer='random_normal'))
+    #model.add(Dense(3, activation = 'relu', kernel_initializer='random_normal'))
     model.add(Dense(3, activation='tanh', kernel_initializer='random_normal'))
     model.compile(optimizer="adam", loss=huber_loss, metrics=['mse'])
     return model
@@ -148,8 +148,9 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
         if max_signals[i] == 0:
             max_signals[i] = 1
         signals[:, i]/= max_signals[i]
-
+    neutral_position = [-0.09223248064517975, 0.00512850284576416, 0.0041762664914131165] #[-0.09272462129592896, 0.0020720958709716797, 0.0129413902759552]
     position = data_array[:, 11:14] # not using Euler angles
+    position = position - np.array(neutral_position)
     inputs = data_array[:, 14:]
 
     N = max(nd, dd) # data sample where we will start first
@@ -165,7 +166,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
     for i in range(dd):
         Y = np.concatenate((Y, position[dd - i - 1 + (N-dd) : L-i, :]), axis = 1)
 
-    U = np.deg2rad(U[:, 2:]) / np.pi
+    U = np.deg2rad(U[:, 2:])
     S = signals[N - 1:, :]
 
     print("Y", Y)

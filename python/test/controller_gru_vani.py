@@ -8,9 +8,9 @@ from python.utilities.util import *
 from python.target.vanis_target_swirl import VanisSwirl
 import numpy as np
 
-model_filename = str(os.environ['HOME']) + '/github_repos/nlsoft/python/models/forward_kinematics_may_29_2021.hdf5'
-sensor_signal_model_filename = str(os.environ['HOME']) + '/github_repos/nlsoft/python/models/model_signals_may_25_2021.hdf5'
-target_filename = str(os.environ['HOME']) + '/github_repos/nlsoft/python/models/ref_data.mat'
+model_filename = str(os.environ['HOME']) + '/nlsoft/python/models/forward_kinematics_may_29_2021.hdf5'
+sensor_signal_model_filename = str(os.environ['HOME']) + '/nlsoft/python/models/model_signals_may_25_2021.hdf5'
+target_filename = str(os.environ['HOME']) + '/nlsoft/python/models/ref_data.mat'
 NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 1130 - 5
 FILENAME = 'gru_log_output_vani_swirl.json'

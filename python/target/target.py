@@ -118,9 +118,9 @@ class Pringle:
             rot = R.from_rotvec(rotation)
             del_X = rot.apply(del_X)
 
-            target[i, :] = [del_X[0] + self.center[0] - 0. / 1000.,
-                            del_X[1] + self.center[1],
-                            del_X[2] + self.center[2] + 7. / 1000.]
+            target[i, :] = [del_X[0],
+                            del_X[1],
+                            del_X[2]]
 
             i+=1
         return target
@@ -223,17 +223,17 @@ class FigureEight:
             z = self.a * np.sin((timestep + i) / self.wavelength + np.pi)
             y = self.b * np.sin((timestep + i) / self.wavelength + np.pi) * \
                np.cos((timestep + i)/self.wavelength + np.pi)
-            x = -0.002*np.cos(2*(timestep+i) / self.wavelength + np.pi)
+            x = 0. #0.004*np.sin(2*(timestep+i) / self.wavelength)
 
             del_X = np.array([x, y, z]).T
 
-            rotation = np.array([0., -0.4, 0.0])
+            rotation = np.array([0., -0., 0.0])
             rot = R.from_rotvec(rotation)
             del_X = rot.apply(del_X)
 
-            target[i, :] = [del_X[0] + self.center[0],
-                            del_X[1] + self.center[1],
-                            del_X[2] + self.center[2]]
+            target[i, :] = [del_X[0],
+                            del_X[1],
+                            del_X[2]]
             i+=1
         return target
 
