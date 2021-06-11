@@ -19,17 +19,17 @@ savelog = True
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
-                                      nd = 2, dd = 2, K = 3,
-                                      Q = np.array([[1e3, 0., 0],
-                                                    [0., 1e4, 0.],
-                                                    [0., 0., 1e3]]),
+                                      nd = 2, dd = 2, K = 1,
+                                     Q = np.array([[1e3, 0., 0],
+                                                    [0., 3e4, 0.],
+                                                    [0., 0., 5e3]]),
                                       Lambda = np.array([[1., 0.],
                                                          [0., 1.]]),
-                                      s = 1e-20, b = 1e-5, r = 4e3,
+                                      s = 1e-20, b = 1e-5, r = 4e5,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
-                                      u0 = [np.deg2rad(-60.), np.deg2rad(-50.)],
-                                      step_size = 8e-2)
+                                      u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
+                                      step_size = 5e-2)
 
 #NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
 #                                      N1 = 0, N2 = 1, Nu = 1,
@@ -50,7 +50,8 @@ NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883
 log = Logger()
 Block.step(NNP.u0)
 time.sleep(10)
-neutral_point = [0., 0., 0.] #Block.get_state()
+neutral_point = [0., 0., 0.]
+actual_neutral_point = Block.get_state()
 print(neutral_point)
 NNP.y0 = neutral_point
 
@@ -59,7 +60,7 @@ NNP.y0 = neutral_point
 
 #target = Diagonal(wavelength = 15000, amplitude= 10./1000., center = neutral_point)
 
-target = FigureEight(a = 15./1000., b = 25./1000., wavelength = 150., center= [-0.0, -0.0, -0.0])#neutral_point)
+target = FigureEight(a = 25./1000., b = 25./1000., wavelength = 150., center= [-0.0, -0.0, -0.0])#neutral_point)
 #target = Pringle(wavelength = 1000, amplitude = 5./1000.,
 #                                center = neutral_point)
 
@@ -130,6 +131,8 @@ try:
             u_action[0] = np.clip((np.rad2deg(u_action[0]) + 50.) - 50. + 20., -100., 50.)
             u_action[1] = np.clip((np.rad2deg(u_action[1]) + 50.) - 50. + 20., -100., 50.)
 
+            #u_action[0] = np.clip((np.rad2deg(u_action[0]) + 50.) - 50. , -100., 50.)
+            #u_action[1] = np.clip((np.rad2deg(u_action[1]) + 50.) - 50. , -100., 50.)
             #u_action[0] = ((1.+np.cos(2.* np.pi / 1000. * n))/2. * 150. - 100.)
             #u_action[1] = ((1.+np.sin(2.* np.pi / 1000. * n))/2. * 150. - 100.)
 
@@ -141,7 +144,7 @@ try:
             u_optimal_old = u_optimal
             u_deque = roll_deque(u_deque, u_optimal[0, :].tolist())
             elapsed = time.time()-seconds
-            actual_ = np.array(Block.get_state()  - np.array([-0.09223248064517975, 0.00512850284576416, 0.0041762664914131165])).tolist()
+            actual_ = np.array(Block.get_state()  - np.array(actual_neutral_point)).tolist()
 
             if verbose is not None:
                 if verbose == 0:
