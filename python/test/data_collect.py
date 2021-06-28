@@ -24,6 +24,10 @@ N = 200
 today = date.today()
 f = open("data_" + today.strftime("%b_%d_%Y")+".csv", "w+")
 el = open('elapsed_' + today.strftime("%b_%d_%Y")+ ".csv", "w+")
+
+B.reset()
+time.sleep(5)
+print(B.get_state())
 # my_string = ','.join(map(str, my_list))
 #try:
 for exp in range(N):

@@ -15,29 +15,44 @@ NUM_EXPERIMENTS = 1
 NUM_TIMESTEPS = 3000
 FILENAME = 'gru_log_output_figure8_demo.json'
 verbose = 1
-savelog = False
+savelog = True
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu = 1,
                                       nd = 2, dd = 2, K = 1,
-                                      Q = np.array([[1e3, 0., 0],
-                                                    [0., 8e3, 0.],
-                                                    [0., 0., 1e3]]),
+                                     Q = np.array([[1e3, 0., 0],
+                                                    [0., 3e4, 0.],
+                                                    [0., 0., 5e3]]),
                                       Lambda = np.array([[1., 0.],
                                                          [0., 1.]]),
-                                      s = 1e-20, b = 1e-5, r = 4e3,
+                                      s = 1e-20, b = 1e-5, r = 4e5,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
-                                      step_size = 8e-2)
+                                      step_size = 5e-2)
+
+#NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
+#                                      N1 = 0, N2 = 1, Nu = 1,
+#                                      nd = 2, dd = 2, K = 1,
+#                                      Q = np.array([[1e3, 0., 0],
+#                                                    [0., 8e3, 0.],
+#                                                    [0., 0., 1e3]]),
+#                                      Lambda = np.array([[1., 0.],
+#                                                         [0., 1.]]),
+#                                      s = 1e-20, b = 1e-5, r = 4e3,
+#                                      states_to_control = [1, 1, 1],
+#                                      y0= [0.0, 0.0, 0.0],
+#                                      u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
+#                                      step_size = 8e-2)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGym(vrpn_ip = "192.168.50.24:3883")
 
 log = Logger()
 Block.step(NNP.u0)
 time.sleep(10)
-neutral_point = Block.get_state() #[-0.062,0.004,-0.051]
-
+neutral_point = [0., 0., 0.]
+actual_neutral_point = Block.get_state()
+print(neutral_point)
 NNP.y0 = neutral_point
 
 #target = FixedTarget(a = 0. / 1000., b = 0./1000.,
@@ -45,11 +60,12 @@ NNP.y0 = neutral_point
 
 #target = Diagonal(wavelength = 15000, amplitude= 10./1000., center = neutral_point)
 
-target = FigureEight(a = 20./1000., b = 20./1000., wavelength = 150., center = [-0.08, 0., -0.03])#neutral_point)
+target = FigureEight(a = 25./1000., b = 25./1000., wavelength = 150., center= [-0.0, -0.0, -0.0])#neutral_point)
 #target = Pringle(wavelength = 1000, amplitude = 5./1000.,
 #                                center = neutral_point)
 
-Block.calibration_max = np.array([615., 110., 103., 157., 99., 155., 170., 1., 1., 7., 6.])
+Block.calibration_max = np.array([24., 1., 11., 75., 29., 98., 168., 1., 1., 1., 4.])
+#Block.calibration_max = np.array([615., 110., 103., 157., 99., 155., 170., 1., 1., 7., 6.])
 #Block.calibration_max = np.array([613., 134., 104., 200., 128., 146., 183., 1., 2., 7., 100.])
 
 u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, 2))
@@ -70,7 +86,7 @@ try:
         print(e)
         Block.step(action = NNP.u0)
         time.sleep(5)
-        NNP.y0 = Block.get_state()
+        NNP.y0 = neutral_point #Block.get_state()
 
         log.log_dictionary['metadata']['neutral_point'] = NNP.y0
 
@@ -81,6 +97,12 @@ try:
         u_action, predicted_states = np.array(NNP.u0), np.array(NNP.y0)
 
         target.center = NNP.y0
+        log.log({str(e): {'predicted': NNP.y0, 'actual': NNP.y0,
+                          'yn': NNP.y0, 'elapsed': 0.0, 'u': [NNP.u0]}})
+        if (e == 0):
+            log.log({'metadata': {'ym': [0., 0., 0.], 'num_signals': 11, 'm': NNP.m,
+                                  'n': NNP.nx}})
+
         for n in range(NUM_TIMESTEPS):
             seconds = time.time()
             signal = np.divide(Block.get_observation(), Block.calibration_max,
@@ -89,7 +111,7 @@ try:
             NNP.yn = []
             ydeq = y_deque.copy()
             for k in range(NNP.K):
-                neural_network_input = np.array((np.array(list(u_deque))/np.pi).flatten().tolist() + \
+                neural_network_input = np.array((np.array(list(u_deque))).flatten().tolist() + \
                                 np.array(list(ydeq)).flatten().tolist() + signal).reshape(1, 1, -1)
                 predicted_states = NNP.predict(neural_network_input).flatten()
                 NNP.yn += [(NNP.C @ predicted_states).tolist()]
@@ -109,6 +131,8 @@ try:
             u_action[0] = np.clip((np.rad2deg(u_action[0]) + 50.) - 50. + 20., -100., 50.)
             u_action[1] = np.clip((np.rad2deg(u_action[1]) + 50.) - 50. + 20., -100., 50.)
 
+            #u_action[0] = np.clip((np.rad2deg(u_action[0]) + 50.) - 50. , -100., 50.)
+            #u_action[1] = np.clip((np.rad2deg(u_action[1]) + 50.) - 50. , -100., 50.)
             #u_action[0] = ((1.+np.cos(2.* np.pi / 1000. * n))/2. * 150. - 100.)
             #u_action[1] = ((1.+np.sin(2.* np.pi / 1000. * n))/2. * 150. - 100.)
 
@@ -120,7 +144,7 @@ try:
             u_optimal_old = u_optimal
             u_deque = roll_deque(u_deque, u_optimal[0, :].tolist())
             elapsed = time.time()-seconds
-            actual_ = np.array(Block.get_state()).tolist()
+            actual_ = np.array(Block.get_state()  - np.array(actual_neutral_point)).tolist()
 
             if verbose is not None:
                 if verbose == 0:
