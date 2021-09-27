@@ -1,17 +1,16 @@
-#include "neural_network_utilities.hpp"
+#include "helpers.hpp"
 #include "matrix.hpp"
 #include "motors.hpp"
 #include "signals.hpp"
 #include "figure_eight_target.hpp"
 
 #define NUM_SIGNAL  11
-#define PI 3.1415926535897932384626433832795
 
 unsigned long timestamp;
 float current_position[3] = {-0.06709795916817293, -0.047865542156502586, -0.016102764150255758};
 unsigned long elapsed;
 
-Controller controller; // controller struct
+Controller controller; // controller struct instantiation
 
 void setup() {
   setup_motor();
@@ -60,22 +59,27 @@ void loop() {
     }
     
     collect_signal(&signal_[0], controller.signal_calibration, NUM_SIGNAL);
-    
+
     if (timestamp > 0){
       build_input_vector(nn_input, controller.u, signal_, current_position, 
                         controller.nd*controller.m, controller.dd*controller.n, 
                         controller.m, controller.n, NUM_SIGNAL);
+    } 
+
+    for (int i = 0 ; i < controller.input_size ; i++) {
+      controller.past_nn_input[i] = nn_input[i];
     }
 
-    for (int i = 0 ; i < controller.input_size ; i++) controller.past_nn_input[i] = nn_input[i];
+    normalize_array(&controller.u[0], &controller.normalized_u[0], 
+                                        controller.m*controller.Nc, PI);
    
     prediction = nn_prediction(controller.N, controller.Nc, controller.n, controller.m, 
                                 NUM_SIGNAL + controller.nd*controller.m + controller.dd*controller.n, 
-                                controller.nd, controller.dd, nn_input, controller.u);
-
-    //print_matrix(prediction);
-    //Serial.println();
+                                controller.nd, controller.dd, nn_input, controller.normalized_u);
     
+    print_matrix(prediction);
+    Serial.println();
+
     for (int i = 0; i < controller.n; i++) {
         current_position[i] = prediction.data[(controller.N - 1)*controller.n + i];
     }
@@ -86,9 +90,7 @@ void loop() {
                               controller.nd, controller.input_size, nn_input, controller.epsilon);
     spin_figure_eight_target(timestamp, 0, controller.N, 
                               controller.n, &target, controller.neutral_point);
-
     del_y = subtract(target, prediction);
-  
     for (int i = 0; i < controller.N*controller.n; i++){
        controller.y[i] = prediction.data[i];
     }
@@ -116,14 +118,15 @@ void loop() {
     set(u_matrix, del_u_matrix.rows, del_u_matrix.cols);
    
     for (int i = 0; i < controller.Nc*controller.m; i++) { 
-      u_matrix.data[i] = controller.u[i] - del_u_matrix.data[i];
+      u_matrix.data[i] = controller.u[i] + del_u_matrix.data[i];
     }
    
     // Clipping action:
-    clip_action(u_matrix);
-
-    //delay(5);
-    print_matrix(u_matrix);
+    //clip_action(u_matrix, controller);
+     
+    delay(5); // TODO(comment this out if I use clip_action)
+    //print_matrix(u_matrix);
+    //Serial.println();
 
     for (int i = 0; i < controller.Nc*controller.m; i++) { 
       controller.prev_u[i] = controller.u[i];
@@ -143,13 +146,7 @@ void loop() {
     free(nn_input);
     free(signal_);
     timestamp++;
-  
     //Serial.println(millis()-elapsed);
-}
-
-float deg2rad(float deg)
-{
-    return deg*PI/180.;
 }
 
 void print_array(float * arr, int arr_size)
@@ -159,13 +156,6 @@ void print_array(float * arr, int arr_size)
       Serial.print(",");
     }
     Serial.println();
-}
-
-void clip_action(Matrix2 &u_matrix){
-  for (int i = 0; i < controller.Nc*controller.m; i++){
-    u_matrix.data[i] = min(u_matrix.data[i], controller.min_max_input_saturation[1]); // max
-    u_matrix.data[i] = max(u_matrix.data[i], controller.min_max_input_saturation[0]); // min
-  }
 }
 
 void print_matrix(Matrix2 matrix)

@@ -1,7 +1,7 @@
-#ifndef __NNUTIL_H__
-#define __NNUTIL_H__
+#ifndef __HELPERS_H__
+#define __HELPERS_H__
 
-//#include <Arduino.h>
+#include <Arduino.h>
 #include <iostream>
 
 #ifdef __cplusplus
@@ -12,11 +12,15 @@ extern "C" {
 #include "matrix.hpp"
 #include "controller.hpp"
 
+#define PI 3.1415926535897932384626433832795
+
 void setup_nn_utils();
 
 void nn_gradients(Matrix2 *, Matrix2 *, int, int, int, int, float *, float);
 
 void roll_window(int, int, int, float *);
+
+void normalize_array(float*, float*, int, float);
 
 Matrix2 nn_prediction(int, int, int, int, int, int, int, float*, float*);
 

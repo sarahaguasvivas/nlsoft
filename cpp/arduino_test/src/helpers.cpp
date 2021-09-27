@@ -1,14 +1,29 @@
-#include "neural_network_utilities.hpp"
-
-/*void roll_window(int buffer_size, float * vector)
-{
-    // offset by buffer size
-    vector = vector - buffer_size;
-}*/
+#include "helpers.hpp"
 
 void setup_nn_utils()
 {
   buildLayers();  
+}
+
+float deg2rad(float deg)
+{
+    return deg*PI/180.;
+}
+
+void normalize_array(float* original_array, float* new_array, int array_size, float factor){
+  for (int i= 0; i< array_size; i++){
+    new_array[i] = original_array[i] / factor;
+  }
+}
+
+void clip_action(
+            Matrix2 &u_matrix, 
+            Controller controller
+){
+  for (int i = 0; i < controller.Nc*controller.m; i++){
+    u_matrix.data[i] = min(u_matrix.data[i], controller.min_max_input_saturation[1]); 
+    u_matrix.data[i] = max(u_matrix.data[i], controller.min_max_input_saturation[0]); 
+  }
 }
 
 void roll_window(int start, int finish, int buffer_size, float * array)
@@ -21,8 +36,17 @@ void roll_window(int start, int finish, int buffer_size, float * array)
     }
 }
 
-void build_input_vector(float * vector, float * u,  float * signal_, float * posish, int ndm, int ddn, int m, int n, int num_sig)
-{
+void build_input_vector(
+                    float * vector, 
+                    float * u,  
+                    float * signal_, 
+                    float * posish, 
+                    int ndm, 
+                    int ddn, 
+                    int m, 
+                    int n, 
+                    int num_sig
+){
    int input_size = ndm + ddn + num_sig;
    roll_window(0, ndm + 1, m, vector);
    for (int i = 0; i < m; i++) vector[i] = u[i];
@@ -31,9 +55,17 @@ void build_input_vector(float * vector, float * u,  float * signal_, float * pos
    for (int i = ndm + ddn; i < input_size; i++) vector[i] = signal_[i - (ndm + ddn)];
 }
 
-Matrix2 nn_prediction(int N, int Nc, int n, int m, int input_size, int nd, int dd, float * previous_input, float * u)
-{
-    buildLayers();
+Matrix2 nn_prediction(
+              int N, 
+              int Nc, 
+              int n, 
+              int m, 
+              int input_size, 
+              int nd, 
+              int dd, 
+              float * previous_input, 
+              float * u
+){
     Matrix2 y_output;
     set(y_output, N, n);
     int num_signal = input_size - nd*m - dd*n;
