@@ -18,11 +18,11 @@ void normalize_array(float* original_array, float* new_array, int array_size, fl
 
 void clip_action(
             Matrix2 &u_matrix, 
-            Controller controller
+            Controller* controller
 ){
-  for (int i = 0; i < controller.Nc*controller.m; i++){
-    u_matrix.data[i] = min(u_matrix.data[i], controller.min_max_input_saturation[1]); 
-    u_matrix.data[i] = max(u_matrix.data[i], controller.min_max_input_saturation[0]); 
+  for (int i = 0; i < controller->Nc*controller->m; i++){
+    u_matrix.data[i] = min(u_matrix.data[i], controller->min_max_input_saturation[1]); 
+    u_matrix.data[i] = max(u_matrix.data[i], controller->min_max_input_saturation[0]); 
   }
 }
 

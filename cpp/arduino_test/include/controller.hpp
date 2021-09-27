@@ -30,4 +30,3 @@ struct Controller{
 };
 
 float deg2rad(float);
-void clip_action(Matrix2 &);

@@ -47,10 +47,8 @@ void loop() {
     if (timestamp == 0) {
       set_to_zero(del_u_matrix);
     } else{
-      for (int i = 0; i < controller.Nc; i++){
-        for (int j = 0; j < controller.m; j++){
-          del_u_matrix.data[i*controller.m+j] = controller.del_u[i*controller.m+j];
-        }
+      for (int i = 0; i < controller.Nc*controller.m; i++){
+          del_u_matrix.data[i] = controller.del_u[i];
       }
     }
     
@@ -61,7 +59,7 @@ void loop() {
     collect_signal(&signal_[0], controller.signal_calibration, NUM_SIGNAL);
 
     if (timestamp > 0){
-      build_input_vector(nn_input, controller.u, signal_, current_position, 
+      build_input_vector(nn_input, controller.normalized_u, signal_, current_position, 
                         controller.nd*controller.m, controller.dd*controller.n, 
                         controller.m, controller.n, NUM_SIGNAL);
     } 
@@ -74,11 +72,8 @@ void loop() {
                                         controller.m*controller.Nc, PI);
    
     prediction = nn_prediction(controller.N, controller.Nc, controller.n, controller.m, 
-                                NUM_SIGNAL + controller.nd*controller.m + controller.dd*controller.n, 
-                                controller.nd, controller.dd, nn_input, controller.normalized_u);
-    
-    print_matrix(prediction);
-    Serial.println();
+                               NUM_SIGNAL + controller.nd*controller.m + controller.dd*controller.n, 
+                               controller.nd, controller.dd, nn_input, controller.normalized_u);
 
     for (int i = 0; i < controller.n; i++) {
         current_position[i] = prediction.data[(controller.N - 1)*controller.n + i];
@@ -87,7 +82,8 @@ void loop() {
     set(ynu, controller.n, controller.m);
     set(dynu_du, controller.n, controller.m);
     nn_gradients(&ynu, &dynu_du, controller.n, controller.m, 
-                              controller.nd, controller.input_size, nn_input, controller.epsilon);
+                              controller.nd, controller.input_size, 
+                              nn_input, controller.epsilon);
     spin_figure_eight_target(timestamp, 0, controller.N, 
                               controller.n, &target, controller.neutral_point);
     del_y = subtract(target, prediction);
@@ -108,25 +104,22 @@ void loop() {
     hessian = get_hessian(del_y, Q, Lambda, ynu, dynu_du, 
                             del_u_matrix, controller.u, 
                               controller.del_u, controller);
-    
     ////////////////////////////////////////////////////////////////////////////////
     release(del_y);
     
     Matrix2 u_matrix; 
-    
+
     solve(jacobian, hessian, del_u_matrix);
     set(u_matrix, del_u_matrix.rows, del_u_matrix.cols);
-   
     for (int i = 0; i < controller.Nc*controller.m; i++) { 
-      u_matrix.data[i] = controller.u[i] + del_u_matrix.data[i];
+      u_matrix.data[i] = controller.prev_u[i] - del_u_matrix.data[i];
     }
-   
+
     // Clipping action:
-    //clip_action(u_matrix, controller);
+    clip_action(u_matrix, &controller);
      
     delay(5); // TODO(comment this out if I use clip_action)
-    //print_matrix(u_matrix);
-    //Serial.println();
+    print_matrix(u_matrix);
 
     for (int i = 0; i < controller.Nc*controller.m; i++) { 
       controller.prev_u[i] = controller.u[i];
