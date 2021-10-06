@@ -26,11 +26,13 @@ void step_motor(float * u, int m)
    *  m is the number of motors
    */
   String to_send;
-  for ( int i = 0 ; i < m - 1; i++) {
-    to_send+= String(u[i]);
-    to_send+=",";
+  uint8_t buffer[2*sizeof(float)]; // 8 = 4 bytes (float) * 2 motors TODO(sarahaguasvivas): dynamic allocation
+  for (int i = 0; i< m; i++){
+      uint8_t * buff;
+      buff = (uint8_t*)(&u[i]);
+      for (int j = 0; j < sizeof(float); j++){
+        buffer[i*sizeof(float) + j] = buff[j];        
+      }
   }
-  to_send+= String(u[m - 1]);
-  to_send+= "\n";
-  //Serial2.print(to_send);
+  Serial2.write(buffer, 8);
 }

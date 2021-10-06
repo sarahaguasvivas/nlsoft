@@ -127,7 +127,7 @@ void loop() {
       controller.del_u[i] = del_u_matrix.data[i];
     }
     
-    //step_motor(u_matrix.data, m);
+    step_motor(u_matrix.data, controller.m);
 
     release(hessian);
     release(jacobian);
