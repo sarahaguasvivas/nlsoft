@@ -28,6 +28,7 @@ void loop() {
     motor_commands[i++] = (int)atoi(ptr);
     ptr = strtok(NULL, ","); 
   }
+  // TODO(sarahaguasvivas): Actually actuate motors
   Serial.print(motor_commands[0]); Serial.print(",");
   Serial.println(motor_commands[1]);
 }

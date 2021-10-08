@@ -12,7 +12,7 @@ void loop() {
 
 String get_buffer_string(){
   float data_buffer[11];
-  String buffer_string = "";
+  String buffer_string = "<";
   
   data_buffer[0] = analogRead(A0);
   data_buffer[1] = analogRead(A1);
@@ -31,7 +31,7 @@ String get_buffer_string(){
     buffer_string += ",";
   }
   buffer_string+= String((int)data_buffer[10]);
-  //buffer_string+= "/n";
+  buffer_string+= ">";
 
   return buffer_string;
   
