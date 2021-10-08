@@ -118,8 +118,8 @@ void loop() {
     // Clipping action:
     clip_action(u_matrix, &controller);
      
-    delay(5); // TODO(comment this out if I use clip_action)
-    print_matrix(u_matrix);
+    //delay(5); // TODO(comment this out if I use clip_action)
+    //print_matrix(u_matrix);
 
     for (int i = 0; i < controller.Nc*controller.m; i++) { 
       controller.prev_u[i] = controller.u[i];
