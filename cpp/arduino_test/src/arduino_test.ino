@@ -1,7 +1,7 @@
 #include "helpers.hpp"
+#include "signals.hpp"
 #include "matrix.hpp"
 #include "motors.hpp"
-#include "signals.hpp"
 #include "figure_eight_target.hpp"
 
 #define NUM_SIGNAL  11

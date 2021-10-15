@@ -1,5 +1,10 @@
 #include "signals.hpp"
 
+const byte numChars = NUM_CHARS;
+char receivedCharsS[numChars];
+boolean newDataS = false;
+int signals[NUM_CHANNELS];
+
 void setup_signal_collector(){
   Serial1.begin(115200, SERIAL_8N1, RXD2_S, TXD2_S);
 }
@@ -26,7 +31,7 @@ void receive_data() {
     char startMarker = '<';
     char endMarker = '>';
     char rc;
-        while (Serial1.available() > 0 && newData == false) {
+        while (Serial1.available() > 0 && newDataS == false) {
         rc = Serial1.read();
 
         if (recvInProgress == true) {
@@ -41,7 +46,7 @@ void receive_data() {
                 receivedCharsS[ndx] = '\0'; // terminate the string
                 recvInProgress = false;
                 ndx = 0;
-                newData = true;
+                newDataS = true;
             }
         }
 
@@ -52,7 +57,7 @@ void receive_data() {
 }
 
 void toggle_data_flag() {
-    if (newData == true) {
-        newData = false;
+    if (newDataS == true) {
+        newDataS = false;
     }
 }
