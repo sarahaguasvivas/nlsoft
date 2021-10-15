@@ -4,7 +4,7 @@
  *  This module is responsible of sending the motor commands through SPI to the OpenCM board
  */
 void setup_motor(){
-  Serial2.begin(115200, SERIAL_8N1, RXD2, TXD2);
+  //Serial2.begin(115200, SERIAL_8N1, RXD2, TXD2);
 }
 
 uint8_t convert_mapped_values(float angle)

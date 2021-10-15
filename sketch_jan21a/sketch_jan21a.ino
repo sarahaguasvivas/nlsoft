@@ -1,13 +1,14 @@
+#define NUM_CHANNELS  11
+
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(2000000);
+  Serial1.begin(2000000);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   String buffer_string = get_buffer_string();
-  Serial.println(buffer_string);
-  //Serial.println();
+  Serial1.println(buffer_string);
 }
 
 String get_buffer_string(){
@@ -24,9 +25,9 @@ String get_buffer_string(){
   data_buffer[7] = analogRead(A7);
   data_buffer[8] = analogRead(A8);
   data_buffer[9] = analogRead(A9);
-  data_buffer[10] = analogRead(A10);
+  data_buffer[10]= analogRead(A10);
   
-  for (int i=0; i<11; i++){
+  for (int i=0; i< NUM_CHANNELS; i++){
     buffer_string+= String((int)data_buffer[i]);
     buffer_string += ",";
   }

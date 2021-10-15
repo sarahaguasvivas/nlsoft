@@ -10,7 +10,6 @@
 #define TXD2_S 17
 #define NUM_CHARS 150
 
-
 void receive_data();
 void toggle_data_flag();
 void setup_signal_collector();

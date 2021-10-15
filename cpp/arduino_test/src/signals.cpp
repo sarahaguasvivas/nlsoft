@@ -6,7 +6,7 @@ boolean newDataS = false;
 int signals[NUM_CHANNELS];
 
 void setup_signal_collector(){
-  Serial1.begin(115200, SERIAL_8N1, RXD2_S, TXD2_S);
+  Serial2.begin(2000000, SERIAL_8N1, RXD2_S, TXD2_S);
 }
 
 void collect_signal(float * signal_to_read, float* calibration_vector, int signal_size)
@@ -15,13 +15,14 @@ void collect_signal(float * signal_to_read, float* calibration_vector, int signa
   toggle_data_flag();
 
   char *ptr = NULL;
-  
   ptr = strtok(receivedCharsS, "<,>");
-  //Serial.println(ptr);
   int i = 0; 
   while (ptr != NULL){
     signals[i++] = (int)atoi(ptr);
     ptr = strtok(NULL, ","); 
+  }
+  for (int i = 0; i < NUM_CHANNELS; i++){
+      signal_to_read[i] = (float)signals[i]/calibration_vector[i];
   }
 }
 
@@ -31,8 +32,8 @@ void receive_data() {
     char startMarker = '<';
     char endMarker = '>';
     char rc;
-        while (Serial1.available() > 0 && newDataS == false) {
-        rc = Serial1.read();
+        while (Serial2.available() > 0 && newDataS == false) {
+        rc = Serial2.read();
 
         if (recvInProgress == true) {
             if (rc != endMarker) {
@@ -54,6 +55,7 @@ void receive_data() {
             recvInProgress = true;
         }
     }
+    Serial.println(receivedCharsS);
 }
 
 void toggle_data_flag() {

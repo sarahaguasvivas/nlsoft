@@ -55,9 +55,10 @@ void loop() {
     for (int i = 0; i < controller.input_size; i++) {
       nn_input[i] = controller.past_nn_input[i];
     }
+    collect_signal(&signal_[0], &controller.signal_calibration[0], NUM_SIGNAL);
+   
+    print_array(signal_, NUM_SIGNAL);
     
-    collect_signal(&signal_[0], controller.signal_calibration, NUM_SIGNAL);
-
     if (timestamp > 0){
       build_input_vector(nn_input, controller.normalized_u, signal_, current_position, 
                         controller.nd*controller.m, controller.dd*controller.n, 
