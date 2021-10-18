@@ -8,7 +8,7 @@
 #define NUM_CHANNELS 11
 #define RXD2_S 16
 #define TXD2_S 17
-#define NUM_CHARS 150
+#define NUM_CHARS 80
 
 void receive_data();
 void toggle_data_flag();

@@ -2,19 +2,12 @@
 
 void setup() {
   // put your setup code here, to run once:
-  Serial1.begin(2000000);
+  Serial.begin(2000000);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  String buffer_string = get_buffer_string();
-  Serial1.println(buffer_string);
-}
-
-String get_buffer_string(){
-  float data_buffer[11];
-  String buffer_string = "<";
-  
+  int data_buffer[NUM_CHANNELS];
   data_buffer[0] = analogRead(A0);
   data_buffer[1] = analogRead(A1);
   data_buffer[2] = analogRead(A2);
@@ -26,14 +19,10 @@ String get_buffer_string(){
   data_buffer[8] = analogRead(A8);
   data_buffer[9] = analogRead(A9);
   data_buffer[10]= analogRead(A10);
-  
-  for (int i=0; i< NUM_CHANNELS; i++){
-    buffer_string+= String((int)data_buffer[i]);
-    buffer_string += ",";
-  }
-  buffer_string+= String((int)data_buffer[10]);
-  buffer_string+= ">";
-
-  return buffer_string;
-  
+  char to_send[128];
+  sprintf(to_send, "<%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d>\n", data_buffer[0],
+                    data_buffer[1], data_buffer[2], data_buffer[3], data_buffer[4],
+                    data_buffer[5], data_buffer[6], data_buffer[7], data_buffer[8],
+                    data_buffer[9], data_buffer[10]);
+  Serial.print(to_send);             
 }
