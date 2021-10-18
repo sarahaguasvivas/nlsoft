@@ -14,7 +14,6 @@
 #include "activations.h"
 #include <math.h>
 #include <stdlib.h>
-#include <iostream>
 
 struct Dense {
 	const float* weights;

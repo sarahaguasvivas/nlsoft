@@ -8,7 +8,7 @@
 
 unsigned long timestamp;
 float current_position[3] = {-0.06709795916817293, -0.047865542156502586, -0.016102764150255758};
-unsigned long elapsed;
+//unsigned long elapsed;
 
 Controller controller; // controller struct instantiation
 
@@ -21,7 +21,7 @@ void setup() {
 }
 
 void loop() {
-    elapsed = millis();
+    //elapsed = millis();
     float * signal_ = (float*)malloc(NUM_SIGNAL*sizeof(float));
     Matrix2 Q;
     Matrix2 Lambda;
@@ -56,8 +56,8 @@ void loop() {
       nn_input[i] = controller.past_nn_input[i];
     }
     collect_signal(&signal_[0], &controller.signal_calibration[0], NUM_SIGNAL);
-    delay(5); 
     //print_array(signal_, NUM_SIGNAL);
+    delay(5); 
     
     if (timestamp > 0){
       build_input_vector(nn_input, controller.normalized_u, signal_, current_position, 
@@ -77,7 +77,7 @@ void loop() {
                                controller.nd, controller.dd, nn_input, controller.normalized_u);
 
     for (int i = 0; i < controller.n; i++) {
-        current_position[i] = prediction.data[(controller.N - 1)*controller.n + i];
+        current_position[i] = prediction.data[(controller.N - 1) + i * controller.n];
     }
     
     set(ynu, controller.n, controller.m);
@@ -116,11 +116,7 @@ void loop() {
       u_matrix.data[i] = controller.prev_u[i] - del_u_matrix.data[i];
     }
 
-    // Clipping action:
     clip_action(u_matrix, &controller);
-     
-    //delay(5); // TODO(comment this out if I use clip_action)
-    //print_matrix(u_matrix);
 
     for (int i = 0; i < controller.Nc*controller.m; i++) { 
       controller.prev_u[i] = controller.u[i];
@@ -140,7 +136,7 @@ void loop() {
     free(nn_input);
     free(signal_);
     timestamp++;
-    //Serial.println(millis()-elapsed);
+    //Serial.println(millis() - elapsed);
 }
 
 void print_array(float * arr, int arr_size)
@@ -161,5 +157,4 @@ void print_matrix(Matrix2 matrix)
     }
     Serial.println();
   }
-  //Serial.println();
 }

@@ -10,8 +10,8 @@
 #include <stdlib.h>
 #include <Arduino.h>
 
-#define OLD_MIN -100
-#define OLD_MAX 50
+#define OLD_MIN -1.74532925
+#define OLD_MAX 0.872665
 #define NEW_MIN 0
 #define NEW_MAX 600
 
