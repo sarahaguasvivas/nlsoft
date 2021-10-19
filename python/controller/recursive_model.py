@@ -9,7 +9,7 @@ import keras.losses as klosses
 import numpy as np
 from collections import deque
 import time
-tf.enable_eager_execution()
+#tf.enable_eager_execution()
 klosses.custom_loss = thousand_mse
 
 class ModelException(Exception):
