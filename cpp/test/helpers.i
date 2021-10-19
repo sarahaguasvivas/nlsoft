@@ -46,46 +46,7 @@
     extern Matrix2 get_hessian(Matrix2, Matrix2, Matrix2, Matrix2, Matrix2, Matrix2, float *, float *, struct   Controller);
     extern void solve(Matrix2, Matrix2, Matrix2 &);
     extern void clip_action(Matrix2 &, Controller*);
- 
-     extern void set(struct Matrix2 &, int, int);
-     extern void set_to_zero(struct Matrix2 &);
-     extern void set_to_ones(struct Matrix2 &);
-     extern struct Matrix2 sum_axis(struct Matrix2, int);
-     extern struct Matrix2 transpose(struct Matrix2);
-     extern struct Matrix2 scale(float, struct Matrix2);
-     extern struct Matrix2 add (struct Matrix2, struct Matrix2);
-     extern struct Matrix2 subtract (struct Matrix2, struct Matrix2);
-     extern struct Matrix2 multiply(struct Matrix2, struct Matrix2);
-     extern struct Matrix2 hadamard(struct Matrix2, struct Matrix2);
-     extern struct Matrix2 inverse (struct Matrix2);
-     extern void release(struct Matrix2 & a);
-     extern void lubksb(struct Matrix2, int *, float *);
-     extern void ludcmp(struct Matrix2, int *, float *);
-     extern struct Matrix2 repmat(struct Matrix2, int, int);
-     extern void equal(struct Matrix2 &, struct Matrix2);
-     extern struct Matrix2 nr_optimizer(struct Matrix2, struct Matrix2, struct Matrix2);
-     extern struct Matrix2 solve_matrix_eqn(struct Matrix2, struct Matrix2);
-     extern void cleanup_helper (float **);
 
-    extern float * activate(float* input, int output_shape, char type);
-
-    extern float * sigmoid(float * input, int m);
-
-    extern float * exp_activation(float * input, int m);
-
-    extern float * softplus(float * input, int m);
-
-    extern float * softsign(float * input, int m);
-
-    extern float * hard_sigmoid(float * input, int m);
-
-    extern float  exponential(float input);
-
-    extern float * relu(float *input, int m);
-
-    extern float * hyper_tan(float * input, int m);
-
-    extern float * softmax(float * input, int m);
 %}
     #define PI 3.1415926535897932384626433832795
  
@@ -102,43 +63,3 @@
     extern void solve(Matrix2, Matrix2, Matrix2 &);
     extern void clip_action(Matrix2 &, Controller*);
 
- 
-     extern void set(struct Matrix2 &, int, int);
-     extern void set_to_zero(struct Matrix2 &);
-     extern void set_to_ones(struct Matrix2 &);
-     extern struct Matrix2 sum_axis(struct Matrix2, int);
-     extern struct Matrix2 transpose(struct Matrix2);
-     extern struct Matrix2 scale(float, struct Matrix2);
-     extern struct Matrix2 add (struct Matrix2, struct Matrix2);
-     extern struct Matrix2 subtract (struct Matrix2, struct Matrix2);
-     extern struct Matrix2 multiply(struct Matrix2, struct Matrix2);
-     extern struct Matrix2 hadamard(struct Matrix2, struct Matrix2);
-     extern struct Matrix2 inverse (struct Matrix2);
-     extern void release(struct Matrix2 & a);
-     extern void lubksb(struct Matrix2, int *, float *);
-     extern void ludcmp(struct Matrix2, int *, float *);
-     extern struct Matrix2 repmat(struct Matrix2, int, int);
-     extern void equal(struct Matrix2 &, struct Matrix2);
-     extern struct Matrix2 nr_optimizer(struct Matrix2, struct Matrix2, struct Matrix2);
-     extern struct Matrix2 solve_matrix_eqn(struct Matrix2, struct Matrix2);
-     extern void cleanup_helper (float **);
-
-extern float * activate(float* input, int output_shape, char type);
-
-extern float * sigmoid(float * input, int m);
-
-extern float * exp_activation(float * input, int m);
-
-extern float * softplus(float * input, int m);
-
-extern float * softsign(float * input, int m);
-
-extern float * hard_sigmoid(float * input, int m);
-
-extern float  exponential(float input);
-
-extern float * relu(float *input, int m);
-
-extern float * hyper_tan(float * input, int m);
-
-extern float * softmax(float * input, int m);
