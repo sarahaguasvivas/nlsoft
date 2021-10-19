@@ -1,7 +1,7 @@
 import helpers
 import os, sys
 import unittest
-sys.path.append(os.path.join(os.environ['HOME'], 'nlsoft'))
+sys.path.append(os.path.join(os.environ['HOME'], 'github_repos', 'nlsoft'))
 from python.controller.recursive_model import *
 from python.controller.soloway_nr import *
 from python.utilities.util import *
@@ -9,7 +9,7 @@ import numpy as np
 import ctypes
 from typing import List, Final
 
-model_filename = str(os.environ["HOME"]) + "/nlsoft/python/test/sys_id.hdf5"
+model_filename = str(os.environ["HOME"]) + "/github_repos/nlsoft/python/test/sys_id.hdf5"
 NUM_TESTS = 1000
 NN_INPUT_SIZE = 26
 
@@ -71,20 +71,22 @@ class TestUtilities(unittest.TestCase):
     def test_prediction(self):
         for _ in range(NUM_TESTS):
             pred_size = (1, 26)
-            prediction_data = np.array([0.2777778804,-0.5555555224,0.2777778804,-0.5555555224,0.2777778804,-0.5555555224,
-                               -0.0251509957,-0.0251509957,1.9656401873,-0.0251509957,-0.0251509957,1.9656401873,
-                               -0.0251509957,-0.0251509957,1.9656401873,0.0000000000,0.0000000000,0.0000000000,
-                               0.0000000000,0.0000000000,0.0000000000,0.0000000000,0.0000000000,0.0000000000,
-                               0.0000000000,0.0000000000]).reshape(pred_size)
-            #np.random.normal(-10.0, 10.0, size = pred_size)
+            #prediction_data = np.array([0.2777778804,-0.5555555224,0.2777778804,-0.5555555224,0.2777778804,-0.5555555224,
+            #                   -0.0251509957,-0.0251509957,1.9656401873,-0.0251509957,-0.0251509957,1.9656401873,
+            #                   -0.0251509957,-0.0251509957,1.9656401873,0.0000000000,0.0000000000,0.0000000000,
+            #                   0.0000000000,0.0000000000,0.0000000000,0.0000000000,0.0000000000,0.0000000000,
+            #                   0.0000000000,0.0000000000]).reshape(pred_size)
+            prediction_data = np.random.normal(-10.0, 10.0, size = pred_size)
             nn_input = list_2_swig_float_pointer(
                                             prediction_data.flatten().tolist(),
                                             prediction_data.size
                                             )
             input_data = prediction_data[0, :2]
             motor_inputs = list_2_swig_float_pointer(input_data.flatten().tolist(), 2)
+            helpers.setup_nn_utils();
             c_prediction = helpers.nn_prediction(2, 1, 3, 2, prediction_data.size,
                                                  3, 3, nn_input, motor_inputs)
+            print(c_prediction.rows, c_prediction.cols, c_prediction.tiny, c_prediction.data)
             c_output_prediction = np.reshape(swig_py_object_2_list(c_prediction.data, 2 * 3), (2, 3))
             _, ydeq = first_load_deques(prediction_data[0, 2:2+3].tolist(), input_data.tolist(), 3, 3)
             python_prediction = python_nn_prediction(prediction_data, input_data, 2, 3, ydeq)
