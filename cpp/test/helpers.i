@@ -46,7 +46,6 @@
     extern Matrix2 get_hessian(Matrix2, Matrix2, Matrix2, Matrix2, Matrix2, Matrix2, float *, float *, struct   Controller);
     extern void solve(Matrix2, Matrix2, Matrix2 &);
     extern void clip_action(Matrix2 &, Controller*);
-
 %}
     #define PI 3.1415926535897932384626433832795
  

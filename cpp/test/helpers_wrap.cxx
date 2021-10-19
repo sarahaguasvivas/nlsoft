@@ -3626,7 +3626,6 @@ SWIGINTERN input *input_frompointer(float *t){
     extern void solve(Matrix2, Matrix2, Matrix2 &);
     extern void clip_action(Matrix2 &, Controller*);
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif

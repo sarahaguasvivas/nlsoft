@@ -92,9 +92,9 @@ Matrix2 nn_prediction(
         {
             y_output.data[i * n + j] = output_next[j];
         }
-        free(output_next);
+        //free(output_next);
     }
-    free(signals); 
+    //free(signals);
     return y_output;
 }
 

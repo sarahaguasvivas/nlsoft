@@ -71,17 +71,23 @@ class TestUtilities(unittest.TestCase):
     def test_prediction(self):
         for _ in range(NUM_TESTS):
             pred_size = (1, 26)
-            prediction_data = np.random.normal(-20.0, 20.0, size = pred_size)
-            nn_input = list_2_swig_float_pointer(prediction_data.flatten().tolist(), prediction_data.size)
-            input_data = prediction_data[0, :2*1]
+            prediction_data = np.array([0.2777778804,-0.5555555224,0.2777778804,-0.5555555224,0.2777778804,-0.5555555224,
+                               -0.0251509957,-0.0251509957,1.9656401873,-0.0251509957,-0.0251509957,1.9656401873,
+                               -0.0251509957,-0.0251509957,1.9656401873,0.0000000000,0.0000000000,0.0000000000,
+                               0.0000000000,0.0000000000,0.0000000000,0.0000000000,0.0000000000,0.0000000000,
+                               0.0000000000,0.0000000000]).reshape(pred_size)
+            #np.random.normal(-10.0, 10.0, size = pred_size)
+            nn_input = list_2_swig_float_pointer(
+                                            prediction_data.flatten().tolist(),
+                                            prediction_data.size
+                                            )
+            input_data = prediction_data[0, :2]
             motor_inputs = list_2_swig_float_pointer(input_data.flatten().tolist(), 2)
             c_prediction = helpers.nn_prediction(2, 1, 3, 2, prediction_data.size,
                                                  3, 3, nn_input, motor_inputs)
-            c_output_prediction = np.reshape(swig_py_object_2_list(c_prediction.data, 2*3), (2, 3))
+            c_output_prediction = np.reshape(swig_py_object_2_list(c_prediction.data, 2 * 3), (2, 3))
             _, ydeq = first_load_deques(prediction_data[0, 2:2+3].tolist(), input_data.tolist(), 3, 3)
             python_prediction = python_nn_prediction(prediction_data, input_data, 2, 3, ydeq)
-            print(np.reshape(c_output_prediction, (2, 3)))
-            print(np.reshape(python_prediction, (2, 3)))
             np.testing.assert_allclose(np.reshape(c_output_prediction, (2, 3)),
                                        np.reshape(python_prediction, (2, 3)), rtol = 1e-5)
 

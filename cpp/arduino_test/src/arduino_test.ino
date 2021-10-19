@@ -75,7 +75,7 @@ void loop() {
     prediction = nn_prediction(controller.N, controller.Nc, controller.n, controller.m, 
                                NUM_SIGNAL + controller.nd*controller.m + controller.dd*controller.n, 
                                controller.nd, controller.dd, nn_input, controller.normalized_u);
-
+    print_matrix(prediction); 
     for (int i = 0; i < controller.n; i++) {
         current_position[i] = prediction.data[(controller.N - 1) + i * controller.n];
     }
