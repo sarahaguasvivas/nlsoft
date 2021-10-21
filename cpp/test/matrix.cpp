@@ -4,7 +4,10 @@ void set(struct Matrix2 & a, int rows, int cols)
 {
     a.rows = rows;
     a.cols = cols; 
-    if (a.rows > 0 && a.cols > 0) a.data = (float*)malloc(a.rows*a.cols*sizeof(float));
+    if (a.rows > 0 && a.cols > 0) {
+        a.data = (float*)malloc(a.rows*a.cols*sizeof(float));
+        for (int i = 0; i < a.rows*a.cols; i++) a.data[i] = 0.0;
+    }
 }
 
 void cleanup_helper (float ** pointer){
@@ -221,7 +224,6 @@ void ludcmp(struct Matrix2 a, int * indx, float *d)
         big=0.0;
         for (j=0;j<n;j++)
             if ((temp=fabs(a.data[i*a.cols + j])) > big) big=temp;
-        //if (big == 0.0) std::cout << "Singular matrix in routine LUDCMP" << std::endl;
         vv[i] = 1.0/big;
     }
  

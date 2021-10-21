@@ -19,7 +19,7 @@ void collect_signal(float * signal_to_read, float* calibration_vector,
   int index = recv_str.indexOf('<');
   unsigned int length_delete = (unsigned int)index - 1;
   recv_str.remove(index, length_delete);
-  recv_str.toCharArray(receivedCharsS, NUM_CHARS);
+  recv_str.toCharArray(receivedCharsS, numChars);
   ptr = strtok(receivedCharsS, "<,>");
   int i = 0; 
   while (ptr != NULL){

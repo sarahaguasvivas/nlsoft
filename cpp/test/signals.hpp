@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 #include <string>
-#include "Arduino.h"
+//#include "Arduino.h"
 
 #define NUM_CHANNELS 11
 #define RXD2_S 16

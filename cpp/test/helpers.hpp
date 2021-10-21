@@ -11,6 +11,7 @@ extern "C" {
 #include "nn4mc.hpp"
 #include "matrix.hpp"
 #include "controller.hpp"
+#include "math.h"
 
 #define PI 3.1415926535897932384626433832795
 

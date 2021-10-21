@@ -29,8 +29,9 @@ void loop() {
     ptr = strtok(NULL, ","); 
   }
   // TODO(sarahaguasvivas): Actually actuate motors
-  Serial.print(motor_commands[0]); Serial.print(",");
-  Serial.println(motor_commands[1]);
+  //Serial.print(motor_commands[0]); Serial.print(",");
+  //Serial.println(motor_commands[1]);
+  actuate_motors(motor_commands);
 }
 
 void receive_data() {

@@ -1,7 +1,7 @@
 import helpers
 import os, sys
 import unittest
-sys.path.append(os.path.join(os.environ['HOME'], 'github_repos', 'nlsoft'))
+sys.path.append(os.path.join(os.environ['HOME'], 'nlsoft'))
 from python.controller.recursive_model import *
 from python.controller.soloway_nr import *
 from python.utilities.util import *
@@ -10,7 +10,7 @@ import ctypes
 from typing import List, Final
 from collections import deque
 
-model_filename = str(os.environ["HOME"]) + "/github_repos/nlsoft/python/test/sys_id.hdf5"
+model_filename = str(os.environ["HOME"]) + "/nlsoft/python/test/sys_id.hdf5"
 NUM_TESTS = 1000
 NN_INPUT_SIZE = 26
 
@@ -62,19 +62,20 @@ def python_nn_prediction(nn_input, ydeq, N):
     nn_input = nn_input.copy()
     for k in range(N):
         flatten_ydeq = list(np.array(list(ydeq.copy())).flatten())
-
+        print(nn_input)
         predicted_states = NNP.predict(nn_input).flatten().copy()
         NNP.yn += [(NNP.C @ predicted_states).tolist()]
         ydeq = roll_deque(ydeq.copy(), predicted_states.tolist().copy())
         for i in range(3 * 3):
-            nn_input[0, i + 2 * 3] = flatten_ydeq[i]
+            nn_input[0][i + 2 * 3] = flatten_ydeq[i]
     return NNP.yn
 
 class TestUtilities(unittest.TestCase):
     def test_prediction(self):
         for _ in range(NUM_TESTS):
             pred_size = (1, 26)
-            N = np.random.randint(1, 5, size = 1)[0]
+            N = np.random.randint(1, 10, size = 1)[0]
+            print(N)
             prediction_data = np.random.normal(-10.0, 10.0, size = pred_size)
             nn_input = list_2_swig_float_pointer(
                                             prediction_data.flatten().tolist(),
@@ -93,8 +94,8 @@ class TestUtilities(unittest.TestCase):
             python_prediction = python_nn_prediction(prediction_data, ydeq, N)
             np.testing.assert_allclose(np.reshape(c_output_prediction, (N, 3)),
                                        np.reshape(python_prediction, (N, 3)),
-                                       atol = 5e-1, rtol = 5e-1)
-            print("test passed!, N: ", N)
+                                       atol = 1e-5, rtol = 1e-5)
+            print("test passed!")
     def test_deg2rad(self):
         for _ in range(NUM_TESTS):
             val = np.random.normal(-100, 50, size = 1)[0]
