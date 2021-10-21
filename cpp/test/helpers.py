@@ -111,9 +111,6 @@ def roll_window(arg1, arg2, arg3, arg4):
 def normalize_array(arg1, arg2, arg3, arg4):
     return _helpers.normalize_array(arg1, arg2, arg3, arg4)
 
-def nn_prediction(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9):
-    return _helpers.nn_prediction(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
-
 def build_input_vector(arg1, u, signal_, posish, ndm, ddn, m, n, arg9):
     return _helpers.build_input_vector(arg1, u, signal_, posish, ndm, ddn, m, n, arg9)
 
@@ -237,6 +234,9 @@ def cleanup_helper(arg1):
 
 def deg2rad(deg):
     return _helpers.deg2rad(deg)
+
+def nn_prediction(*args):
+    return _helpers.nn_prediction(*args)
 
 def lubksb(*args):
     return _helpers.lubksb(*args)

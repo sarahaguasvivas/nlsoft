@@ -3971,7 +3971,7 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_nn_prediction(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_nn_prediction__SWIG_0(PyObject *SWIGUNUSEDPARM(self), Py_ssize_t nobjs, PyObject **swig_obj) {
   PyObject *resultobj = 0;
   int arg1 ;
   int arg2 ;
@@ -4000,10 +4000,9 @@ SWIGINTERN PyObject *_wrap_nn_prediction(PyObject *SWIGUNUSEDPARM(self), PyObjec
   int res8 = 0 ;
   void *argp9 = 0 ;
   int res9 = 0 ;
-  PyObject *swig_obj[9] ;
   Matrix2 result;
   
-  if (!SWIG_Python_UnpackTuple(args, "nn_prediction", 9, 9, swig_obj)) SWIG_fail;
+  if ((nobjs < 9) || (nobjs > 9)) SWIG_fail;
   ecode1 = SWIG_AsVal_int(swig_obj[0], &val1);
   if (!SWIG_IsOK(ecode1)) {
     SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "nn_prediction" "', argument " "1"" of type '" "int""'");
@@ -6086,6 +6085,221 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_nn_prediction__SWIG_1(PyObject *SWIGUNUSEDPARM(self), Py_ssize_t nobjs, PyObject **swig_obj) {
+  PyObject *resultobj = 0;
+  int arg1 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  int arg5 ;
+  int arg6 ;
+  int arg7 ;
+  float *arg8 = (float *) 0 ;
+  float *arg9 = (float *) 0 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  int val6 ;
+  int ecode6 = 0 ;
+  int val7 ;
+  int ecode7 = 0 ;
+  void *argp8 = 0 ;
+  int res8 = 0 ;
+  void *argp9 = 0 ;
+  int res9 = 0 ;
+  Matrix2 result;
+  
+  if ((nobjs < 9) || (nobjs > 9)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(swig_obj[0], &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "nn_prediction" "', argument " "1"" of type '" "int""'");
+  } 
+  arg1 = static_cast< int >(val1);
+  ecode2 = SWIG_AsVal_int(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "nn_prediction" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(swig_obj[2], &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "nn_prediction" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(swig_obj[3], &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "nn_prediction" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  ecode5 = SWIG_AsVal_int(swig_obj[4], &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "nn_prediction" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = static_cast< int >(val5);
+  ecode6 = SWIG_AsVal_int(swig_obj[5], &val6);
+  if (!SWIG_IsOK(ecode6)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "nn_prediction" "', argument " "6"" of type '" "int""'");
+  } 
+  arg6 = static_cast< int >(val6);
+  ecode7 = SWIG_AsVal_int(swig_obj[6], &val7);
+  if (!SWIG_IsOK(ecode7)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode7), "in method '" "nn_prediction" "', argument " "7"" of type '" "int""'");
+  } 
+  arg7 = static_cast< int >(val7);
+  res8 = SWIG_ConvertPtr(swig_obj[7], &argp8,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res8)) {
+    SWIG_exception_fail(SWIG_ArgError(res8), "in method '" "nn_prediction" "', argument " "8"" of type '" "float *""'"); 
+  }
+  arg8 = reinterpret_cast< float * >(argp8);
+  res9 = SWIG_ConvertPtr(swig_obj[8], &argp9,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res9)) {
+    SWIG_exception_fail(SWIG_ArgError(res9), "in method '" "nn_prediction" "', argument " "9"" of type '" "float *""'"); 
+  }
+  arg9 = reinterpret_cast< float * >(argp9);
+  result = nn_prediction(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9);
+  resultobj = SWIG_NewPointerObj((new Matrix2(static_cast< const Matrix2& >(result))), SWIGTYPE_p_Matrix2, SWIG_POINTER_OWN |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_nn_prediction(PyObject *self, PyObject *args) {
+  Py_ssize_t argc;
+  PyObject *argv[10] = {
+    0
+  };
+  
+  if (!(argc = SWIG_Python_UnpackTuple(args, "nn_prediction", 0, 9, argv))) SWIG_fail;
+  --argc;
+  if (argc == 9) {
+    int _v;
+    {
+      int res = SWIG_AsVal_int(argv[0], NULL);
+      _v = SWIG_CheckState(res);
+    }
+    if (_v) {
+      {
+        int res = SWIG_AsVal_int(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        {
+          int res = SWIG_AsVal_int(argv[2], NULL);
+          _v = SWIG_CheckState(res);
+        }
+        if (_v) {
+          {
+            int res = SWIG_AsVal_int(argv[3], NULL);
+            _v = SWIG_CheckState(res);
+          }
+          if (_v) {
+            {
+              int res = SWIG_AsVal_int(argv[4], NULL);
+              _v = SWIG_CheckState(res);
+            }
+            if (_v) {
+              {
+                int res = SWIG_AsVal_int(argv[5], NULL);
+                _v = SWIG_CheckState(res);
+              }
+              if (_v) {
+                {
+                  int res = SWIG_AsVal_int(argv[6], NULL);
+                  _v = SWIG_CheckState(res);
+                }
+                if (_v) {
+                  void *vptr = 0;
+                  int res = SWIG_ConvertPtr(argv[7], &vptr, SWIGTYPE_p_float, 0);
+                  _v = SWIG_CheckState(res);
+                  if (_v) {
+                    void *vptr = 0;
+                    int res = SWIG_ConvertPtr(argv[8], &vptr, SWIGTYPE_p_float, 0);
+                    _v = SWIG_CheckState(res);
+                    if (_v) {
+                      return _wrap_nn_prediction__SWIG_0(self, argc, argv);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  if (argc == 9) {
+    int _v;
+    {
+      int res = SWIG_AsVal_int(argv[0], NULL);
+      _v = SWIG_CheckState(res);
+    }
+    if (_v) {
+      {
+        int res = SWIG_AsVal_int(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        {
+          int res = SWIG_AsVal_int(argv[2], NULL);
+          _v = SWIG_CheckState(res);
+        }
+        if (_v) {
+          {
+            int res = SWIG_AsVal_int(argv[3], NULL);
+            _v = SWIG_CheckState(res);
+          }
+          if (_v) {
+            {
+              int res = SWIG_AsVal_int(argv[4], NULL);
+              _v = SWIG_CheckState(res);
+            }
+            if (_v) {
+              {
+                int res = SWIG_AsVal_int(argv[5], NULL);
+                _v = SWIG_CheckState(res);
+              }
+              if (_v) {
+                {
+                  int res = SWIG_AsVal_int(argv[6], NULL);
+                  _v = SWIG_CheckState(res);
+                }
+                if (_v) {
+                  void *vptr = 0;
+                  int res = SWIG_ConvertPtr(argv[7], &vptr, SWIGTYPE_p_float, 0);
+                  _v = SWIG_CheckState(res);
+                  if (_v) {
+                    void *vptr = 0;
+                    int res = SWIG_ConvertPtr(argv[8], &vptr, SWIGTYPE_p_float, 0);
+                    _v = SWIG_CheckState(res);
+                    if (_v) {
+                      return _wrap_nn_prediction__SWIG_1(self, argc, argv);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+fail:
+  SWIG_Python_RaiseOrModifyTypeError("Wrong number or type of arguments for overloaded function 'nn_prediction'.\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    nn_prediction(int,int,int,int,int,int,int,float *,float *)\n"
+    "    nn_prediction(int,int,int const,int const,int,int const,int const,float *,float *)\n");
+  return 0;
+}
+
+
 SWIGINTERN PyObject *_wrap_lubksb__SWIG_1(PyObject *SWIGUNUSEDPARM(self), Py_ssize_t nobjs, PyObject **swig_obj) {
   PyObject *resultobj = 0;
   Matrix2 arg1 ;
@@ -6371,7 +6585,6 @@ static PyMethodDef SwigMethods[] = {
 	 { "nn_gradients", _wrap_nn_gradients, METH_VARARGS, NULL},
 	 { "roll_window", _wrap_roll_window, METH_VARARGS, NULL},
 	 { "normalize_array", _wrap_normalize_array, METH_VARARGS, NULL},
-	 { "nn_prediction", _wrap_nn_prediction, METH_VARARGS, NULL},
 	 { "build_input_vector", _wrap_build_input_vector, METH_VARARGS, NULL},
 	 { "partial_delta_u_partial_u", _wrap_partial_delta_u_partial_u, METH_VARARGS, NULL},
 	 { "kronecker_delta", _wrap_kronecker_delta, METH_VARARGS, NULL},
@@ -6429,6 +6642,7 @@ static PyMethodDef SwigMethods[] = {
 	 { "solve_matrix_eqn", _wrap_solve_matrix_eqn, METH_VARARGS, NULL},
 	 { "cleanup_helper", _wrap_cleanup_helper, METH_O, NULL},
 	 { "deg2rad", _wrap_deg2rad, METH_O, NULL},
+	 { "nn_prediction", _wrap_nn_prediction, METH_VARARGS, NULL},
 	 { "lubksb", _wrap_lubksb, METH_VARARGS, NULL},
 	 { "new_input", _wrap_new_input, METH_O, NULL},
 	 { "delete_input", _wrap_delete_input, METH_O, NULL},

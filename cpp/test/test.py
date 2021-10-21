@@ -8,6 +8,7 @@ from python.utilities.util import *
 import numpy as np
 import ctypes
 from typing import List, Final
+from collections import deque
 
 model_filename = str(os.environ["HOME"]) + "/github_repos/nlsoft/python/test/sys_id.hdf5"
 NUM_TESTS = 1000
@@ -56,26 +57,24 @@ NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       u0 = [np.deg2rad(-70.), np.deg2rad(-50.)],
                                       step_size = 5e-2)
 
-def python_nn_prediction(nn_input, u, N, n, ydeq):
+def python_nn_prediction(nn_input, ydeq, N):
     NNP.yn = []
-    for k in range(NNP.K):
-        predicted_states = NNP.predict(nn_input).flatten()
+    nn_input = nn_input.copy()
+    for k in range(N):
+        flatten_ydeq = list(np.array(list(ydeq.copy())).flatten())
+
+        predicted_states = NNP.predict(nn_input).flatten().copy()
         NNP.yn += [(NNP.C @ predicted_states).tolist()]
-        ydeq = roll_deque(ydeq, predicted_states.tolist())
-        flatten_ydeq = np.array(list(ydeq)).flatten().tolist()
-        for i in range(3*3):
-            nn_input[0, i+2] = flatten_ydeq[i]
+        ydeq = roll_deque(ydeq.copy(), predicted_states.tolist().copy())
+        for i in range(3 * 3):
+            nn_input[0, i + 2 * 3] = flatten_ydeq[i]
     return NNP.yn
 
 class TestUtilities(unittest.TestCase):
     def test_prediction(self):
         for _ in range(NUM_TESTS):
             pred_size = (1, 26)
-            #prediction_data = np.array([0.2777778804,-0.5555555224,0.2777778804,-0.5555555224,0.2777778804,-0.5555555224,
-            #                   -0.0251509957,-0.0251509957,1.9656401873,-0.0251509957,-0.0251509957,1.9656401873,
-            #                   -0.0251509957,-0.0251509957,1.9656401873,0.0000000000,0.0000000000,0.0000000000,
-            #                   0.0000000000,0.0000000000,0.0000000000,0.0000000000,0.0000000000,0.0000000000,
-            #                   0.0000000000,0.0000000000]).reshape(pred_size)
+            N = np.random.randint(1, 5, size = 1)[0]
             prediction_data = np.random.normal(-10.0, 10.0, size = pred_size)
             nn_input = list_2_swig_float_pointer(
                                             prediction_data.flatten().tolist(),
@@ -83,15 +82,23 @@ class TestUtilities(unittest.TestCase):
                                             )
             input_data = prediction_data[0, :2]
             motor_inputs = list_2_swig_float_pointer(input_data.flatten().tolist(), 2)
-            helpers.setup_nn_utils();
-            c_prediction = helpers.nn_prediction(2, 1, 3, 2, prediction_data.size,
+            helpers.setup_nn_utils()
+            c_prediction = helpers.nn_prediction(int(N), 1, 3, 2, prediction_data.size,
                                                  3, 3, nn_input, motor_inputs)
-            print(c_prediction.rows, c_prediction.cols, c_prediction.tiny, c_prediction.data)
-            c_output_prediction = np.reshape(swig_py_object_2_list(c_prediction.data, 2 * 3), (2, 3))
-            _, ydeq = first_load_deques(prediction_data[0, 2:2+3].tolist(), input_data.tolist(), 3, 3)
-            python_prediction = python_nn_prediction(prediction_data, input_data, 2, 3, ydeq)
-            np.testing.assert_allclose(np.reshape(c_output_prediction, (2, 3)),
-                                       np.reshape(python_prediction, (2, 3)), rtol = 1e-5)
+            c_output_prediction = np.reshape(swig_py_object_2_list(c_prediction.data, N * 3), (N, 3))
+            y_deq = prediction_data[0, 2*3:2*3 + 3*3]
+            ydeq = deque([])
+            for i in range(3):
+                ydeq.append(y_deq[i:i+3])
+            python_prediction = python_nn_prediction(prediction_data, ydeq, N)
+            np.testing.assert_allclose(np.reshape(c_output_prediction, (N, 3)),
+                                       np.reshape(python_prediction, (N, 3)),
+                                       atol = 5e-1, rtol = 5e-1)
+            print("test passed!, N: ", N)
+    def test_deg2rad(self):
+        for _ in range(NUM_TESTS):
+            val = np.random.normal(-100, 50, size = 1)[0]
+            np.testing.assert_allclose(helpers.deg2rad(val), np.deg2rad(val), rtol = 1e-5)
 
 if __name__ == '__main__':
     unittest.main()

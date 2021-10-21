@@ -58,11 +58,11 @@ void build_input_vector(
 Matrix2 nn_prediction(
               int N, 
               int Nc, 
-              int n, 
-              int m, 
+              const int n,
+              const int m,
               int input_size, 
-              int nd, 
-              int dd, 
+              const int nd,
+              const int dd,
               float * previous_input, 
               float * u
 ){
@@ -70,20 +70,25 @@ Matrix2 nn_prediction(
     set(y_output, N, n);
     int num_signal = input_size - nd*m - dd*n;
     float * signals = (float*)malloc(num_signal*sizeof(float));
-    for (int i = 0; i < num_signal; i++) signals[i] = previous_input[nd*m+dd*n + i];
+    for (int i = 0; i < num_signal; i++) {
+        signals[i] = previous_input[nd*m+dd*n + i];
+    }
     float motor_input[m*nd];
     for (int i = 0; i < N; i++)
     {
         float * input_next = (float*)malloc(input_size*sizeof(float));        
-        for (int j = 0; j < input_size; j++) input_next[j] = previous_input[j];
+        for (int j = 0; j < input_size; j++) {
+            input_next[j] = previous_input[j];
+        }
         float * output_next;
+
         output_next = fwdNN(input_next);
         
         int input_index = (i < Nc) ? i : (Nc-1);
         
         for (int k = 0; k < m; k++)
         {
-           motor_input[k] = u[input_index*m + k];
+           motor_input[k] = u[input_index * m + k];
         } 
         build_input_vector(previous_input, motor_input, signals, 
                                       output_next, nd*m, dd*n, 
@@ -92,14 +97,13 @@ Matrix2 nn_prediction(
         {
             y_output.data[i * n + j] = output_next[j];
         }
-        //free(output_next);
+        free(output_next);
     }
-    //free(signals);
+    free(signals);
     return y_output;
 }
 
-
-void nn_gradients(Matrix2 * first_derivative, Matrix2 * second_derivative, 
+void nn_gradients(Matrix2 * first_derivative, Matrix2 * second_derivative,
                       int n, int m, int nd, int input_size, float * input, float epsilon)
 {
     int size_first = first_derivative->rows * first_derivative->cols;
