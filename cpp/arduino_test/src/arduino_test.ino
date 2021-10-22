@@ -56,7 +56,6 @@ void loop() {
       nn_input[i] = controller.past_nn_input[i];
     }
     collect_signal(&signal_[0], &controller.signal_calibration[0], NUM_SIGNAL);
-    //print_array(signal_, NUM_SIGNAL);
     delay(4); 
     
     if (timestamp > 0){
@@ -75,7 +74,6 @@ void loop() {
     prediction = nn_prediction(controller.N, controller.Nc, controller.n, controller.m, 
                                NUM_SIGNAL + controller.nd*controller.m + controller.dd*controller.n, 
                                controller.nd, controller.dd, nn_input, controller.normalized_u);
-
     for (int i = 0; i < controller.n; i++) {
         current_position[i] = prediction.data[(controller.N - 1) + i * controller.n];
     }
@@ -88,6 +86,7 @@ void loop() {
 
     spin_figure_eight_target(timestamp, 0, controller.N, 
                               controller.n, &target, controller.neutral_point);
+
     del_y = subtract(target, prediction);
     for (int i = 0; i < controller.N*controller.n; i++){
        controller.y[i] = prediction.data[i];
@@ -124,7 +123,7 @@ void loop() {
       controller.u[i] = u_matrix.data[i];
       controller.del_u[i] = del_u_matrix.data[i];
     }
-    
+    print_array(u_matrix.data, 2); 
     step_motor(u_matrix.data, controller.m);
 
     release(hessian);

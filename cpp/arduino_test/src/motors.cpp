@@ -30,5 +30,5 @@ void step_motor(float * u, const int m)
   }
   char to_send[32];
   sprintf(to_send, "<%d,%d>\n", buffer[0], buffer[1]);
-  Serial.print(to_send);
+  //Serial.print(to_send);
 }
