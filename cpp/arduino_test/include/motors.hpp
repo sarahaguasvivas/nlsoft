@@ -10,8 +10,8 @@
 #include <stdlib.h>
 #include <Arduino.h>
 
-#define OLD_MIN -1.74532925
-#define OLD_MAX 0.872665
+#define OLD_MIN -1.75
+#define OLD_MAX 0.83
 #define NEW_MIN 0
 #define NEW_MAX 600
 
@@ -22,7 +22,7 @@ void setup_motor();
 
 void step_motor(float *, int);
 
-uint8_t convert_mapped_values(float);
+uint16_t convert_mapped_values(float);
 
 
 #endif

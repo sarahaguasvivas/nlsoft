@@ -55,8 +55,8 @@ void loop() {
     for (int i = 0; i < controller.input_size; i++) {
       nn_input[i] = controller.past_nn_input[i];
     }
+    delay(4);
     collect_signal(&signal_[0], &controller.signal_calibration[0], NUM_SIGNAL);
-    delay(4); 
     
     if (timestamp > 0){
       build_input_vector(nn_input, controller.normalized_u, signal_, current_position, 
@@ -83,14 +83,15 @@ void loop() {
     nn_gradients(&ynu, &dynu_du, controller.n, controller.m, 
                               controller.nd, controller.input_size, 
                               nn_input, controller.epsilon);
-
+    
     spin_figure_eight_target(timestamp, 0, controller.N, 
                               controller.n, &target, controller.neutral_point);
-
     del_y = subtract(target, prediction);
+    
     for (int i = 0; i < controller.N*controller.n; i++){
        controller.y[i] = prediction.data[i];
     }
+
     release(prediction);
     release(target);
     
@@ -114,17 +115,19 @@ void loop() {
     set(u_matrix, del_u_matrix.rows, del_u_matrix.cols);
     for (int i = 0; i < controller.Nc*controller.m; i++) { 
       u_matrix.data[i] = controller.prev_u[i] - del_u_matrix.data[i];
+      if (isnan(u_matrix.data[i])){
+        u_matrix.data[i] = -1.308;
+      }
     }
-
     clip_action(u_matrix, &controller);
-
+    
     for (int i = 0; i < controller.Nc*controller.m; i++) { 
       controller.prev_u[i] = controller.u[i];
       controller.u[i] = u_matrix.data[i];
       controller.del_u[i] = del_u_matrix.data[i];
     }
-    print_array(u_matrix.data, 2); 
-    step_motor(u_matrix.data, controller.m);
+    
+    step_motor(&u_matrix.data[0], controller.m);
 
     release(hessian);
     release(jacobian);

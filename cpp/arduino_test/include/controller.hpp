@@ -4,14 +4,14 @@
 
 struct Controller{
   float epsilon = 5e-2;
-  float signal_calibration[11] = {613., 134., 104., 200., 600., 146., 183., 600., 2., 7., 100.};
-  int m = 2, n = 3, nd = 3, dd = 3, N = 5, Nc = 1;
+  float signal_calibration[11] = {613., 134., 104., 200., 600., 146., 183., 600., 2., 600., 100.};
+  int m = 2, n = 3, nd = 3, dd = 3, N = 1, Nc = 1;
   float s = 1e-20, b = 1e-5, r = 4e3;
   int input_size = 26;
   float neutral_point[3] = {-0.06709795916817293, -0.047865542156502586, -0.016102764150255758};
   float q_matrix[3] = {1e-3, 1e3, 1e3};
   float lambda_matrix[2] = {1., 1.};
-  float min_max_input_saturation[2] = {-1.74532925, 0.872665};
+  float min_max_input_saturation[2] = {-1.75, 0.83};
   float u[2*1] = {-1.22173048, -0.872664626};
   float normalized_u[2*1] = {-1.22173048/PI, -0.872664626/PI};
   float prev_u[2*1] = {-1.22173048, -0.872664626};

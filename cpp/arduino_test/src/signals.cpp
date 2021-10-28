@@ -1,6 +1,6 @@
 #include "signals.hpp"
 
-const byte numChars = NUM_CHARS;
+const byte numChars = NUM_CHARS + 1;
 char receivedCharsS[numChars];
 boolean newDataS = false;
 int signals[NUM_CHANNELS];
@@ -27,8 +27,14 @@ void collect_signal(float * signal_to_read, float* calibration_vector,
     ptr = strtok(NULL, ","); 
   }
   for (int i = 0; i < NUM_CHANNELS; i++){
-      signal_to_read[i] = (float)signals[i] / 
-                            calibration_vector[i]; // TODO(sarahaguasvivas): normalize by calibration
+      int sig_read = signals[i];
+      if (sig_read > 600){
+          sig_read = 0.0;
+      }  
+      signal_to_read[i] = (float)sig_read / 
+                                    calibration_vector[i]; // TODO(sarahaguasvivas): 
+                                                           //       normalize by calibration
+      
   }
 }
 
@@ -37,9 +43,8 @@ void receive_data() {
     static byte ndx = 0;
     char startMarker = '<';
     char endMarker = '>';
-    delay(2);
     char rc;
-        while (Serial2.available() > 0 && newDataS == false) {
+    while (Serial2.available() > 0 && newDataS == false) {
         rc = Serial2.read();
 
         if (recvInProgress == true) {
