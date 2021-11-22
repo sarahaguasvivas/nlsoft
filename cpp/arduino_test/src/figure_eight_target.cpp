@@ -5,7 +5,7 @@
 void spin_figure_eight_target(int timestep, int n1, int n2, int dims, Matrix2 * target, float * center)
 {
   float wavelength = 150.;
-  float a = 25./1000.;
+  float a = 20./1000.;
   float b = 25./1000.;
   int n = target->cols;
   
@@ -23,13 +23,13 @@ void spin_figure_eight_target(int timestep, int n1, int n2, int dims, Matrix2 * 
   
   for (int i = n1; i < n2; i++)
   {
-    temp.data[i*n + 0] = 0.002*sin((timestep+i) / 
-                                    wavelength) * sin((timestep + i) / 
-                                    wavelength);
+    temp.data[i*n + 0] = 0.0; //0.002*sin((timestep+i) / 
+                              //           wavelength) * sin((timestep + i) / 
+                              //           wavelength);
     temp.data[i*n + 1] = b * sin((timestep + i) /
                                     wavelength + PI) * cos((timestep + i)/
                                     wavelength + PI); 
-    temp.data[i*n + 2] =  a * sin((timestep + i) / wavelength + PI);
+    temp.data[i*n + 2] =  a * sin((timestep + i) / wavelength + PI) + 0./1000.;
   }
   
   //Matrix2 temp1;

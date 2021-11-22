@@ -33,21 +33,22 @@ void setup_dynamixels(int m)
 }
 
 void actuate_motors(int * u){
-
+  
   for (int i=0 ; i< n_motors; i++){
         goal_position[i] = u[i];
         
         packetHandler->read1ByteTxRx(portHandler, dynamixel_ids[i], MOVING, (uint8_t*)&isMoving, &dxl_error);
     
-        if(isMoving == 0 ){ 
+       // if(isMoving == 0 ){ 
+           
             dxl_comm_result[i] = packetHandler->write2ByteTxRx(portHandler, dynamixel_ids[i], ADDR_AX_GOAL_POSITION, goal_position[i], &dxl_error);
      
         if(goal_position[i] == DXL_MAXIMUM_POSITION_VALUE)
           goal_position[i] = 0;
         else
           goal_position[i] = DXL_MAXIMUM_POSITION_VALUE;
-      }
-    
+      //}
+     
       packetHandler->read2ByteTxRx(portHandler, dynamixel_ids[i], ADDR_AX_PRESENT_POSITION, (uint16_t*)&dxl_present_position[i], &dxl_error);
   } 
 }

@@ -7,17 +7,18 @@
 #define NUM_SIGNAL  11
 
 unsigned long timestamp;
-float current_position[3] = {-0.06709795916817293, -0.047865542156502586, -0.016102764150255758};
+float current_position[3] = {-0.06709795916817293, 
+                            -0.047865542156502586, 
+                            -0.016102764150255758};
 //unsigned long elapsed;
 
 Controller controller; // controller struct instantiation
 
 void setup() {
-  setup_motor();
   setup_signal_collector();
   setup_nn_utils();
   timestamp = 0;
-  Serial.begin(115200);
+  Serial.begin(2000000);
 }
 
 void loop() {
@@ -39,7 +40,8 @@ void loop() {
     set_to_zero(Lambda);
     
     for (int i = 0; i < controller.n; i++) Q.data[i*controller.n+i] = controller.q_matrix[i];
-    for (int i = 0; i < controller.m; i++) Lambda.data[i*controller.m + i] = controller.lambda_matrix[i];
+    for (int i = 0; i < controller.m; i++) Lambda.data[i*controller.m + i] = controller
+                                                                            .lambda_matrix[i];
     
     set(target, controller.N, controller.n);
     float * nn_input = (float*)malloc((controller.input_size)*sizeof(float));
@@ -55,7 +57,7 @@ void loop() {
     for (int i = 0; i < controller.input_size; i++) {
       nn_input[i] = controller.past_nn_input[i];
     }
-    delay(4);
+    delay(1); // 3
     collect_signal(&signal_[0], &controller.signal_calibration[0], NUM_SIGNAL);
     
     if (timestamp > 0){

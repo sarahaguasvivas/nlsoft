@@ -1,11 +1,10 @@
 #include "motors.hpp"
 
 /* 
- *  This module is responsible of sending the motor commands through SPI to the OpenCM board
+ * This module is responsible for actutating the motors. 
+ *     For the sleeve setup it does so by sending
+ *     actuation data through Serial to the OpenCM 9.04 board 
  */
-void setup_motor(){
-  //Serial2.begin(115200, SERIAL_8N1, RXD2, TXD2);
-}
 
 uint16_t convert_mapped_values(float angle)
 {

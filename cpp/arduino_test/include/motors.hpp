@@ -1,7 +1,7 @@
-
-
 /* 
- *  This module is responsible of sending the motor commands through SPI to the OpenCM board
+ * This module is responsible for actutating the motors. 
+ *     For the sleeve setup it does so by sending
+ *     actuation data through Serial to the OpenCM 9.04 board 
  */
 
 #ifndef __MOTORS_H__
@@ -18,11 +18,8 @@
 #define RXD2 3
 #define TXD2 1
 
-void setup_motor();
-
 void step_motor(float *, int);
 
 uint16_t convert_mapped_values(float);
-
 
 #endif
