@@ -55,7 +55,7 @@ float* single_prediction(float* input){
     // This function was made for debugging
     // purposes only
     float * output = fwdNN(input);
-    return output;
+    return &output[0];
 }
 
 Matrix2 nn_prediction(
