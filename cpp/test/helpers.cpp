@@ -46,11 +46,16 @@ void build_input_vector(
                     int num_sig
 ){
    int input_size = ndm + ddn + num_sig;
-   //roll_window(0, ndm, m, vector);
-   //for (int i = 0; i < m; i++) vector[i] = u[i];
    roll_window(ndm, ndm + ddn, n, vector);
    for (int i = 0; i < n; i++) vector[i + ndm] = posish[i];
-   for (int i = ndm + ddn; i < input_size; i++) vector[i] = signal_[i - (ndm + ddn)];
+   for (int i = 0; i < num_sig; i++) vector[i + ndm + ddn] = signal_[i];
+}
+
+float* single_prediction(float* input){
+    // This function was made for debugging
+    // purposes only
+    float * output = fwdNN(input);
+    return output;
 }
 
 Matrix2 nn_prediction(
@@ -66,37 +71,37 @@ Matrix2 nn_prediction(
 ){
     Matrix2 y_output;
     set(y_output, N, n);
-    //int num_signal = input_size - nd*m - dd*n;
-    //float * signals = (float*)malloc(num_signal*sizeof(float));
-    //for (int i = 0; i < num_signal; i++) {
-    //    signals[i] = previous_input[nd*m+dd*n + i];
-    //}
-    //const int mnd = m*nd;
-    //float motor_input[mnd];
-    //for (int i = 0; i < N; i++)
-    //{
-    //    float * input_next = (float*)malloc(input_size*sizeof(float));
-    //    for (int j = 0; j < input_size; j++) {
-    //        input_next[j] = previous_input[j];
-    //    }
-    //    float * output_next;
+    int num_signal = input_size - nd*m - dd*n;
+    float * signals = (float*)malloc(num_signal*sizeof(float));
+    for (int i = 0; i < num_signal; i++) {
+        signals[i] = previous_input[nd*m+dd*n + i];
+    }
+    const int mnd = m*nd;
+    float motor_input[mnd];
+    for (int i = 0; i < N; i++)
+    {
+        float * input_next = (float*)malloc(input_size*sizeof(float));
+        for (int j = 0; j < input_size; j++) {
+            input_next[j] = previous_input[j];
+        }
+        float * output_next;
 
-    //    output_next = fwdNN(input_next);
+        output_next = fwdNN(input_next);
 
-    //    for (int j = 0; j < n; j++)
-    //    {
-    //        y_output.data[i * n + j] = output_next[j];
-    //    }
-    //    int input_index = (i < Nc) ? i : (Nc-1);
-    //    for (int k = 0; k < m; k++)
-    //    {
-    //       motor_input[k] = u[input_index * m + k];
-    //    }
-    //    build_input_vector(previous_input, motor_input, signals,
-    //                                  output_next, nd*m, dd*n,
-    //                                  m, n, num_signal);
-    //    free(output_next);
-    //}
+        for (int j = 0; j < n; j++)
+        {
+            y_output.data[i * n + j] = output_next[j];
+        }
+        //int input_index = (i < Nc) ? i : (Nc-1);
+        //for (int k = 0; k < m; k++)
+        //{
+        //   motor_input[k] = u[input_index * m + k];
+        //}
+        build_input_vector(previous_input, motor_input, signals,
+                                      output_next, nd*m, dd*n,
+                                      m, n, num_signal);
+        //free(output_next);
+    }
     //free(signals);
     return y_output;
 }

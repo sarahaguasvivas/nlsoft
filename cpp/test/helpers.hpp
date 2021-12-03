@@ -17,15 +17,19 @@ extern "C" {
 
 void setup_nn_utils();
 
+float* single_prediction(float*);
+
 void nn_gradients(Matrix2 *, Matrix2 *, int, int, int, int, float *, float);
 
 void roll_window(int, int, int, float *);
 
 void normalize_array(float*, float*, int, float);
 
-Matrix2 nn_prediction(int, int, int, int, int, int, int, float*, float*);
+Matrix2 nn_prediction(int, int, int, int, int,
+                            int, int, float*, float*);
 
-void build_input_vector(float *, float * u, float * signal_, float * posish, int ndm, int ddn, int m, int n, int);
+void build_input_vector(float *, float * u, float * signal_,
+                            float * posish, int ndm, int ddn, int m, int n, int);
 
 float partial_delta_u_partial_u(int, int);
 float kronecker_delta(int, int);

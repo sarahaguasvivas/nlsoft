@@ -6,7 +6,7 @@
 void setup_motor(){
 }
 
-void step_motor(float * u, const int m)
+void step_motor_hasel(float * u, const int m)
 {
   /*
    * Code to move the HASELs 

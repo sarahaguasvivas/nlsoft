@@ -146,6 +146,10 @@ def setup_nn_utils():
     return _helpers.setup_nn_utils()
 setup_nn_utils = _helpers.setup_nn_utils
 
+def single_prediction(arg1):
+    return _helpers.single_prediction(arg1)
+single_prediction = _helpers.single_prediction
+
 def nn_gradients(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
     return _helpers.nn_gradients(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
 nn_gradients = _helpers.nn_gradients

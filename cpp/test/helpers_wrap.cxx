@@ -4089,6 +4089,28 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_single_prediction(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  float *arg1 = (float *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  float *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:single_prediction",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_float, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "single_prediction" "', argument " "1"" of type '" "float *""'"); 
+  }
+  arg1 = reinterpret_cast< float * >(argp1);
+  result = (float *)single_prediction(arg1);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_float, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_nn_gradients(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   Matrix2 *arg1 = (Matrix2 *) 0 ;
@@ -6940,6 +6962,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"softmax", _wrap_softmax, METH_VARARGS, NULL},
 	 { (char *)"PI_swigconstant", PI_swigconstant, METH_VARARGS, NULL},
 	 { (char *)"setup_nn_utils", _wrap_setup_nn_utils, METH_VARARGS, NULL},
+	 { (char *)"single_prediction", _wrap_single_prediction, METH_VARARGS, NULL},
 	 { (char *)"nn_gradients", _wrap_nn_gradients, METH_VARARGS, NULL},
 	 { (char *)"roll_window", _wrap_roll_window, METH_VARARGS, NULL},
 	 { (char *)"normalize_array", _wrap_normalize_array, METH_VARARGS, NULL},

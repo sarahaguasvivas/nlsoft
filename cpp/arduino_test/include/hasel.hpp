@@ -1,5 +1,7 @@
 /* 
- *  This module is responsible of sending the motor commands through SPI to the OpenCM board
+ *  This module is responsible for moving the HASELS based on what a controller
+ *   (outside of this module) solves for the inputs
+
  */
 
 #ifndef __HASEL_H__
@@ -16,6 +18,6 @@ All definitions, preprocessor directives, library imports
 
 void setup_motor();
 
-void step_motor(float *, int);
+void step_motor_hasel(float *, int);
 
 #endif

@@ -9,6 +9,7 @@ import numpy as np
 import ctypes
 from typing import List, Final
 from collections import deque
+import matplotlib.pyplot as plt
 
 model_filename = str(os.environ["HOME"]) + "/nlsoft/python/test/sys_id.hdf5"
 NUM_TESTS = 1000
@@ -61,21 +62,27 @@ def python_nn_prediction(nn_input, ydeq, N):
     NNP.yn = []
     nn_input = nn_input.copy()
     for k in range(N):
-        flatten_ydeq = list(np.array(list(ydeq.copy())).flatten())
-        print(nn_input)
-        predicted_states = NNP.predict(nn_input).flatten().copy()
+        nn_input_1 = list_2_swig_float_pointer(
+            nn_input.flatten().tolist(),
+            26
+        )
+        print(nn_input_1)
+        predicted_states = helpers.single_prediction(nn_input_1)
+        print(dir(predicted_states))
+        predicted_states = np.reshape(swig_py_object_2_list(predicted_states.data,(1, 3)), (1, 3))
         NNP.yn += [(NNP.C @ predicted_states).tolist()]
         ydeq = roll_deque(ydeq.copy(), predicted_states.tolist().copy())
-        for i in range(3 * 3):
-            nn_input[0][i + 2 * 3] = flatten_ydeq[i]
+        new_ydeq = np.array(ydeq).flatten().tolist()
+        for i in range(9):
+            nn_input[0, 2*3 + i] = new_ydeq[i]
     return NNP.yn
 
 class TestUtilities(unittest.TestCase):
     def test_prediction(self):
         for _ in range(NUM_TESTS):
             pred_size = (1, 26)
-            N = np.random.randint(1, 10, size = 1)[0]
-            print(N)
+            N = 2 #np.random.randint(1, 10, size = 1)[0]
+            NNP.K = N
             prediction_data = np.random.normal(-10.0, 10.0, size = pred_size)
             nn_input = list_2_swig_float_pointer(
                                             prediction_data.flatten().tolist(),
@@ -90,8 +97,12 @@ class TestUtilities(unittest.TestCase):
             y_deq = prediction_data[0, 2*3:2*3 + 3*3]
             ydeq = deque([])
             for i in range(3):
-                ydeq.append(y_deq[i:i+3])
+                ydeq.append(y_deq[i:i+3].tolist())
             python_prediction = python_nn_prediction(prediction_data, ydeq, N)
+            plt.figure()
+            plt.plot(np.reshape(python_prediction, (N, 3)))
+            plt.plot(np.reshape(c_output_prediction, (N, 3)), linestyle = '--')
+            plt.savefig("test.png")
             np.testing.assert_allclose(np.reshape(c_output_prediction, (N, 3)),
                                        np.reshape(python_prediction, (N, 3)),
                                        atol = 1e-5, rtol = 1e-5)
