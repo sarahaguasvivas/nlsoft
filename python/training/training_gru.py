@@ -36,13 +36,9 @@ def prepare_data_file_vani(signals, position, inputs, nd=3, dd=3):
     signals = signals.astype(np.float32)
     position = position.astype(np.float32)
     position = position - position[0, :]
-    max_signals = np.max(signals, axis=0)
-
-    # Normalizing signal
-    for i in range(len(max_signals)):
-        if np.isclose(max_signals[i], 0.):
-            max_signals[i] = 1
-        signals[:, i] /= max_signals[i]
+    max_signals = np.clip(np.max(signals, axis=0), 1, np.inf)
+    signals = signals / max_signals - 0.5
+    inputs = inputs / np.max(inputs, axis = 0) - 0.5
 
     N = max(nd, dd)  # data sample where we will start first
 
@@ -105,7 +101,7 @@ def gru_training(data):
     X, y = create_data_labels(data)
     for i in range(len(X)):
         print(X[i].shape)
-        model.fit(X[i].reshape(X[i].shape[0], 1, -1), y[i], epochs = 50, batch_size = 500)
+        model.fit(X[i].reshape(X[i].shape[0], 1, -1), y[i], epochs = 50, batch_size = 1000)
     model.save('forward_kinematics_jan_10_2022.hdf5')
 
 
