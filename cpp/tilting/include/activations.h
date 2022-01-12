@@ -1,3 +1,4 @@
+
 /********************
     activations.h
     Code generated using nn4mc.
@@ -32,3 +33,4 @@ float* hyper_tan(float *, int);
 float* softmax(float *, int );
 
 #endif
+

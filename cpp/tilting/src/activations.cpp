@@ -1,7 +1,11 @@
+
 /********************
     activations.cpp
+
     Code generated using nn4mc.
+
     This file implements all activation functions.
+
 */
 
 #include "activations.h"
@@ -40,7 +44,7 @@ float * softplus(float * input, int m)
   return input;
 }
 
-float* softsign(float *input, int m)
+float * softsign(float * input, int m)
 {
    for (int i = m-1; i>=0; i--){
         input[i] = input[i] / (abs(input[i]) + 1);
@@ -64,7 +68,7 @@ float * hard_sigmoid(float * input, int m)
 
 float exponential(float input)
 {
-// not an activation function
+  // not an activation function
   input = (float)expf((float)input);
   return input;
 }
@@ -77,7 +81,7 @@ float * relu(float * input, int m)
   return input;
 }
 
-float * elu(float * input, int m, float a)
+float * elu(float * input, int m, int a)
 {
   for (int i = m - 1; i>=0; i--){
         if (input[i] < 0)
@@ -110,8 +114,7 @@ float * exp_activation(float * input, int m)
   return input;
 }
 
-
-float * hyper_tan(float* input, int m)
+float * hyper_tan(float * input, int m)
 {
   for (int i = m - 1; i>= 0; i--){
         input[i] = tanh(input[i]);
@@ -150,7 +153,7 @@ float * softmax(float * input, int m)
   return input;
 }
 
-float* activate(float * input, int output_shape, char type)
+float* activate(float* input, int output_shape, char type)
 {
   if (type == 0x00)
     return softmax(input, output_shape);
@@ -184,3 +187,4 @@ float* activate(float * input, int output_shape, char type)
 
   return input;
 }
+

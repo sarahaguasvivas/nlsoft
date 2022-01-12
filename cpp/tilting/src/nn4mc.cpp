@@ -8,27 +8,41 @@
 
 */
 
-#include "nn4mc.hpp"
-#include "dense.hpp"
+#ifdef __cplusplus
+extern "C" {
 
-struct Dense dense_19;
-struct Dense dense_20;
+#include "nn4mc.h"
+#include <stdlib.h>
 
+// FIXME: Undefined references 
 void buildLayers(){
-
-   
-        dense_19 = build_layer_dense(&dense_19_W[0], dense_19_b, 26, 8, 0x06);
-
-        dense_20 = build_layer_dense(&dense_20_W[0], dense_20_b, 8, 3, 0x07);
- 
+//
+//    
+//gru = build_layer_gru(
+//                          &dense_W[0],
+//                          &gru_Wrec[0],
+//                          &dense_b[0],
+//                          '8',
+//                          '7',
+//                          1,
+//                          68,
+//                          1
+//);
+//
+//        dense = build_layer_dense(&dense_W[0], dense_b, 1, 3, '6');
+//
+//
 }
-
-
+//
+//
 float * fwdNN(float* data)
 {
-
-        data = fwd_dense(dense_19, data);
-
-        data = fwd_dense(dense_20, data);
+//
+//    
+//data =  fwd_gru(gru, data);
+//data = fwd_dense(dense, data);
     return data;
 }
+
+}
+#endif

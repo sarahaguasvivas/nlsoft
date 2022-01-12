@@ -9,14 +9,12 @@
 
 #include <stdlib.h>
 #include <Arduino.h>
+#include "SRTxMCU.h"
 
-#define OLD_MIN -1.75
-#define OLD_MAX 0.83
+#define OLD_MIN -1
+#define OLD_MAX 1
 #define NEW_MIN 0
-#define NEW_MAX 600
-
-#define RXD2 3
-#define TXD2 1
+#define NEW_MAX UINT16_MAX
 
 void step_motor(float *, int);
 

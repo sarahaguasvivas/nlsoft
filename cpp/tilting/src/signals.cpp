@@ -1,76 +1,26 @@
 #include "signals.hpp"
 
-const byte numChars = NUM_CHARS + 1;
-char receivedCharsS[numChars];
-boolean newDataS = false;
+SensorChannel chnl_7(7, 2, 30);
+SensorChannel chnl_8(8, 3, 29);
+SensorChannel chnl_9(9, 4, 28);
+SensorChannel chnl_10(10, 5, 27);
+SensorChannel chnl_11(11, 6, 26);
+SensorChannel chnl_12(12, 7, 25);
+
 int signals[NUM_CHANNELS];
 
 void setup_signal_collector(){
-  Serial2.begin(2000000);
+    chnl_7.begin();
+    chnl_8.begin();
+    chnl_9.begin();
+    chnl_10.begin();
+    chnl_11.begin();
+    chnl_12.begin();
 }
 
 void collect_signal(float * signal_to_read, float* calibration_vector, 
                                             int signal_size)
 {
-  receive_data();
-  toggle_data_flag();
-  String recv_str = String(receivedCharsS);
-  char *ptr = NULL;
-  int index = recv_str.indexOf('<');
-  unsigned int length_delete = (unsigned int)index - 1;
-  recv_str.remove(index, length_delete);
-  recv_str.toCharArray(receivedCharsS, numChars);
-  ptr = strtok(receivedCharsS, "<,>");
-  int i = 0; 
-  while (ptr != NULL){
-    signals[i++] = (int)atoi(ptr);
-    ptr = strtok(NULL, ","); 
-  }
-  for (int i = 0; i < NUM_CHANNELS; i++){
-      int sig_read = signals[i];
-      if (sig_read > 600){
-          sig_read = 0.0;
-      }  
-      signal_to_read[i] = (float)sig_read / 
-                                    calibration_vector[i]; // TODO(sarahaguasvivas): 
-                                                           //       normalize by calibration
-      
-  }
-}
+    // channel driver
 
-void receive_data() {
-    static boolean recvInProgress = false;
-    static byte ndx = 0;
-    char startMarker = '<';
-    char endMarker = '>';
-    char rc;
-    while (Serial2.available() > 0 && newDataS == false) {
-        rc = Serial2.read();
-
-        if (recvInProgress == true) {
-            if (rc != endMarker) {
-                receivedCharsS[ndx] = rc;
-                ndx++;
-                if (ndx >= numChars) {
-                    ndx = numChars - 1;
-                }
-            }
-            else {
-                receivedCharsS[ndx] = '\0'; // terminate the string
-                recvInProgress = false;
-                ndx = 0;
-                newDataS = true;
-            }
-        }
-
-        else if (rc == startMarker) {
-            recvInProgress = true;
-        }
-    }
-}
-
-void toggle_data_flag() {
-    if (newDataS == true) {
-        newDataS = false;
-    }
 }
