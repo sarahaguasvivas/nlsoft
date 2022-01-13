@@ -6,7 +6,7 @@ DriverChannel::DriverChannel(int addr, int pin_chg, int pin_drn, int pin_v_mon) 
     is_ctrl = false; //start with raw pwm mode
     update_pwm = true;
     charge_pwm = 0;
-    drain_pwm = 9830;
+    drain_pwm = 9000;
     core.attach(this, addr);
 }
 
@@ -24,7 +24,7 @@ void DriverChannel::at_disconnect()
     is_ctrl = false;
     update_pwm = true;
     charge_pwm = 0;
-    drain_pwm = 9830;
+    drain_pwm = 9000;
 }
 
 
@@ -37,7 +37,7 @@ void DriverChannel::spin()
     if (update_pwm) 
     {
         analogWrite(PIN_CHG, charge_pwm);
-        analogWrite(PIN_DRN, drain_pwm);
+        analogWrite(PIN_DRN, 9000); //drain_pwm);
         update_pwm = false;
     }
 }

@@ -4,7 +4,7 @@
 
 struct Controller{
   float epsilon = 5e-2;
-  float signal_calibration[11] = {613., 134., 104., 200., 600., 146., 183., 600., 100., 600., 100.};
+  float signal_calibration[18];
   int m = 6, n = 3, nd = 3, dd = 3, N = 1, Nc = 1;
   float s = 1e-20, b = 1e-5, r = 4e3;
   int nn_input_size = 26;

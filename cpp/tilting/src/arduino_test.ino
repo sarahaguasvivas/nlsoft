@@ -4,7 +4,7 @@
 #include "motors.hpp"
 #include "figure_eight_target.hpp"
 
-#define NUM_SIGNAL 6
+#define NUM_SIGNAL 18
 
 unsigned long timestamp;
 float current_position[3] = { 0.0,
@@ -17,18 +17,46 @@ Controller controller; // controller struct instantiation
 MCUCore core;
 CoreChannel core_chnl(0);
 
+long int count = 0;
+int actuators_turn = 0;
 //AnalogInChannel chnl_13(13, A4); // was used for laser displacement sensor
 
 void setup() {
   setup_signal_collector();
   setup_nn_utils();
+  setup_motors();
   timestamp = 0;
-  Serial.begin(2000000);
+  Serial.begin(115200);
 }
 
 void loop() {
+    float * signals = (float*)malloc(NUM_SIGNAL*sizeof(float));  
+    float* u = (float*)malloc(6*sizeof(float));
+    for (int i = 0; i < NUM_SIGNAL; i++){
+      signals[i] = 0.0;
+      controller.signal_calibration[i] = 1.0;
+    }
+    collect_signal(&signals[0], &controller.signal_calibration[0], NUM_SIGNAL);
+    free(signals);
 
+    for (int i =0 ; i < 6; i++){
+        u[i] = 0; //(float)(count < 5000) * 9500 + (float)(count >=5000) * 0;
+    }
+    u[actuators_turn] = (float)(255 * (float)(count / 5000.));  
 
+    //for (int i =0 ; i < 6; i++){
+    //  Serial.print(u[i]); Serial.print(" ");
+    //}
+    //Serial.println();
+
+    step_motor(&u[0], 6);
+    if (count == 5000 - 1){
+      actuators_turn = (actuators_turn + 1) % 6;
+    }
+    count = (count + 1) % 5000;
+    
+    free(u);
+    // safe values 9500 pwm in 
     //elapsed = millis();
     //float * signal_ = (float*)malloc(NUM_SIGNAL*sizeof(float));
     //Matrix2 Q;

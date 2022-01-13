@@ -276,6 +276,8 @@ public:
     // get size of the target's encoded data
     int data_size(uint8_t trgt);
 
+    uint16_t charge_pwm;
+    bool update_pwm; //toggled whenenver a new PWM value is written: prevent constantly writing the same thing
 
 
 private:
@@ -283,12 +285,7 @@ private:
     const int PIN_DRN;
     const int PIN_V_MON;
 
-   
-
-    uint16_t charge_pwm;
     uint16_t drain_pwm;
-    bool update_pwm; //toggled whenenver a new PWM value is written: prevent constantly writing the same thing
-
     uint16_t v_ref;
     uint16_t v_mon;
 
