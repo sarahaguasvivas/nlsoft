@@ -18,13 +18,13 @@ float* softsign(float *, int);
 
 float* hard_sigmoid(float *, int);
 
+float* elu(float*, int, float);
+
 float* exp_activation(float *, int);
 
 float exponential(float);
 
 float* relu(float*, int);
-
-float* elu(float*, int, float);
 
 float* selu(float*, int);
 

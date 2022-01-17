@@ -14,10 +14,11 @@
 #define OLD_MIN -1
 #define OLD_MAX 1
 #define NEW_MIN 0
-#define NEW_MAX UINT16_MAX
+#define NEW_MAX UINT8_MAX
+
+
 void setup_motors();
 void step_motor(float *, int);
-
-uint16_t convert_mapped_values(float);
+uint8_t convert_mapped_values(float);
 
 #endif

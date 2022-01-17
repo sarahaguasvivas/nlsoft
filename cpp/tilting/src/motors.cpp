@@ -26,11 +26,11 @@ void setup_motors(){
   chnl_6.begin();
 }
 
-uint16_t convert_mapped_values(float angle)
+uint8_t convert_mapped_values(float angle)
 {
     int new_angle;
 
-    new_angle = (uint16_t)((angle - OLD_MIN)/(OLD_MAX - OLD_MIN)*(NEW_MAX - NEW_MIN) + NEW_MIN);
+    new_angle = (uint8_t)((angle - OLD_MIN)/(OLD_MAX - OLD_MIN)*(NEW_MAX - NEW_MIN) + NEW_MIN);
     
     return new_angle;
 }
@@ -44,9 +44,9 @@ void step_motor(float * u, const int m)
    *  m is the number of motors
    */
 
-    int32_t buffer[m];
+    uint8_t buffer[m];
     for (int i = m - 1; i >=0; i--){
-        buffer[i] = (int32_t)u[i];//(uint8_t)(convert_mapped_values(u[i]));
+        buffer[i] = (uint8_t)convert_mapped_values(u[i]);
     }
 
     chnl_1.charge_pwm = buffer[0];
@@ -70,37 +70,36 @@ void step_motor(float * u, const int m)
     chnl_5.spin();
     chnl_6.spin();
 
-    uint8_t d0, d1, d2, d3, d4, d5;
-    uint8_t c0, c1, c2, c3, c4, c5;
+    //uint8_t d0, d1, d2, d3, d4, d5;
+    //uint8_t c0, c1, c2, c3, c4, c5;
 
-    Convert d00, d11, d22, d33, d44, d55;
-    chnl_1.get_data(TGT_DRN_PWM, &d0); 
-    chnl_2.get_data(TGT_DRN_PWM, &d1); 
-    chnl_3.get_data(TGT_DRN_PWM, &d2);  
-    chnl_4.get_data(TGT_DRN_PWM, &d3);
-    chnl_5.get_data(TGT_DRN_PWM, &d4);
-    chnl_6.get_data(TGT_DRN_PWM, &d5);
+    //Convert d00, d11, d22, d33, d44, d55;
+    //chnl_1.get_data(TGT_DRN_PWM, &d0); 
+    //chnl_2.get_data(TGT_DRN_PWM, &d1); 
+    //chnl_3.get_data(TGT_DRN_PWM, &d2);  
+    //chnl_4.get_data(TGT_DRN_PWM, &d3);
+    //chnl_5.get_data(TGT_DRN_PWM, &d4);
+    //chnl_6.get_data(TGT_DRN_PWM, &d5);
     
-    chnl_1.get_data(TGT_CHG_PWM, &c0); 
-    chnl_2.get_data(TGT_CHG_PWM, &c1); 
-    chnl_3.get_data(TGT_CHG_PWM, &c2);  
-    chnl_4.get_data(TGT_CHG_PWM, &c3);
-    chnl_5.get_data(TGT_CHG_PWM, &c4);
-    chnl_6.get_data(TGT_CHG_PWM, &c5);
+    //chnl_1.get_data(TGT_CHG_PWM, &c0); 
+    //chnl_2.get_data(TGT_CHG_PWM, &c1); 
+    //chnl_3.get_data(TGT_CHG_PWM, &c2);  
+    //chnl_4.get_data(TGT_CHG_PWM, &c3);
+    //chnl_5.get_data(TGT_CHG_PWM, &c4);
+    //chnl_6.get_data(TGT_CHG_PWM, &c5);
 
-    Serial.print(d0); Serial.print(" "); 
-    Serial.print(d1); Serial.print(" ");
-    Serial.print(d2); Serial.print(" ");
-    Serial.print(d3); Serial.print(" ");
-    Serial.print(d4); Serial.print(" ");
-    Serial.print(d5); Serial.print(" ");
+    //Serial.print(d0); Serial.print(" "); 
+    //Serial.print(d1); Serial.print(" ");
+    //Serial.print(d2); Serial.print(" ");
+    //Serial.print(d3); Serial.print(" ");
+    //Serial.print(d4); Serial.print(" ");
+    //Serial.print(d5); Serial.print(" ");
 
-    Serial.print(c0); Serial.print(" "); 
-    Serial.print(c1); Serial.print(" ");        
-    Serial.print(c2); Serial.print(" ");
-    Serial.print(c3); Serial.print(" ");
-    Serial.print(c4); Serial.print(" ");
-    Serial.print(c5); Serial.print(" ");
-    Serial.println();
-
+    //Serial.print(c0); Serial.print(" "); 
+    //Serial.print(c1); Serial.print(" ");        
+    //Serial.print(c2); Serial.print(" ");
+    //Serial.print(c3); Serial.print(" ");
+    //Serial.print(c4); Serial.print(" ");
+    //Serial.print(c5); Serial.print(" ");
+    //Serial.println();
 }
