@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-#include "nn4mc.hpp"
+#include "nn4mc.h"
 #include "matrix.hpp"
 #include "controller.hpp"
 
