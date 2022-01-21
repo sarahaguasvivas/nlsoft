@@ -1,6 +1,6 @@
 #include "swirl_target.hpp"
 
-float tar[3390] = {0.0000000e+00, 0.0000000e+00, 0.0000000e+00, 0.0000000e+00,
+const float tar[3390] = {0.0000000e+00, 0.0000000e+00, 0.0000000e+00, 0.0000000e+00,
    0.0000000e+00, 0.0000000e+00, 0.0000000e+00, 0.0000000e+00,
    0.0000000e+00, 0.0000000e+00, 0.0000000e+00, 0.0000000e+00,
    0.0000000e+00, 0.0000000e+00, 0.0000000e+00, 0.0000000e+00,
@@ -855,12 +855,14 @@ void spin_swirl_target(int timestep, int n1, int n2, int dims, Matrix2 * target,
   
   Matrix2 temp;
   set(temp, target->rows, target->cols);
+
+  timestep = timestep % 1130;
   
   for (int i = n1; i < n2; i++)
   {
-    temp.data[i * n + 0] =  tar[i * 3 + 0];
-    temp.data[i * n + 1] =  tar[i * 3 + 1];     
-    temp.data[i * n + 2] =  tar[i * 3 + 2];
+    temp.data[i * n + 0] = tar[timestep * 3 + 0];
+    temp.data[i * n + 1] = tar[timestep * 3 + 1];     
+    temp.data[i * n + 2] = tar[timestep * 3 + 2];
   }
     
   for (int i = n1; i < n2; i++)

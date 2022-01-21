@@ -23,7 +23,7 @@ void setup() {
   setup_nn_utils();
   setup_motors();
   timestamp = 0;
-  Serial.begin(115200);
+  Serial.begin(1000000);
 }
 
 void loop() {
@@ -40,7 +40,7 @@ void loop() {
     //    u[i] = 0; //(float)(count < 5000) * 9500 + (float)(count >=5000) * 0;
     //}
     //u[actuators_turn] = (float)(255 * (float)(count / 5000.));  
-
+    //Serial.println("here");
     //step_motor(&u[0], 6);
     //if (count == 5000 - 1){
     //  actuators_turn = (actuators_turn + 1) % 6;
@@ -48,9 +48,8 @@ void loop() {
     //count = (count + 1) % 5000;
     
     //free(u);
-    // safe values 9500 pwm in 
     elapsed = millis();
-    float * signal_ = (float*)malloc(NUM_SIGNAL*sizeof(float));
+    float * signal = (float*)malloc(NUM_SIGNAL*sizeof(float));
     Matrix2 Q;
     Matrix2 Lambda;
     Matrix2 del_u_matrix;
@@ -84,11 +83,11 @@ void loop() {
     for (int i = 0; i < controller.nn_input_size; i++) {
       nn_input[i] = controller.past_nn_input[i];
     }
-    delay(1); // 3
-    collect_signal(&signal_[0], &controller.signal_calibration[0], NUM_SIGNAL);
+    //delay(1); // 3
+    collect_signal(&signal[0], &controller.signal_calibration[0], NUM_SIGNAL);
     
     if (timestamp > 0){
-      build_input_vector(nn_input, controller.normalized_u, signal_, current_position, 
+      build_input_vector(nn_input, controller.normalized_u, signal, current_position, 
                         controller.nd*controller.m, controller.dd*controller.n, 
                         controller.m, controller.n, NUM_SIGNAL);
     } 
@@ -145,7 +144,7 @@ void loop() {
     for (int i = 0; i < controller.Nc*controller.m; i++) { 
       u_matrix.data[i] = controller.prev_u[i] - del_u_matrix.data[i];
       if (isnan(u_matrix.data[i])){
-        u_matrix.data[i] = -1.308;
+        u_matrix.data[i] = controller.min_max_input_saturation[0];
       }
     }
     clip_action(u_matrix, &controller);
@@ -168,7 +167,7 @@ void loop() {
     release(del_u_matrix);
     
     free(nn_input);
-    free(signal_);
+    free(signal);
     timestamp++;
     Serial.println(millis() - elapsed);
 }
