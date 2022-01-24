@@ -9,6 +9,7 @@ import keras.backend as K
 import keras
 from typing import List, Tuple
 import copy
+import matplotlib.pyplot as plt
 from collections import deque
 
 #  Channel description:
@@ -69,8 +70,9 @@ def huber_loss(y_true, y_pred):
 
 def create_gru_network(x_train_shape: Tuple[int]):
     model = Sequential()
-    model.add(GRU(units = 10, input_shape = (1, x_train_shape[-1])))
+    model.add(GRU(units = 50, input_shape = (1, x_train_shape[-1])))
     model.add(Dense(3, activation = 'relu', kernel_initializer='random_normal'))
+    model.add(Dense(3, activation = 'tanh', kernel_initializer='random_normal'))
     model.compile(optimizer = "adam", loss = "mae", metrics=["mse"])
     return model
 
@@ -92,31 +94,72 @@ def create_data_labels(data):
                                                 nd = N_D, dd = D_D)
         X += [dataset]
         y += [labels]
-    return X, y
+    return np.vstack(X), np.vstack(y)
 
 def gru_training(data):
     data_shape = data[0].shape
-    print(data_shape)
     model = create_gru_network(x_train_shape = (None, 1, DATA_SIZE))
     X, y = create_data_labels(data)
-    for i in range(len(X)):
-        print(X[i].shape)
-        model.fit(X[i].reshape(X[i].shape[0], 1, -1), y[i], epochs = 50, batch_size = 1000)
+    kfold = TimeSeriesSplit(n_splits = 10)
+    for train, test in kfold.split(X, y):
+        x_train = X[train].reshape(-1, 1, DATA_SIZE)
+        y_train = y[train]
+        model.fit(x_train, y_train, epochs = 50, batch_size = 1000)
     model.save('forward_kinematics_jan_10_2022.hdf5')
+    return X, y, model
+
+if __name__=='__main__':
+    files = []
+    for region in regions:
+      files += [f for f in listdir(data_files_location)
+                  if isfile(join(data_files_location, region)) and f[:4] == 'SV_t']
+    print(files)
+
+    data = []
+    for i, region in enumerate(regions):
+      data += [np.genfromtxt(join(data_files_location, region),
+                             delimiter = ',',
+                              invalid_raise = False)]
 
 
+    X, y, model = gru_training(data)
 
-files = []
-for region in regions:
-  files += [f for f in listdir(data_files_location)
-              if isfile(join(data_files_location, region)) and f[:4] == 'SV_t']
-print(files)
+    forward_kinematics_model = keras.models.load_model('forward_kinematics_jan_10_2022.hdf5', compile=False)
+    samples = 1000
+    X_sysint = X[:samples, :]
+    y_true_sysint = y[:samples, :]
+    y_pred_sysint = forward_kinematics_model.predict(
+        X_sysint.reshape(X_sysint.shape[0], 1, X_sysint.shape[1])
+    )  # our predictions!
 
-data = []
-for i, region in enumerate(regions):
-  data += [np.genfromtxt(join(data_files_location, region),
-                         delimiter = ',',
-                          invalid_raise = False)]
+    plt.figure(figsize=(20, 7))
+    plt.subplot(3, 2, 1)
+    plt.plot(1000 * y_true_sysint[:, 0], '--k', linewidth=2)
+    plt.plot(1000 * y_pred_sysint[:, 0], 'r', linewidth=2)
+    plt.legend([r'$x_{true}$', r'$\hat{x}_{GRU}$'])
+    plt.ylabel('x [mm]')
 
+    plt.subplot(3, 2, 3)
+    plt.plot(1000 * y_true_sysint[:, 1], '--k', linewidth=2)
+    plt.plot(1000 * y_pred_sysint[:, 1], 'r', linewidth=2)
+    plt.legend([r'$y_{true}$', r'$\hat{y}_{GRU}$'])
+    plt.ylabel('y [mm]')
 
-gru_training(data)
+    plt.subplot(3, 2, 5)
+    plt.plot(1000 * y_true_sysint[:, 2], '--k', linewidth=2)
+    plt.plot(1000 * y_pred_sysint[:, 2], 'r', linewidth=2)
+    plt.legend([r'$z_{true}$', r'$\hat{z}_{GRU}$'])
+    plt.ylabel('z [mm]')
+
+    plt.subplot(3, 2, 2)
+    plt.plot(1000 * y_true_sysint[:, 0] - 1000 * y_pred_sysint[:, 0])
+    plt.ylabel('error x [mm]')
+
+    plt.subplot(3, 2, 4)
+    plt.plot(1000 * y_true_sysint[:, 1] - 1000 * y_pred_sysint[:, 1])
+    plt.ylabel('error y [mm]')
+
+    plt.subplot(3, 2, 6)
+    plt.plot(1000 * y_true_sysint[:, 2] - 1000 * y_pred_sysint[:, 2])
+    plt.ylabel('error z [mm]')
+    plt.savefig('sysint.png', dpi=300, format='png')

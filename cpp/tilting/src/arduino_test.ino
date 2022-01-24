@@ -63,7 +63,7 @@ void loop() {
       nn_input[i] = controller.past_nn_input[i];
     }
     collect_signal(&signal[0], &controller.signal_calibration[0], NUM_SIGNAL);
-    
+
     if (timestamp > 0){
       build_input_vector(nn_input, controller.normalized_u, signal, current_position, 
                         controller.nd*controller.m, controller.dd*controller.n, 
