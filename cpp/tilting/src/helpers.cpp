@@ -81,10 +81,10 @@ Matrix2 nn_prediction(
         
         int input_index = (i < Nc) ? i : (Nc-1);
         
-        //for (int k = 0; k < m; k++)
-        //{
-        //   motor_input[k] = u[input_index*m + k];
-        //} 
+        for (int k = 0; k < m; k++)
+        {
+           motor_input[k] = u[input_index*m + k];
+        } 
         build_input_vector(previous_input, motor_input, signals, 
                                       output_next, nd*m, dd*n, 
                                       m, n, num_signal);
@@ -228,7 +228,8 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
     Matrix2 trn1;
     Matrix2 trn2;
     set(hessian, controller.Nc, controller.Nc);
-    
+    set_to_zero(hessian);
+     
     temp = hadamard(ynu, ynu);
     release(ynu);
     temp1 = multiply(Q, temp);
@@ -256,10 +257,8 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
                                           trn1.data[0] - trn2.data[0]; //  subtract(temp3, temp4);
     release(trn1);
     release(trn2);
- 
     set(hessian1, controller.Nc, controller.Nc);
     set_to_zero(hessian1);
-   
     Matrix2 second_y;
     Matrix2 second_y1;
     Matrix2 scale_1;
@@ -267,20 +266,17 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
     Matrix2 mult1;
     Matrix2 sum1;
     Matrix2 sum2;
-    
-    sum1 = sum_axis(hessian, 0);
+    sum1 = sum_axis(hessian1, 0);
     sum2 = sum_axis(sum1, 1);
     release(sum1);
-
     set(second_y, 1, controller.m);
     set(second_y1, controller.m, 1);
-    
     for (int h = 0; h < controller.Nc; h++)
     {
       for (int mm = 0; mm < controller.Nc; mm++)
       {
         hessian1.data[h*controller.Nc+mm] = sum2.data[0];
-       
+               
         for (int j = 0; j < controller.m ; j++)
         { 
           second_y.data[j] = partial_delta_u_partial_u(j, mm);
@@ -300,19 +296,20 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
         release(mult);
         hessian1.data[h*controller.Nc + mm] += multtt.data[0];
         release(multtt);
-        
+         
          for (int jj = 0; jj < controller.m; jj++)
          {
             for (int i = 0; i < controller.m; i++)
             {
               hessian1.data[h*hessian1.cols + mm] += 2.0* controller.s / 
-                                                            pow((u[jj*controller.m + i] + controller.r / 2. - controller.b), 3.0) + 
-                                                             2.0 * controller.s / pow(controller.r/2. + controller.b - u[jj*controller.m + i], 3.0);
+                                                            pow((u[jj*controller.m + i] + controller.machine_zero + 
+                                                                controller.r / 2. - controller.b), 3.0) + 
+                                                             2.0 * controller.s / pow(controller.r/2. + controller.b - (u[jj*controller.m + i] + 
+                                                              controller.machine_zero), 3.0) + controller.machine_zero;
             }
         }
       }
     }
-  
     release(sum2);
     release(second_y);
     release(second_y1);
