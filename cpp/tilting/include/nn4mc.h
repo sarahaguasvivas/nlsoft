@@ -15,7 +15,9 @@
 extern "C" {
 #endif
 
+#include <stdlib.h>
 #include "parameters.h"
+
 
 float* fwdNN(float*);
 void buildLayers();

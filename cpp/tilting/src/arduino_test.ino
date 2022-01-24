@@ -27,6 +27,7 @@ void setup() {
 }
 
 void loop() {
+    Serial.println("here");
     elapsed = millis();
     float * signal = (float*)malloc(NUM_SIGNAL*sizeof(float));
     Matrix2 Q;
@@ -37,7 +38,7 @@ void loop() {
     Matrix2 prediction;
     Matrix2 ynu;
     Matrix2 dynu_du;
-    
+    Serial.println("here0"); 
     set(Q, controller.n, controller.n);
     set(Lambda, controller.m, controller.m);
     set(del_u_matrix, controller.Nc, controller.m);
@@ -47,7 +48,7 @@ void loop() {
     for (int i = 0; i < controller.n; i++) Q.data[i*controller.n+i] = controller.q_matrix[i];
     for (int i = 0; i < controller.m; i++) Lambda.data[i*controller.m + i] = controller
                                                                             .lambda_matrix[i];
-    
+    Serial.println("here1"); 
     set(target, controller.N, controller.n);
     float * nn_input = (float*)malloc((controller.nn_input_size)*sizeof(float));
     
@@ -58,7 +59,7 @@ void loop() {
           del_u_matrix.data[i] = controller.del_u[i];
       }
     }
-    
+    Serial.println("here2"); 
     for (int i = 0; i < controller.nn_input_size; i++) {
       nn_input[i] = controller.past_nn_input[i];
     }
@@ -73,34 +74,33 @@ void loop() {
     for (int i = 0 ; i < controller.nn_input_size ; i++) {
       controller.past_nn_input[i] = nn_input[i];
     }
-
+    Serial.println("here3");
     normalize_array(&controller.u[0], &controller.normalized_u[0], 
                                         controller.m*controller.Nc, PI);
    
     prediction = nn_prediction(controller.N, controller.Nc, controller.n, controller.m, 
                                NUM_SIGNAL + controller.nd*controller.m + controller.dd*controller.n, 
                                controller.nd, controller.dd, nn_input, controller.normalized_u);
-    
+    Serial.println("here4"); 
     for (int i = 0; i < controller.n; i++) {
         current_position[i] = prediction.data[(controller.N - 1) + i * controller.n];
     }
     set(ynu, controller.n, controller.m);
     set(dynu_du, controller.n, controller.m);
-    
+    Serial.println("her111e") ;
     nn_gradients(&ynu, &dynu_du, controller.n, controller.m, 
                               controller.nd, controller.nn_input_size, 
                               nn_input, controller.epsilon);
-
+    Serial.println("hhhereerere");
     spin_swirl_target(timestamp, 0, controller.N, 
                               controller.n, &target, controller.neutral_point);
     del_y = subtract(target, prediction);
-    
+    Serial.println("hhhh"); 
     for (int i = 0; i < controller.N*controller.n; i++){
        controller.y[i] = prediction.data[i];
     }
     release(prediction);
     release(target);
-    
     // jacobian ////////////////////////////////////////////////////////////////////
     Matrix2 jacobian;
     jacobian = get_jacobian(del_y, Q, Lambda, ynu, 
@@ -113,11 +113,7 @@ void loop() {
                             del_u_matrix, &controller.u[0], 
                               &controller.del_u[0], controller);
     ////////////////////////////////////////////////////////////////////////////////
-    Serial.println("Hess");
-    Serial.println(hessian.data[0], 10);
-
     release(del_y);
-    
     Matrix2 u_matrix; 
     solve(jacobian, hessian, del_u_matrix);
     set(u_matrix, controller.Nc, controller.m);
