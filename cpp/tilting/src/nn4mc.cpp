@@ -19,18 +19,17 @@ struct Dense dense_1;
 
 
 void buildLayers(){
-
     
-gru = build_layer_gru(
-                          &gru_W[0],
-                          &gru_Wrec[0],
-                          &gru_b[0],
-                          0x08,
-                          0x07,
-                          1,
-                          68,
-                          50
-);
+        gru = build_layer_gru(
+                                &gru_W[0],
+                                &gru_Wrec[0],
+                                &gru_b[0],
+                                0x08,
+                                0x07,
+                                1,
+                                68,
+                                50
+        );
 
         dense = build_layer_dense(&dense_W[0], dense_b, 50, 20, 0x06);
 
@@ -44,7 +43,7 @@ float * fwdNN(float* data)
 {
 
     
-data =  fwd_gru(gru, data);
+        data =  fwd_gru(gru, data);
 
         data = fwd_dense(dense, data);
 

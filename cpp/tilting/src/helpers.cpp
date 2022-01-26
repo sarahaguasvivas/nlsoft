@@ -66,9 +66,8 @@ Matrix2 nn_prediction(
 ){
     Matrix2 y_output;
     set(y_output, N, n);
-    int num_signal = input_size - nd*m - dd*n;
-    float * signals = (float*)malloc(num_signal*sizeof(float));
-    for (int i = 0; i < num_signal; i++) signals[i] = previous_input[nd*m+dd*n + i];
+    float * signals = (float*)malloc(NUM_SIGNAL*sizeof(float));
+    for (int i = 0; i < NUM_SIGNAL; i++) signals[i] = previous_input[nd*m+dd*n + i];
     const int mnd = m*nd;
     float motor_input[mnd];
     for (int i = 0; i < N; i++)
@@ -87,7 +86,7 @@ Matrix2 nn_prediction(
         } 
         build_input_vector(previous_input, motor_input, signals, 
                                       output_next, nd*m, dd*n, 
-                                      m, n, num_signal);
+                                      m, n, NUM_SIGNAL);
         for (int j = 0; j < n; j++)
         {
             y_output.data[i * n + j] = output_next[j];
@@ -99,45 +98,48 @@ Matrix2 nn_prediction(
 }
 
 void nn_gradients(Matrix2 * first_derivative, Matrix2 * second_derivative, 
-                      int n, int m, int nd, int input_size, float * input, float epsilon)
+                      const int n, int m, int nd, int input_size, float * input, float epsilon)
 {
     set_to_zero(*first_derivative);
     set_to_zero(*second_derivative);
+    
+    //for (int nn = 0; nn < nd*m; nn++)
+    //{
+    //  float * output;
+    //  float * output_minus_h;
+    //  float * output_plus_h;  
 
-    buildLayers();
+    //  float * input_center = (float*)malloc(input_size*sizeof(float));
+    //  float * input_plus_h = (float*)malloc(input_size*sizeof(float));
+    //  float * input_minus_h = (float*)malloc(input_size*sizeof(float));
 
-    float * output;
-    float * output_minus_h; 
-    float * output_plus_h;
+    //  for (int i = 0; i < input_size; i++)
+    //  {
+    //    input_center[i] =  input[i];
+    //    input_plus_h[i] =  input[i];
+    //    input_minus_h[i] = input[i];            
+    //  }
+    //  input_plus_h[nn] += epsilon;
+    //  input_minus_h[nn] -= epsilon;
 
-    for (int nn = 0; nn < nd*m; nn++)
-    {   
-      int j = nn % m;
-      float * input_center = (float*)malloc(input_size*sizeof(float));
-      float * input_plus_h = (float*)malloc(input_size*sizeof(float));
-      float * input_minus_h= (float*)malloc(input_size*sizeof(float));
-      for (int i = 0; i < input_size; i++)
-      {
-        input_center[i] =  0.0; //input[i];
-        input_plus_h[i] =  0.0; //input[i];
-        input_minus_h[i] = 0.0; //input[i];            
-      }
-      input_plus_h[nn] += epsilon;
-      input_minus_h[nn] -= epsilon;
-            
-      output = fwdNN(input_center);
-      output_plus_h = fwdNN(input_plus_h);
-      output_minus_h = fwdNN(input_minus_h);
-      for (int i = 0 ; i < n; i++){
-        first_derivative->data[i*first_derivative->cols + j] += 
-                                (output_plus_h[i] - output_minus_h[i]) / (2. * epsilon);
-        second_derivative->data[i*second_derivative->cols + j] += 
-                              (output_plus_h[i] - 2.*output[i] + output_minus_h[i]) / (epsilon * epsilon);    
-      }
-      free(output);
-      free(output_minus_h);
-      free(output_plus_h);  
-    }
+    //  Serial.println("here");
+    //  output_plus_h = fwdNN(input_plus_h);
+    //  Serial.println("here0");
+    //  output_minus_h = fwdNN(input_minus_h);
+    //  Serial.println("here1");
+    //  output = fwdNN(input_center);
+    //  Serial.println("here2");
+    //  int j = nn % m;
+    //  for (int i = 0 ; i < n; i++){
+    //    first_derivative->data[i*first_derivative->cols + j] += 
+    //                            (output_plus_h[i] - output_minus_h[i]) / (2. * epsilon);
+    //    second_derivative->data[i*second_derivative->cols + j] += 
+    //                          (output_plus_h[i] - 2.*output[i] + output_minus_h[i]) / (epsilon * epsilon);    
+    //  }
+    //  free(output);
+    //  free(output_minus_h);
+    //  free(output_plus_h);  
+    //}
 }
 
 

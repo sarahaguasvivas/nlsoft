@@ -70,8 +70,9 @@ def huber_loss(y_true, y_pred):
 
 def create_gru_network(x_train_shape: Tuple[int]):
     model = Sequential()
-    model.add(GRU(units = 10, input_shape = (1, x_train_shape[-1])))
-    model.add(Dense(20, activation = 'relu', kernel_initializer='random_normal'))
+    model.add(GRU(units = 50, input_shape = (1, x_train_shape[-1])))
+    model.add(Dense(10, activation = 'relu'))
+    model.add(Dense(5, activation = 'relu'))
     model.add(Dense(3, activation = 'tanh', kernel_initializer='random_normal'))
     model.compile(optimizer = "adam", loss = huber_loss, metrics=["mse"])
     return model
@@ -100,11 +101,11 @@ def gru_training(data):
     data_shape = data[0].shape
     model = create_gru_network(x_train_shape = (None, 1, DATA_SIZE))
     X, y = create_data_labels(data)
-    kfold = TimeSeriesSplit(n_splits = 100)
+    kfold = TimeSeriesSplit(n_splits = 10)
     for train, test in kfold.split(X, y):
         x_train = X[train].reshape(-1, 1, DATA_SIZE)
         y_train = y[train]
-        model.fit(x_train, y_train, epochs = 50, batch_size = 100)
+        model.fit(x_train, y_train, epochs = 20, batch_size = 100)
     model.save('forward_kinematics_jan_10_2022.hdf5')
     return X, y, model
 

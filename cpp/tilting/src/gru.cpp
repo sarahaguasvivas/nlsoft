@@ -15,6 +15,9 @@
 *********************/
 #include "gru.h"
 
+float * h_tm1 = (float*)malloc(3*sizeof(float));
+
+
 struct GRU build_layer_gru(
                           const float* W,
                           const float* U,
@@ -23,7 +26,7 @@ struct GRU build_layer_gru(
                           char activation,
                           int input_shape_0,
                           int input_shape_1,
-                          int output_units
+                          const int output_units
 ){
 	struct GRU layer;
 
@@ -36,7 +39,7 @@ struct GRU build_layer_gru(
 
     layer.big_u_shape[0] = output_units;
     layer.big_u_shape[1] = 3 * output_units;
-
+    
     layer.biases_shape[0] = 2;
     layer.biases_shape[1] = 3 * output_units;
 
@@ -48,21 +51,22 @@ struct GRU build_layer_gru(
 
     layer.output_shape[0] = output_units;
 
-    layer.h_tm1 = (float*)malloc(output_units * sizeof(float));
-    for (int i = 0; i < output_units; i++){
-        layer.h_tm1[i] = 0.0;
-    }
+    for (int i = 0; i < 3; i++){
+        h_tm1[i] = 0.0;
+    }   
+
 	return layer;
 }
 
 float * fwd_gru(struct GRU L, float * input)
 {
     const int M = L.output_shape[0];
-    float* x_z = (float*)malloc(M * L.input_shape[0] * sizeof(float));
-    float* x_r = (float*)malloc(M * L.input_shape[0] * sizeof(float));
-    float* x_h = (float*)malloc(M * L.input_shape[0] * sizeof(float));
-    float* h_t = (float*)malloc(M * L.input_shape[0] * sizeof(float));
-    for (int i = 0; i < M*L.input_shape[0]; i++){
+    const int NM = L.input_shape[0] * L.output_shape[0];
+    float * x_z = (float*)malloc(NM * sizeof(float));
+    float * x_r = (float*)malloc(NM * sizeof(float));
+    float * x_h = (float*)malloc(NM * sizeof(float));
+    float * h_t = (float*)malloc(NM * sizeof(float));
+    for (int i = 0; i < NM; i++){
         x_z[i] = 0.0;
         x_r[i] = 0.0;
         x_h[i] = 0.0;
@@ -83,35 +87,37 @@ float * fwd_gru(struct GRU L, float * input)
             }
         }
         for (int j = 0; j < M; j++){
-            x_z[i * M + j] += *(L.big_u + i * 3 * M + j) * L.h_tm1[j];
-            x_r[i * M + j] += *(L.big_u + i * 3 * M + j + M) * L.h_tm1[j];
+            x_z[i * M + j] += *(L.big_u + i * 3 * M + j) * h_tm1[j];
+            x_r[i * M + j] += *(L.big_u + i * 3 * M + j + M) * h_tm1[j];
         }
     }
-    x_z = activate(x_z, M * L.input_shape[0], L.recurrent_activation);
-    x_r = activate(x_r, M * L.input_shape[0], L.recurrent_activation);
+    free(input);
+    x_z = activate(&x_z[0], NM, L.recurrent_activation);
+    x_r = activate(&x_r[0], NM, L.recurrent_activation);
     for (int i = 0; i < M; i++){
         for (int j = 0; j < M; j++){
             x_h[i * M + j] += *(L.big_u + i * 3 * M + j + 2 * M) *
-                                                    L.h_tm1[j] * x_r[j];
+                                                    h_tm1[j] * x_r[j];
         }
     }
-    x_h = activate(x_h, M * L.input_shape[0], L.activation);
-
-    float one = 1.0;
+    x_h = activate(&x_h[0], NM, L.activation);
     for (int i = 0; i < M; i++){
         for (int j = 0; j < L.input_shape[0]; j++){
-                h_t[j * M + i] = (one - x_z[j * M + i]) *
+                h_t[j * M + i] = ((float)1.0 - x_z[j * M + i]) *
                                         x_h[j * M + i] +
                                             x_z[j * M + i] *
-                                            L.h_tm1[i];
+                                            h_tm1[i];
 
-            }
-
-            L.h_tm1[i] = h_t[i];
+        }
+        //L.h_tm1[i] = h_t[i];
     }
-    free(x_z);
-    free(x_r);
+    for (int i = 0; i < L.output_shape[0]; i++){
+        h_tm1[i] = h_t[i];
+    }
+    Serial.println("bb");
     free(x_h);
-    free(input);
+    free(x_r);
+    free(x_z);
+    Serial.println("hh");
     return h_t;
 }
