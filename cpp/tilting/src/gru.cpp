@@ -92,15 +92,15 @@ float * fwd_gru(struct GRU L, float * input)
         }
     }
     free(input);
-    x_z = activate(&x_z[0], NM, L.recurrent_activation);
-    x_r = activate(&x_r[0], NM, L.recurrent_activation);
+    x_z = activate(x_z, NM, L.recurrent_activation);
+    x_r = activate(x_r, NM, L.recurrent_activation);
     for (int i = 0; i < M; i++){
         for (int j = 0; j < M; j++){
             x_h[i * M + j] += *(L.big_u + i * 3 * M + j + 2 * M) *
                                                     h_tm1[j] * x_r[j];
         }
     }
-    x_h = activate(&x_h[0], NM, L.activation);
+    x_h = activate(x_h, NM, L.activation);
     for (int i = 0; i < M; i++){
         for (int j = 0; j < L.input_shape[0]; j++){
                 h_t[j * M + i] = ((float)1.0 - x_z[j * M + i]) *
@@ -109,7 +109,6 @@ float * fwd_gru(struct GRU L, float * input)
                                             h_tm1[i];
 
         }
-        //L.h_tm1[i] = h_t[i];
     }
     for (int i = 0; i < L.output_shape[0]; i++){
         h_tm1[i] = h_t[i];

@@ -29,6 +29,7 @@ from collections import deque
 N_D = 5
 D_D = 5
 DATA_SIZE = 68
+TRAINING = False
 
 data_files_location = "../../data/12_23_2021"
 regions = ['SV_tilt_' + str(i) for i in range(1, 20)]
@@ -111,6 +112,7 @@ def gru_training(data):
     return X, y, model
 
 if __name__=='__main__':
+    plt.style.use('seaborn')
     files = []
     for region in regions:
       files += [f for f in listdir(data_files_location)
@@ -123,9 +125,12 @@ if __name__=='__main__':
                              delimiter = ',',
                               invalid_raise = False)]
 
+    if TRAINING:
+        X, y, forward_kinematics_model = gru_training(data)
+    else:
+        X, y = create_data_labels(data)
 
-    X, y, model = gru_training(data)
-
+    print(X.shape)
     forward_kinematics_model = keras.models.load_model('forward_kinematics_jan_10_2022.hdf5', compile=False)
     samples = 10000
     X_sysint = X[:samples, :]
@@ -134,35 +139,45 @@ if __name__=='__main__':
         X_sysint.reshape(X_sysint.shape[0], 1, X_sysint.shape[1])
     )  # our predictions!
 
-    plt.figure(figsize=(20, 7))
+    plt.figure(figsize=(7, 5))
     plt.subplot(3, 2, 1)
     plt.plot(1000 * y_true_sysint[:, 0], '--k', linewidth=2)
     plt.plot(1000 * y_pred_sysint[:, 0], 'r', linewidth=2)
+    plt.tick_params(axis = 'x', which = 'both', bottom = False, top = False, labelbottom = False)
     plt.legend([r'$x_{true}$', r'$\hat{x}_{GRU}$'])
+    plt.title("Predictions on Test Set Data")
     plt.ylabel('x [mm]')
 
     plt.subplot(3, 2, 3)
     plt.plot(1000 * y_true_sysint[:, 1], '--k', linewidth=2)
     plt.plot(1000 * y_pred_sysint[:, 1], 'r', linewidth=2)
+    plt.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
     plt.legend([r'$y_{true}$', r'$\hat{y}_{GRU}$'])
     plt.ylabel('y [mm]')
 
     plt.subplot(3, 2, 5)
     plt.plot(1000 * y_true_sysint[:, 2], '--k', linewidth=2)
     plt.plot(1000 * y_pred_sysint[:, 2], 'r', linewidth=2)
+    plt.ylim(-10, 10)
     plt.legend([r'$z_{true}$', r'$\hat{z}_{GRU}$'])
     plt.ylabel('z [mm]')
 
     plt.subplot(3, 2, 2)
     plt.plot(1000 * y_true_sysint[:, 0] - 1000 * y_pred_sysint[:, 0])
+    plt.ylim([-2, 2])
+    plt.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+    plt.title("Error in Prediction on Testing Set Data")
     plt.ylabel('error x [mm]')
 
     plt.subplot(3, 2, 4)
     plt.plot(1000 * y_true_sysint[:, 1] - 1000 * y_pred_sysint[:, 1])
+    plt.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+    plt.ylim([-2, 2])
     plt.ylabel('error y [mm]')
 
     plt.subplot(3, 2, 6)
     plt.plot(1000 * y_true_sysint[:, 2] - 1000 * y_pred_sysint[:, 2])
+    plt.ylim([-2, 2])
     plt.ylabel('error z [mm]')
     plt.savefig('sysint.png', dpi=300, format='png')
 

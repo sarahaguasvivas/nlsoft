@@ -6,7 +6,7 @@ struct Controller{
   float machine_zero = 1e-10;
   float epsilon = 5e-2;
   float signal_calibration[NUM_SIGNAL];
-  int m = 6, n = 3, nd = 3, dd = 3, N = 3, Nc = 1;
+  int m = 6, n = 3, nd = 5, dd = 5, N = 3, Nc = 1;
   float s = 1e-20, b = 1e-5, r = 4e5;
   int nn_input_size = 68;
   float neutral_point[3] = { 0.};
