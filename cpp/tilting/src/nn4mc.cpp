@@ -41,7 +41,6 @@ void buildLayers(){
 
 float * fwdNN(float* data)
 {
-
     
         data =  fwd_gru(gru, data);
 

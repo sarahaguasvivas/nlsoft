@@ -9,6 +9,7 @@ import keras.backend as K
 import keras
 from typing import List, Tuple
 import copy
+import tensorflow as tf
 import matplotlib.pyplot as plt
 from collections import deque
 
@@ -38,7 +39,7 @@ def prepare_data_file_vani(signals, position, inputs, nd=3, dd=3):
     position = position.astype(np.float32)
     position = position - position[0, :]
     max_signals = np.clip(np.max(signals, axis=0), 1, np.inf)
-    signals = signals / max_signals - 0.5
+    signals = np.clip(signals / max_signals - 0.5, 0, np.inf)
     inputs = inputs / np.max(inputs, axis = 0) - 0.5
 
     N = max(nd, dd)  # data sample where we will start first
@@ -70,10 +71,10 @@ def huber_loss(y_true, y_pred):
 
 def create_gru_network(x_train_shape: Tuple[int]):
     model = Sequential()
-    model.add(GRU(units = 50, input_shape = (1, x_train_shape[-1])))
+    model.add(GRU(units = 70, input_shape = (1, x_train_shape[-1])))
     model.add(Dense(10, activation = 'relu'))
-    model.add(Dense(5, activation = 'relu'))
     model.add(Dense(3, activation = 'tanh', kernel_initializer='random_normal'))
+                            #bias_constraint = tf.keras.constraints.max_norm(0.0)))
     model.compile(optimizer = "adam", loss = huber_loss, metrics=["mse"])
     return model
 
@@ -164,3 +165,7 @@ if __name__=='__main__':
     plt.plot(1000 * y_true_sysint[:, 2] - 1000 * y_pred_sysint[:, 2])
     plt.ylabel('error z [mm]')
     plt.savefig('sysint.png', dpi=300, format='png')
+
+    plt.figure()
+    plt.plot(X[:, -18:])
+    plt.savefig('sensors.png', format = 'png')
