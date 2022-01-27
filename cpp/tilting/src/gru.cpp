@@ -15,8 +15,6 @@
 *********************/
 #include "gru.h"
 
-float * h_tm1 = (float*)malloc(3*sizeof(float));
-
 
 struct GRU build_layer_gru(
                           const float* W,
@@ -51,8 +49,10 @@ struct GRU build_layer_gru(
 
     layer.output_shape[0] = output_units;
 
+    layer.h_tm1 = (float*)malloc(3*sizeof(float));
+
     for (int i = 0; i < 3; i++){
-        h_tm1[i] = 0.0;
+        layer.h_tm1[i] = 0.0;
     }   
 
 	return layer;
@@ -87,8 +87,8 @@ float * fwd_gru(struct GRU L, float * input)
             }
         }
         for (int j = 0; j < M; j++){
-            x_z[i * M + j] += *(L.big_u + i * 3 * M + j) * h_tm1[j];
-            x_r[i * M + j] += *(L.big_u + i * 3 * M + j + M) * h_tm1[j];
+            x_z[i * M + j] += *(L.big_u + i * 3 * M + j) * L.h_tm1[j];
+            x_r[i * M + j] += *(L.big_u + i * 3 * M + j + M) * L.h_tm1[j];
         }
     }
     free(input);
@@ -97,7 +97,7 @@ float * fwd_gru(struct GRU L, float * input)
     for (int i = 0; i < M; i++){
         for (int j = 0; j < M; j++){
             x_h[i * M + j] += *(L.big_u + i * 3 * M + j + 2 * M) *
-                                                    h_tm1[j] * x_r[j];
+                                                    L.h_tm1[j] * x_r[j];
         }
     }
     x_h = activate(x_h, NM, L.activation);
@@ -106,12 +106,12 @@ float * fwd_gru(struct GRU L, float * input)
                 h_t[j * M + i] = ((float)1.0 - x_z[j * M + i]) *
                                         x_h[j * M + i] +
                                             x_z[j * M + i] *
-                                            h_tm1[i];
+                                            L.h_tm1[i];
 
         }
     }
     for (int i = 0; i < L.output_shape[0]; i++){
-        h_tm1[i] = h_t[i];
+        L.h_tm1[i] = h_t[i];
     }
     Serial.println("bb");
     free(x_h);

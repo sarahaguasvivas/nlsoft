@@ -1,6 +1,5 @@
-# This file was automatically generated for projects
-# without default 'CMakeLists.txt' file.
-
-FILE(GLOB_RECURSE app_sources ${CMAKE_SOURCE_DIR}/src/*.*)
-
-idf_component_register(SRCS ${app_sources})
+file (GLOB SOURCES src/*.cpp)
+foreach( testsourcefile get_filename_component(NAME ${SOURCES} ABSOLUTE)
+    string( REPLACE ".cpp" "" testname ${testsourcefile} )
+    add_library( ${testname} ${testsourcefile} ))
+endforeach( testsourcefile ${SOURCES} )

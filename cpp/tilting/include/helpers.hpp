@@ -1,7 +1,7 @@
 #ifndef __HELPERS_H__
 #define __HELPERS_H__
 
-#include <Arduino.h>
+//#include <Arduino.h>
 #include "math.h"
 
 #ifdef __cplusplus

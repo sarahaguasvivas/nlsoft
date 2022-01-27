@@ -30,6 +30,8 @@ struct GRU {
 	int input_shape[2];		            // (TIMESTEPS, FEATURE)
 	int output_shape[1];	            // (UNITS)
 
+    float * h_tm1;
+
     };
 
 struct GRU build_layer_gru(const float*, const float*, const float*,

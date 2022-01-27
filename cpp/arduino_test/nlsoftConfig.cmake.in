@@ -1,0 +1,5 @@
+get_filename_component(NLSOFT_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+set (NLSOFT_CMAKE_DIR include/*)
+
+set(NLSOFT_EXECUTABLE test/arduino_test_tilting.cpp)
