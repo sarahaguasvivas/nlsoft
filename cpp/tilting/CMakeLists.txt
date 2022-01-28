@@ -4,22 +4,20 @@ project(nlsoft)
 
 add_subdirectory(src)
 add_subdirectory(include)
+include_directories(include)
 
-file (GLOB SOURCES src/*.cpp)
-file (GLOB HEADERS include/*)
+file (GLOB SOURCES src/activations.cpp src/nn4mc.cpp src/helpers.cpp
+                        src/gru.cpp src/swirl_target.cpp src/dense.cpp
+                        src/matrix.cpp src/helpers.cpp)
+file (GLOB HEADERS  include/activations.h
+                                include/nn4mc.h include/helpers.hpp include/gru.h include/swirl_target.hpp
+                                        include/dense.hpp include/matrix.hpp include/helpers.hpp)
 
-add_library(nlsoftlib ${SOURCES} ${HEADERS})
+add_library(nlsoftlib SHARED ${SOURCES} ${HEADERS})
 
-foreach( testsourcefile get_filename_component(NAME ${SOURCES} ABSOLUTE )
-    string( REPLACE ".cpp" "" testname ${testsourcefile} )
-    MESSAGE(${testname})
-    add_executable(${testname} ${testsourcefile} )
-    target_link_libraries( ${testname} nlsoft ))
-endforeach( testsourcefile ${SOURCES} )
+add_executable(${PROJECT_NAME} test/arduino_test_tilting.cpp
+                src/activations.cpp src/nn4mc.cpp src/gru.cpp src/helpers.cpp
+                src/swirl_target.cpp src/dense.cpp src/matrix.cpp)
 
-add_executable(${PROJECT_NAME} test/arduino_test_tilting.cpp ${HEADERS})
-
-target_link_libraries(nlsoft matrix)
-
-target_include_directories(nlsoft PUBLIC include)
+target_include_directories(${PROJECT_NAME} PUBLIC include)
 

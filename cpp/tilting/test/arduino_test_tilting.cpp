@@ -1,3 +1,4 @@
+#include <iostream>
 #include "helpers.hpp"
 //#include "signals.hpp"
 #include "matrix.hpp"
@@ -31,6 +32,7 @@ void setup() {
 }
 
 int main() {
+    setup();
     //elapsed = millis();
     float * signal = (float*)malloc(NUM_SIGNAL*sizeof(float));
     Matrix2 Q;
@@ -150,19 +152,20 @@ int main() {
 void print_array(float * arr, int arr_size)
 {
     for (int i = 0; i < arr_size; i++) {
-      //Serial.print(arr[i], 10);
-      //Serial.print(",");
+        std::cout << arr[i] << std::endl;
+        std::cout << std::endl; 
     }
-    //Serial.println();
+    std::cout << std::endl;
 }
 
 void print_matrix(Matrix2 matrix)
 {
   for (int i=0; i< matrix.rows; i++){
     for (int j=0; j< matrix.cols; j++){
-      //Serial.print(matrix.data[i*matrix.cols + j], 10);
-      //Serial.print(",");
+        std::cout << matrix.data[i*matrix.cols + j] << std::endl;
+        std::cout << std::endl; 
     }
     //Serial.println();
+    std::cout << std::endl;
   }
 }

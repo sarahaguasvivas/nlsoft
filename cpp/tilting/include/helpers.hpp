@@ -2,17 +2,20 @@
 #define __HELPERS_H__
 
 //#include <Arduino.h>
-#include "math.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#define PI 3.1415926535897932384626433832795
 #include "nn4mc.h"
 #include "matrix.hpp"
 #include "controller.hpp"
+#include "math.h"
 
-#define PI 3.1415926535897932384626433832795
+float min(float, float);
+
+float max(float, float);
 
 void setup_nn_utils();
 

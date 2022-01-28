@@ -113,10 +113,10 @@ float * fwd_gru(struct GRU L, float * input)
     for (int i = 0; i < L.output_shape[0]; i++){
         L.h_tm1[i] = h_t[i];
     }
-    Serial.println("bb");
+//    Serial.println("bb");
     free(x_h);
     free(x_r);
     free(x_z);
-    Serial.println("hh");
+ //   Serial.println("hh");
     return h_t;
 }

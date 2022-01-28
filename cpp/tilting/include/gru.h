@@ -12,7 +12,7 @@
 #include "activations.h"
 #include <math.h>
 #include <stdlib.h>
-#include <Arduino.h>
+//#include <Arduino.h>
 
 struct GRU {
 

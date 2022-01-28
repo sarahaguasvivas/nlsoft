@@ -1,5 +1,12 @@
 #include "helpers.hpp"
 
+float max (float a, float b) {
+  return (a<b)?b:a;     // or: return comp(a,b)?b:a; for version (2)
+}
+float min (float a, float b) {
+  return (a>b)?b:a;     // or: return comp(a,b)?b:a; for version (2)
+}
+
 void setup_nn_utils()
 {
   buildLayers();  
