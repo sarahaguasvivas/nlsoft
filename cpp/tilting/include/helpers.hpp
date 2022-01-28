@@ -25,7 +25,7 @@ void roll_window(int, int, int, float *);
 
 void normalize_array(float*, float*, int, float);
 
-Matrix2 nn_prediction(int, int, int, int, int, int, int, float*, float*);
+Matrix2 nn_prediction(int, int, int, int, int, int, int, float*, float*, float*);
 
 void build_input_vector(float *, float * u, float * signal_, float * posish, int ndm, int ddn, int m, int n, int);
 

@@ -6,25 +6,27 @@
 #include "swirl_target.hpp"
 
 #define NUM_SIGNAL 18
+#define NN_INPUT_LENGTH   68
+#define GRU_OUTPUT  70
 
 void print_matrix(Matrix2);
 void print_array(float *, int);
-
 
 unsigned long timestamp;
 float current_position[3] = { 0.0 };
 unsigned long elapsed;
 
-Controller controller; // controller struct instantiation
+struct Controller controller; // controller struct instantiation
 
 //MCUCore core;
 //CoreChannel core_chnl(0);
 
 long int count = 0;
 int actuators_turn = 0;
+float h_tm1[3] = {0.0};
 
 void setup() {
- // setup_signal_collector();
+  //setup_signal_collector();
   setup_nn_utils();
  // setup_motors();
   timestamp = 0;
@@ -78,74 +80,82 @@ int main() {
     }
     normalize_array(&controller.u[0], &controller.normalized_u[0], 
                                         controller.m*controller.Nc, PI);
-   
+    float* h_tm = (float*)malloc(GRU_OUTPUT * sizeof(float));
+    for (int i = 0; i < GRU_OUTPUT; i++){
+      h_tm[i] = h_tm1[i];
+    }   
     prediction = nn_prediction(controller.N, controller.Nc, controller.n, controller.m, 
-                               NUM_SIGNAL + controller.nd*controller.m + controller.dd*controller.n, 
-                               controller.nd, controller.dd, nn_input, controller.normalized_u);
-    for (int i = 0; i < controller.n; i++) {
-        current_position[i] = prediction.data[(controller.N - 1) + i * controller.n];
+                               NN_INPUT_LENGTH, controller.nd, controller.dd, nn_input, 
+                                controller.normalized_u, &h_tm[0]);
+    for (int i = 0; i < GRU_OUTPUT; i++){
+      h_tm1[i] = h_tm[i];
     }
-    set(ynu, controller.n, controller.m);
-    set(dynu_du, controller.n, controller.m);
-    nn_gradients(&ynu, &dynu_du, controller.n, controller.m, 
-                              controller.nd, controller.nn_input_size, 
-                              nn_input, controller.epsilon);
-    //Serial.println("hhhereerere");
-    spin_swirl_target(timestamp, 0, controller.N, 
-                              controller.n, &target, controller.neutral_point);
-    del_y = subtract(target, prediction);
-    //Serial.println("hhhh"); 
-    for (int i = 0; i < controller.N*controller.n; i++){
-       controller.y[i] = prediction.data[i];
-    }
+    free(h_tm);
+    //for (int i = 0; i < controller.n; i++) {
+    //    current_position[i] = prediction.data[(controller.N - 1) + i * controller.n];
+    //}
+    //set(ynu, controller.n, controller.m);
+    //set(dynu_du, controller.n, controller.m);
+    //nn_gradients(&ynu, &dynu_du, controller.n, controller.m, 
+    //                          controller.nd, controller.nn_input_size, 
+    //                          nn_input, controller.epsilon);
+    ////Serial.println("hhhereerere");
+    //spin_swirl_target(timestamp, 0, controller.N, 
+    //                          controller.n, &target, controller.neutral_point);
+    //del_y = subtract(target, prediction);
+    ////Serial.println("hhhh"); 
+    //for (int i = 0; i < controller.N*controller.n; i++){
+    //   controller.y[i] = prediction.data[i];
+    //}
     release(prediction);
     release(target);
-    // jacobian ////////////////////////////////////////////////////////////////////
-    Matrix2 jacobian;
-    jacobian = get_jacobian(del_y, Q, Lambda, ynu, 
-                              dynu_du, del_u_matrix, &controller.u[0], 
-                              &controller.del_u[0], controller);
+    //// jacobian ////////////////////////////////////////////////////////////////////
+    //Matrix2 jacobian;
+    //jacobian = get_jacobian(del_y, Q, Lambda, ynu, 
+    //                          dynu_du, del_u_matrix, &controller.u[0], 
+    //                          &controller.del_u[0], controller);
     
-    // hessian /////////////////////////////////////////////////////////////////////
-    Matrix2 hessian;
-    hessian = get_hessian(del_y, Q, Lambda, ynu, dynu_du, 
-                            del_u_matrix, &controller.u[0], 
-                              &controller.del_u[0], controller);
-    ////////////////////////////////////////////////////////////////////////////////
-    release(del_y);
-    Matrix2 u_matrix; 
-    solve(jacobian, hessian, del_u_matrix);
-    set(u_matrix, controller.Nc, controller.m);
-    for (int i = 0; i < controller.Nc*controller.m; i++) { 
-      u_matrix.data[i] = controller.prev_u[i] - del_u_matrix.data[i];
-      //if (isnan(u_matrix.data[i])){
-      //  Serial.println("here");
-      //  u_matrix.data[i] = controller.min_max_input_saturation[0];
-      //}
-    }
-    clip_action(u_matrix, &controller);
-    for (int i = 0; i < controller.Nc*controller.m; i++) {
-      controller.prev_u[i] = controller.u[i];
-      controller.u[i] = u_matrix.data[i];
-      controller.del_u[i] = del_u_matrix.data[i];
-    }
+    //// hessian /////////////////////////////////////////////////////////////////////
+    //Matrix2 hessian;
+    //hessian = get_hessian(del_y, Q, Lambda, ynu, dynu_du, 
+    //                        del_u_matrix, &controller.u[0], 
+    //                          &controller.del_u[0], controller);
+    //////////////////////////////////////////////////////////////////////////////////
+    //release(del_y);
+    //release(ynu);
+    //release(dynu_du);
+    //Matrix2 u_matrix; 
+    //solve(jacobian, hessian, del_u_matrix);
+    //set(u_matrix, controller.Nc, controller.m);
+    //for (int i = 0; i < controller.Nc*controller.m; i++) { 
+    //  u_matrix.data[i] = controller.prev_u[i] - del_u_matrix.data[i];
+    //  //if (isnan(u_matrix.data[i])){
+    //  //  Serial.println("here");
+    //  //  u_matrix.data[i] = controller.min_max_input_saturation[0];
+    //  //}
+    //}
+    //clip_action(u_matrix, &controller);
+    //for (int i = 0; i < controller.Nc*controller.m; i++) {
+    //  controller.prev_u[i] = controller.u[i];
+    //  controller.u[i] = u_matrix.data[i];
+    //  controller.del_u[i] = del_u_matrix.data[i];
+    //}
 
-    print_matrix(u_matrix);
+    //print_matrix(u_matrix);
     
-    //step_motor(&u_matrix.data[0], controller.m);
-    release(u_matrix);
+    ////step_motor(&u_matrix.data[0], controller.m);
+    //release(u_matrix);
 
-    release(hessian);
-    release(jacobian);
+    //release(hessian);
+    //release(jacobian);
     
     release(Q);
     release(Lambda);
     release(del_u_matrix);
-    
     free(nn_input);
     free(signal);
-    timestamp++;
-    //Serial.println(millis() - elapsed);
+    ////timestamp++;
+    ////Serial.println(millis() - elapsed);
     return 0;
 }
 

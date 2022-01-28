@@ -49,16 +49,10 @@ struct GRU build_layer_gru(
 
     layer.output_shape[0] = output_units;
 
-    layer.h_tm1 = (float*)malloc(3*sizeof(float));
-
-    for (int i = 0; i < 3; i++){
-        layer.h_tm1[i] = 0.0;
-    }   
-
 	return layer;
 }
 
-float * fwd_gru(struct GRU L, float * input)
+float * fwd_gru(struct GRU L, float * input, float * h_tm1)
 {
     const int M = L.output_shape[0];
     const int NM = L.input_shape[0] * L.output_shape[0];
@@ -74,9 +68,9 @@ float * fwd_gru(struct GRU L, float * input)
     }
     for (int i = 0; i < M; i++){
         for (int k = 0; k < L.input_shape[0]; k++){
-            x_z[k * M + i] +=  L.biases[i];
-            x_r[k * M + i] +=  L.biases[i + M];
-            x_h[k * M + i] +=  L.biases[i + 2 * M];
+            x_z[k * M + i] += L.biases[i];
+            x_r[k * M + i] += L.biases[i + M];
+            x_h[k * M + i] += L.biases[i + 2 * M];
             x_z[k * M + i] += L.biases[i + 3 * M];
             x_r[k * M + i] += L.biases[i + 4 * M];
             x_h[k * M + i] += L.biases[i + 5 * M];
@@ -87,8 +81,8 @@ float * fwd_gru(struct GRU L, float * input)
             }
         }
         for (int j = 0; j < M; j++){
-            x_z[i * M + j] += *(L.big_u + i * 3 * M + j) * L.h_tm1[j];
-            x_r[i * M + j] += *(L.big_u + i * 3 * M + j + M) * L.h_tm1[j];
+            x_z[i * M + j] += *(L.big_u + i * 3 * M + j) * h_tm1[j];
+            x_r[i * M + j] += *(L.big_u + i * 3 * M + j + M) * h_tm1[j];
         }
     }
     free(input);
@@ -97,26 +91,24 @@ float * fwd_gru(struct GRU L, float * input)
     for (int i = 0; i < M; i++){
         for (int j = 0; j < M; j++){
             x_h[i * M + j] += *(L.big_u + i * 3 * M + j + 2 * M) *
-                                                    L.h_tm1[j] * x_r[j];
+                                                    h_tm1[j] * x_r[j];
         }
     }
     x_h = activate(x_h, NM, L.activation);
     for (int i = 0; i < M; i++){
         for (int j = 0; j < L.input_shape[0]; j++){
-                h_t[j * M + i] = ((float)1.0 - x_z[j * M + i]) *
+                h_t[j * M + i] = (1.0 - x_z[j * M + i]) *
                                         x_h[j * M + i] +
                                             x_z[j * M + i] *
-                                            L.h_tm1[i];
+                                            h_tm1[i];
 
         }
     }
-    for (int i = 0; i < L.output_shape[0]; i++){
-        L.h_tm1[i] = h_t[i];
-    }
-//    Serial.println("bb");
     free(x_h);
     free(x_r);
     free(x_z);
- //   Serial.println("hh");
+    for (int i = 0; i < L.output_shape[0]; i++){
+        h_tm1[i] = h_t[i];
+    }
     return h_t;
 }

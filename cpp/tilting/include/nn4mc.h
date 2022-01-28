@@ -19,7 +19,7 @@ extern "C" {
 #include "parameters.h"
 
 
-float* fwdNN(float*);
+float* fwdNN(float*, float*);
 void buildLayers();
 
 #ifdef __cplusplus

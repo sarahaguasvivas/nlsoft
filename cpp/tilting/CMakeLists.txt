@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10.2)
 
 project(nlsoft)
-
+set (CMAKE_CXX_STANDARD 11)
 add_subdirectory(src)
 add_subdirectory(include)
 include_directories(include)

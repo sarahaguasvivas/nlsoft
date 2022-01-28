@@ -2,6 +2,7 @@
 
 #define PI 3.1415926535897932384626433832795
 #define NUM_SIGNAL  18
+
 struct Controller{
   float machine_zero = 1e-10;
   float epsilon = 5e-2;
