@@ -88,12 +88,14 @@ float * fwd_gru(struct GRU L, float * input, float * h_tm1)
     free(input);
     x_z = activate(x_z, NM, L.recurrent_activation);
     x_r = activate(x_r, NM, L.recurrent_activation);
-    //for (int i = 0; i < M; i++){
-    //    for (int j = 0; j < M; j++){
-    //        x_h[i * M + j] += *(L.big_u + i * 3 * M + j + 2 * M) *
-    //                                                h_tm1[j] * x_r[j];
-    //    }
-    //}
+    for (int i = 0; i < L.input_shape[0]; i++){
+        for (int j = 0; j < M; j++){
+            for (int k = 0; k < M; k++){
+                x_h[i * M + j] += *(L.big_u + k * 3 * M + j + 2 * M) *
+                                                        h_tm1[j] * x_r[i * M + k];
+            }
+        }
+    }
     x_h = activate(x_h, NM, L.activation);
     for (int i = 0; i < M; i++){
         for (int j = 0; j < L.input_shape[0]; j++){
@@ -104,11 +106,11 @@ float * fwd_gru(struct GRU L, float * input, float * h_tm1)
 
         }
     }
+    for (int i = 0; i < L.output_shape[0]; i++){
+        h_tm1[i] = h_t[i];
+    }    
     free(x_h);
     free(x_r);
     free(x_z);
-    for (int i = 0; i < L.output_shape[0]; i++){
-        h_tm1[i] = h_t[i];
-    }
     return h_t;
 }
