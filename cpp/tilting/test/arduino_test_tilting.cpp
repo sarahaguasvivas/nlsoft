@@ -148,6 +148,7 @@ int main() {
     release(Lambda);
     release(del_u_matrix);
     free(signal);
+    free(nn_input);
     ////timestamp++;
     ////Serial.println(millis() - elapsed);
     return 0;
