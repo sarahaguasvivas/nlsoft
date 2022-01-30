@@ -5,6 +5,7 @@ void set(struct Matrix2 & a, int rows, int cols)
     a.rows = rows;
     a.cols = cols; 
     if (a.rows > 0 && a.cols > 0) a.data = (float*)malloc(a.rows*a.cols*sizeof(float));
+    set_to_zero(a);
 }
 
 void cleanup_helper (float ** pointer){
@@ -21,6 +22,7 @@ struct Matrix2 scale(float scale, struct Matrix2 matrix)
 {
     Matrix2 scaled;
     set(scaled, matrix.rows, matrix.cols);
+    set_to_zero(scaled);
     for (int i=0; i< matrix.rows; i++)
       for (int j=0; j<matrix.cols;j++)
         scaled.data[i*scaled.cols + j] = scale*matrix.data[i*matrix.cols + j];
@@ -58,20 +60,16 @@ struct Matrix2 transpose(struct Matrix2 a)
     int size = a.rows*a.cols;
     
     Matrix2 transp;
-    set(transp, a.rows, a.cols);
+    set(transp, a.cols, a.rows);
+    set_to_zero(transp);
 
     for (int i = 0 ; i< a.rows; i++)
     {
         for (int j = 0; j< a.cols; j++)
         {
-            int forward_idx = i * a.cols + j;
-            int transposed_idx = j * a.cols + i;
-            transp.data[forward_idx] = a.data[transposed_idx];
+            transp.data[j * a.rows + i] = a.data[i * a.cols + j];
         }
     }
-    int temp = a.rows;
-    transp.rows = a.cols;
-    transp.cols = a.rows;
     
     return transp;
 }
@@ -174,6 +172,7 @@ struct Matrix2 multiply(struct Matrix2 a, struct Matrix2 b)
 {
     Matrix2 product;
     set(product, a.rows, b.cols);
+    set_to_zero(product);
     
     if (a.cols == b.rows)
     {

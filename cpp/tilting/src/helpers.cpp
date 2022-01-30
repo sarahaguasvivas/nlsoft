@@ -189,7 +189,6 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
     release(temp);
     
     temp = multiply(del_u_matrix, Lambda);
-    release(del_u_matrix);
     temp1 = scale(2., temp);
     release(temp);
     
@@ -219,7 +218,7 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
       {
         for (int i = 0; i < controller.m; i++)
         {
-          jacobian.data[i*jacobian.cols + j] += -controller.s / pow(u[j*controller.m + i] + 
+          jacobian.data[h*jacobian.cols + j] += -controller.s / pow(u[j*controller.m + i] + 
                                                   controller.r / 2.0 - controller.b, 2) +  controller.s / 
                                                   pow(controller.r / 2.0 + controller.b - u[j*controller.m + i], 2.0);
         }
@@ -246,13 +245,11 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
     set_to_zero(hessian);
      
     temp = hadamard(ynu, ynu);
-    release(ynu);
     temp1 = multiply(Q, temp);
     release(temp);
     temp = scale(2., temp1);
     release(temp1);
     temp1 = multiply(Q, dynu_du);
-    release(dynu_du);
     temp2 = multiply(del_y, temp1);
     release(temp1);
     trn = scale(2., temp2);
@@ -269,7 +266,7 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
     release(temp4);
     
     for (int i = 0 ; i < controller.Nc*controller.Nc; i++) hessian.data[i] = 
-                                          trn1.data[0] - trn2.data[0]; //  subtract(temp3, temp4);
+                                          trn1.data[0] - trn2.data[0];
     release(trn1);
     release(trn2);
     set(hessian1, controller.Nc, controller.Nc);
@@ -290,7 +287,7 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
     {
       for (int mm = 0; mm < controller.Nc; mm++)
       {
-        hessian1.data[h*controller.Nc+mm] = sum2.data[0];
+       hessian1.data[h*controller.Nc+mm] = sum2.data[0];
                
         for (int j = 0; j < controller.m ; j++)
         { 
@@ -323,12 +320,13 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
                                                               controller.machine_zero), 3.0) + controller.machine_zero;
             }
         }
+       release(mult1);
+
       }
     }
     release(sum2);
     release(second_y);
     release(second_y1);
-    release(mult1);
     release(hessian);
     return hessian1;
 }

@@ -7,7 +7,6 @@
 
 #define NUM_SIGNAL 18
 #define NN_INPUT_LENGTH   68
-//#define GRU_OUTPUT  70
 
 void print_matrix(Matrix2);
 void print_array(float *, int);
@@ -99,28 +98,27 @@ int main() {
     nn_gradients(&ynu, &dynu_du, controller.n, controller.m, 
                               controller.nd, controller.nn_input_size, 
                               nn_input, controller.epsilon);
-    //spin_swirl_target(timestamp, 0, controller.N, 
-    //                          controller.n, &target, controller.neutral_point);
-    //del_y = subtract(target, prediction);
-    ////Serial.println("hhhh"); 
-    //for (int i = 0; i < controller.N*controller.n; i++){
-    //   controller.y[i] = prediction.data[i];
-    //}
-    //release(prediction);
-    //release(target);
+    spin_swirl_target(timestamp, 0, controller.N, 
+                              controller.n, &target, controller.neutral_point);
+    del_y = subtract(target, prediction);
+    for (int i = 0; i < controller.N*controller.n; i++){
+       controller.y[i] = prediction.data[i];
+    }
+    release(prediction);
+    release(target);
     //// jacobian ////////////////////////////////////////////////////////////////////
-    //Matrix2 jacobian;
-    //jacobian = get_jacobian(del_y, Q, Lambda, ynu, 
-    //                          dynu_du, del_u_matrix, &controller.u[0], 
-    //                          &controller.del_u[0], controller);
+    Matrix2 jacobian;
+    jacobian = get_jacobian(del_y, Q, Lambda, ynu, 
+                              dynu_du, del_u_matrix, &controller.u[0], 
+                              &controller.del_u[0], controller);
     
     //// hessian /////////////////////////////////////////////////////////////////////
-    //Matrix2 hessian;
-    //hessian = get_hessian(del_y, Q, Lambda, ynu, dynu_du, 
-    //                        del_u_matrix, &controller.u[0], 
-    //                          &controller.del_u[0], controller);
+    Matrix2 hessian;
+    hessian = get_hessian(del_y, Q, Lambda, ynu, dynu_du, 
+                            del_u_matrix, &controller.u[0], 
+                              &controller.del_u[0], controller);
     //////////////////////////////////////////////////////////////////////////////////
-    //release(del_y);
+    release(del_y);
     release(ynu);
     release(dynu_du);
     //Matrix2 u_matrix; 
@@ -145,8 +143,8 @@ int main() {
     ////step_motor(&u_matrix.data[0], controller.m);
     //release(u_matrix);
 
-    //release(hessian);
-    //release(jacobian);
+    release(hessian);
+    release(jacobian);
     release(Q);
     release(Lambda);
     release(del_u_matrix);
