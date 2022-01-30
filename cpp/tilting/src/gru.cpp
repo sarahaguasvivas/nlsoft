@@ -1,4 +1,3 @@
-
 /********************
 
     gru.cpp
@@ -55,7 +54,7 @@ struct GRU build_layer_gru(
 float * fwd_gru(struct GRU L, float * input, float * h_tm1)
 {
     const int M = L.output_shape[0];
-    const int NM = L.input_shape[0] * L.output_shape[0];
+    const int NM = L.input_shape[1] * L.output_shape[0];
     float * x_z = (float*)malloc(NM * sizeof(float));
     float * x_r = (float*)malloc(NM * sizeof(float));
     float * x_h = (float*)malloc(NM * sizeof(float));
@@ -74,26 +73,27 @@ float * fwd_gru(struct GRU L, float * input, float * h_tm1)
             x_z[k * M + i] += L.biases[i + 3 * M];
             x_r[k * M + i] += L.biases[i + 4 * M];
             x_h[k * M + i] += L.biases[i + 5 * M];
-            for (int j = 0; j < L.input_shape[1]; j++){
+            for (int j = 0; j < L.input_shape[0]; j++){
                 x_z[k * M + i] += input[k * L.input_shape[1] + j] * *(L.weights + j * 3*M + i);
                 x_r[k * M + i] += input[k * L.input_shape[1] + j] * *(L.weights + j * 3*M + i + M);
                 x_h[k * M + i] += input[k * L.input_shape[1] + j] * *(L.weights + j * 3*M + i + 2*M);
             }
+            for (int j = 0; j < M; j++){
+                x_z[k * M + j] += *(L.big_u + i * 3 * M + j) * h_tm1[j];
+                x_r[k * M + j] += *(L.big_u + i * 3 * M + j + M) * h_tm1[j];
+            }   
         }
-        for (int j = 0; j < M; j++){
-            x_z[i * M + j] += *(L.big_u + i * 3 * M + j) * h_tm1[j];
-            x_r[i * M + j] += *(L.big_u + i * 3 * M + j + M) * h_tm1[j];
-        }
+        
     }
     free(input);
     x_z = activate(x_z, NM, L.recurrent_activation);
     x_r = activate(x_r, NM, L.recurrent_activation);
-    for (int i = 0; i < M; i++){
-        for (int j = 0; j < M; j++){
-            x_h[i * M + j] += *(L.big_u + i * 3 * M + j + 2 * M) *
-                                                    h_tm1[j] * x_r[j];
-        }
-    }
+    //for (int i = 0; i < M; i++){
+    //    for (int j = 0; j < M; j++){
+    //        x_h[i * M + j] += *(L.big_u + i * 3 * M + j + 2 * M) *
+    //                                                h_tm1[j] * x_r[j];
+    //    }
+    //}
     x_h = activate(x_h, NM, L.activation);
     for (int i = 0; i < M; i++){
         for (int j = 0; j < L.input_shape[0]; j++){

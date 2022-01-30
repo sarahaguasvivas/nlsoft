@@ -35,7 +35,7 @@ void clip_action(
 
 void roll_window(int start, int finish, int buffer_size, float * array)
 {
-    for (int i = finish - buffer_size + 1; i >= start; i--) 
+    for (int i = finish; i >= buffer_size + start; i--) 
     {
         array[i] = array[i - buffer_size];
     }
@@ -45,19 +45,19 @@ void build_input_vector(
                   float * vector, 
                   float * u,  
                   float * signal_, 
-                    float * posish, 
-                    int ndm, 
-                    int ddn, 
-                    int m, 
-                    int n, 
-                    int num_sig
+                  float * posish, 
+                  int ndm, 
+                  int ddn, 
+                  int m, 
+                  int n, 
+                  int num_sig
 ){
    int input_size = ndm + ddn + num_sig;
    roll_window(0, ndm, m, vector);
    for (int i = 0; i < m; i++) vector[i] = u[i];
    roll_window(ndm, ndm + ddn, n, vector);
    for (int i = 0; i < n; i++) vector[i + ndm] = posish[i];
-   for (int i = ndm + ddn; i < input_size; i++) vector[i] = signal_[i - (ndm + ddn)];
+   for (int i = 0; i < num_sig; i++) vector[i + ndm+ddn] = signal_[i];
 }
 
 Matrix2 nn_prediction(
@@ -91,19 +91,19 @@ Matrix2 nn_prediction(
         float * output_next;
         output_next = fwdNN(input_next, h_tm1);
         
-        //int input_index = (i < Nc) ? i : (Nc-1);
+        int input_index = (i < Nc) ? i : (Nc-1);
         
-        //for (int k = 0; k < m; k++)
-        //{
-        //   motor_input[k] = u[input_index*m + k];
-        //} 
-        //build_input_vector(previous_input, motor_input, signals, 
-        //                              output_next, nd*m, dd*n, 
-        //                              m, n, NUM_SIGNAL);
-        //for (int j = 0; j < n; j++)
-        //{
-        //    y_output.data[i * n + j] = output_next[j];
-        //}
+        for (int k = 0; k < m; k++)
+        {
+           motor_input[k] = u[input_index*m + k];
+        } 
+        build_input_vector(previous_input, motor_input, signals, 
+                                      output_next, nd*m, dd*n, 
+                                      m, n, NUM_SIGNAL);
+        for (int j = 0; j < n; j++)
+        {
+            y_output.data[i * n + j] = output_next[j];
+        }
         free(output_next);
     }
     free(signals);

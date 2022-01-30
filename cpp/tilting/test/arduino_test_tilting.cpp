@@ -22,8 +22,8 @@ struct Controller controller; // controller struct instantiation
 //CoreChannel core_chnl(0);
 
 long int count = 0;
-int actuators_turn = 0;
-float h_tm1[3] = {0.0};
+//int actuators_turn = 0;
+float h_tm1[GRU_OUTPUT] = {0.0};
 
 void setup() {
   //setup_signal_collector();
@@ -107,8 +107,8 @@ int main() {
     //for (int i = 0; i < controller.N*controller.n; i++){
     //   controller.y[i] = prediction.data[i];
     //}
-    release(prediction);
-    release(target);
+    //release(prediction);
+    //release(target);
     //// jacobian ////////////////////////////////////////////////////////////////////
     //Matrix2 jacobian;
     //jacobian = get_jacobian(del_y, Q, Lambda, ynu, 
@@ -148,11 +148,10 @@ int main() {
 
     //release(hessian);
     //release(jacobian);
-    
     release(Q);
     release(Lambda);
     release(del_u_matrix);
-    free(nn_input);
+    //free(nn_input);
     free(signal);
     ////timestamp++;
     ////Serial.println(millis() - elapsed);
