@@ -35,7 +35,7 @@ float partial_delta_u_partial_u(int, int);
 float kronecker_delta(int, int);
 Matrix2 get_jacobian(Matrix2, Matrix2, Matrix2, Matrix2, Matrix2, Matrix2, float *, float *, struct Controller);
 Matrix2 get_hessian(Matrix2, Matrix2, Matrix2, Matrix2, Matrix2, Matrix2, float *, float *, struct Controller);
-void solve(Matrix2, Matrix2, Matrix2 &);
+void solve(Matrix2&, Matrix2&, Matrix2 &);
 void clip_action(Matrix2 &, Controller*);
 
 #ifdef __cplusplus

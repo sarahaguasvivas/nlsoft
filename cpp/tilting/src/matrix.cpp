@@ -176,13 +176,13 @@ struct Matrix2 multiply(struct Matrix2 a, struct Matrix2 b)
     
     if (a.cols == b.rows)
     {
-        for (int i = 0; i < a.rows; ++i)
+        for (int i = 0; i < a.rows; i++)
         {
-            for (int j = 0; j < b.cols; ++j)
+            for (int j = 0; j < b.cols; j++)
             {
                 product.data[i*b.cols + j] = 0.0;
                 
-                for (int k = 0; k < a.cols; ++k)
+                for (int k = 0; k < a.cols; k++)
                 {
                     product.data[i*b.cols + j] +=  a.data[i*a.cols + k] * b.data[k * b.cols + j];
                 }

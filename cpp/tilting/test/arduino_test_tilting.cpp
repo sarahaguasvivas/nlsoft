@@ -117,38 +117,36 @@ int main() {
     hessian = get_hessian(del_y, Q, Lambda, ynu, dynu_du, 
                             del_u_matrix, &controller.u[0], 
                               &controller.del_u[0], controller);
-    //////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////
     release(del_y);
     release(ynu);
     release(dynu_du);
-    //Matrix2 u_matrix; 
-    //solve(jacobian, hessian, del_u_matrix);
-    //set(u_matrix, controller.Nc, controller.m);
-    //for (int i = 0; i < controller.Nc*controller.m; i++) { 
-    //  u_matrix.data[i] = controller.prev_u[i] - del_u_matrix.data[i];
-    //  //if (isnan(u_matrix.data[i])){
-    //  //  Serial.println("here");
-    //  //  u_matrix.data[i] = controller.min_max_input_saturation[0];
-    //  //}
-    //}
-    //clip_action(u_matrix, &controller);
-    //for (int i = 0; i < controller.Nc*controller.m; i++) {
-    //  controller.prev_u[i] = controller.u[i];
-    //  controller.u[i] = u_matrix.data[i];
-    //  controller.del_u[i] = del_u_matrix.data[i];
-    //}
+    Matrix2 u_matrix; 
+    solve(jacobian, hessian, del_u_matrix);
+    set(u_matrix, controller.Nc, controller.m);
+    for (int i = 0; i < controller.Nc*controller.m; i++) { 
+      u_matrix.data[i] = controller.prev_u[i] - del_u_matrix.data[i];
+      //if (isnan(u_matrix.data[i])){
+      //  Serial.println("here");
+      //  u_matrix.data[i] = controller.min_max_input_saturation[0];
+      //}
+    }
+    clip_action(u_matrix, &controller);
+    for (int i = 0; i < controller.Nc*controller.m; i++) {
+      controller.prev_u[i] = controller.u[i];
+      controller.u[i] = u_matrix.data[i];
+      controller.del_u[i] = del_u_matrix.data[i];
+    }
 
     //print_matrix(u_matrix);
     
-    ////step_motor(&u_matrix.data[0], controller.m);
-    //release(u_matrix);
-
+    //step_motor(&u_matrix.data[0], controller.m);
+    release(u_matrix);
     release(hessian);
     release(jacobian);
     release(Q);
     release(Lambda);
     release(del_u_matrix);
-    //free(nn_input);
     free(signal);
     ////timestamp++;
     ////Serial.println(millis() - elapsed);

@@ -297,7 +297,6 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
        
         scale_1 = scale(2., Lambda);
         mult = multiply(second_y, second_y1);
-        
         mult1 = multiply(scale_1, mult);
         Matrix2 multt;
         Matrix2 multtt;
@@ -331,11 +330,12 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
     return hessian1;
 }
 
-void solve(Matrix2 jacobian, Matrix2 hessian, Matrix2 &del_u_matrix){
+void solve(Matrix2& jacobian, Matrix2& hessian, Matrix2 &del_u_matrix){
     Matrix2 inv;
     inv = inverse(hessian);
     Matrix2 minusj;
     minusj = scale(-1., jacobian);
+    release(del_u_matrix);
     del_u_matrix = multiply(inv, minusj); 
     release(inv);
     release(minusj);
