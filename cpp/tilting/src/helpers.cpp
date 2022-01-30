@@ -115,8 +115,8 @@ void nn_gradients(Matrix2 * first_derivative, Matrix2 * second_derivative,
 {
     set_to_zero(*first_derivative);
     set_to_zero(*second_derivative);
-    float * h_tm1 = (float*)malloc(n); 
-    for (int i = 0; i < n; i++){
+    float * h_tm1 = (float*)malloc(GRU_OUTPUT*sizeof(float)); 
+    for (int i = 0; i < GRU_OUTPUT; i++){
         h_tm1[i] = 0.0;
     }
     for (int nn = 0; nn < nd*m; nn++)
@@ -149,10 +149,10 @@ void nn_gradients(Matrix2 * first_derivative, Matrix2 * second_derivative,
                               (output_plus_h[i] - 2.*output[i] + output_minus_h[i]) / (epsilon * epsilon);    
       }
       free(output);
-      free(h_tm1);
       free(output_minus_h);
       free(output_plus_h);  
     }
+    free(h_tm1);
 }
 
 

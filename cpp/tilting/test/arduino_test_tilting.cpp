@@ -7,7 +7,7 @@
 
 #define NUM_SIGNAL 18
 #define NN_INPUT_LENGTH   68
-#define GRU_OUTPUT  70
+//#define GRU_OUTPUT  70
 
 void print_matrix(Matrix2);
 void print_array(float *, int);
@@ -91,15 +91,14 @@ int main() {
       h_tm1[i] = h_tm[i];
     }
     free(h_tm);
-    //for (int i = 0; i < controller.n; i++) {
-    //    current_position[i] = prediction.data[(controller.N - 1) + i * controller.n];
-    //}
-    //set(ynu, controller.n, controller.m);
-    //set(dynu_du, controller.n, controller.m);
-    //nn_gradients(&ynu, &dynu_du, controller.n, controller.m, 
-    //                          controller.nd, controller.nn_input_size, 
-    //                          nn_input, controller.epsilon);
-    ////Serial.println("hhhereerere");
+    for (int i = 0; i < controller.n; i++) {
+        current_position[i] = prediction.data[(controller.N - 1) + i * controller.n];
+    }
+    set(ynu, controller.n, controller.m);
+    set(dynu_du, controller.n, controller.m);
+    nn_gradients(&ynu, &dynu_du, controller.n, controller.m, 
+                              controller.nd, controller.nn_input_size, 
+                              nn_input, controller.epsilon);
     //spin_swirl_target(timestamp, 0, controller.N, 
     //                          controller.n, &target, controller.neutral_point);
     //del_y = subtract(target, prediction);
@@ -122,8 +121,8 @@ int main() {
     //                          &controller.del_u[0], controller);
     //////////////////////////////////////////////////////////////////////////////////
     //release(del_y);
-    //release(ynu);
-    //release(dynu_du);
+    release(ynu);
+    release(dynu_du);
     //Matrix2 u_matrix; 
     //solve(jacobian, hessian, del_u_matrix);
     //set(u_matrix, controller.Nc, controller.m);
