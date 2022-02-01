@@ -25,13 +25,13 @@ from collections import deque
 #  Channel 44--48: Centroid position
 #  Channel 49--52: {q0, q1, q2, q3}
 #
+NUM_SENSORS = 18
+N_D = 2
+D_D = 2
+DATA_SIZE = N_D*6 + D_D*3 + NUM_SENSORS + 2
+TRAINING = True
 
-N_D = 5
-D_D = 5
-DATA_SIZE = 68
-TRAINING = False
-
-data_files_location = "../../data/12_23_2021"
+data_files_location = "../data/12_23_2021/12_23_2021"
 regions = ['SV_tilt_' + str(i) for i in range(1, 20)]
 
 def prepare_data_file_vani(signals, position, inputs, nd=3, dd=3):
@@ -72,10 +72,10 @@ def huber_loss(y_true, y_pred):
 
 def create_gru_network(x_train_shape: Tuple[int]):
     model = Sequential()
-    model.add(GRU(units = 70, input_shape = (1, x_train_shape[-1])))
+    model.add(GRU(units = 10, input_shape = (1, x_train_shape[-1])))
     model.add(Dense(10, activation = 'relu'))
-    model.add(Dense(3, activation = 'tanh', kernel_initializer='random_normal'))
-                            #bias_constraint = tf.keras.constraints.max_norm(0.0)))
+    model.add(Dense(3, activation = 'tanh', kernel_initializer='random_normal',
+                            bias_constraint = tf.keras.constraints.max_norm(0.0)))
     model.compile(optimizer = "adam", loss = huber_loss, metrics=["mse"])
     return model
 
@@ -97,6 +97,7 @@ def create_data_labels(data):
                                                 nd = N_D, dd = D_D)
         X += [dataset]
         y += [labels]
+    print(X[0].shape)
     return np.vstack(X), np.vstack(y)
 
 def gru_training(data):
@@ -112,7 +113,7 @@ def gru_training(data):
     return X, y, model
 
 if __name__=='__main__':
-    plt.style.use('seaborn')
+    #plt.style.use('seaborn')
     files = []
     for region in regions:
       files += [f for f in listdir(data_files_location)
