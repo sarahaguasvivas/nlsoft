@@ -44,7 +44,7 @@ void roll_window(int start, int finish, int buffer_size, float * array)
 void build_input_vector(
                   float * vector, 
                   float * u,  
-                  float * signal_, 
+                  float * sensors, 
                   float * posish, 
                   int ndm, 
                   int ddn, 
@@ -53,11 +53,17 @@ void build_input_vector(
                   int num_sig
 ){
    int input_size = ndm + ddn + num_sig;
-   roll_window(0, ndm, m, vector);
-   for (int i = 0; i < m; i++) vector[i] = u[i];
-   roll_window(ndm, ndm + ddn, n, vector);
-   for (int i = 0; i < n; i++) vector[i + ndm] = posish[i];
-   for (int i = 0; i < num_sig; i++) vector[i + ndm+ddn] = signal_[i];
+   roll_window(m, ndm - 1, m, vector);
+   for (int i = 0; i < m; i++){
+      vector[i] = u[i];
+   }   
+   roll_window(ndm + n, ndm + ddn - 1, n, vector);
+   for (int i = 0; i < n; i++){
+      vector[i + ndm] = posish[i];
+   }
+   for (int i = 0; i < num_sig; i++){ 
+     vector[i + ndm+ddn] = sensors[i];
+   }
 }
 
 Matrix2 nn_prediction(

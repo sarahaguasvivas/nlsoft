@@ -66,7 +66,8 @@ void loop() {
       build_input_vector(nn_input, controller.normalized_u, signal, current_position, 
                         controller.nd*controller.m, controller.dd*controller.n, 
                         controller.m, controller.n, NUM_SIGNAL);
-    } 
+    }
+    print_array(nn_input, NN_INPUT_LENGTH); 
     for (int i = 0 ; i < controller.nn_input_size ; i++) {
       controller.past_nn_input[i] = nn_input[i];
     }
@@ -83,9 +84,15 @@ void loop() {
       h_tm1[i] = h_tm[i];
     }
     free(h_tm);
-    for (int i = 0; i < controller.n; i++) {
-        current_position[i] = prediction.data[(controller.N - 1) + i * controller.n];
+    Serial.println("PREDICTION DATA");
+    print_matrix(prediction);
+    Serial.println();
+    for (int i = 0; i < controller.n; ++i) {
+        current_position[i] = prediction.data[(controller.N - 1) * controller.n + i];
     }
+    Serial.println("POSITION");
+    print_array(current_position, controller.n);
+    Serial.println();
     set(ynu, controller.n, controller.m);
     set(dynu_du, controller.n, controller.m);
     nn_gradients(&ynu, &dynu_du, controller.n, controller.m, 
@@ -135,7 +142,7 @@ void loop() {
     release(del_u_matrix);
     free(signal);
     free(nn_input);
-    //timestamp++;
+    timestamp++;
     Serial.println(millis() - elapsed);
 }
 
