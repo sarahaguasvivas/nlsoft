@@ -5,7 +5,7 @@
 #include "swirl_target.hpp"
 
 #define NUM_SIGNAL 18
-#define NN_INPUT_LENGTH   38
+#define NN_INPUT_LENGTH   36
 
 void print_matrix(Matrix2);
 void print_array(float *, int);
@@ -62,8 +62,11 @@ void loop() {
       nn_input[i] = controller.past_nn_input[i];
     }
     collect_signal(&signal[0], &controller.signal_calibration[0], NUM_SIGNAL);
+    Serial.println(NUM_SIGNAL + controller.nd*controller.m + 
+                    controller.dd*controller.n);
     if (timestamp > 0){
-      build_input_vector(nn_input, controller.normalized_u, signal, current_position, 
+      build_input_vector(&nn_input[0], &controller.normalized_u[0], &signal[0], 
+                        &current_position[0], 
                         controller.nd*controller.m, controller.dd*controller.n, 
                         controller.m, controller.n, NUM_SIGNAL);
     }
@@ -72,7 +75,7 @@ void loop() {
       controller.past_nn_input[i] = nn_input[i];
     }
     normalize_array(&controller.u[0], &controller.normalized_u[0], 
-                                        controller.m*controller.Nc, PI);
+                                        controller.m*controller.Nc, 1.);
     float* h_tm = (float*)malloc(GRU_OUTPUT * sizeof(float));
     for (int i = 0; i < GRU_OUTPUT; i++){
       h_tm[i] = h_tm1[i];
@@ -126,12 +129,13 @@ void loop() {
     for (int i = 0; i < controller.Nc*controller.m; i++) { 
       u_matrix.data[i] = controller.prev_u[i] - del_u_matrix.data[i];
     }
-    //clip_action(u_matrix, &controller);
+    clip_action(u_matrix, &controller);
     for (int i = 0; i < controller.Nc*controller.m; i++) {
       controller.prev_u[i] = controller.u[i];
       controller.u[i] = u_matrix.data[i];
       controller.del_u[i] = del_u_matrix.data[i];
     }
+    Serial.println();
     print_matrix(u_matrix);
     step_motor(&u_matrix.data[0], controller.m);
     release(u_matrix);

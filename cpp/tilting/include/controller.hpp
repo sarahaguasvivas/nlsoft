@@ -2,7 +2,7 @@
 
 #define PI 3.1415926535897932384626433832795
 #define NUM_SIGNAL  18
-#define NN_INPUT_S   38
+#define NN_INPUT_S   36
 
 struct Controller{
   float machine_zero = 1e-10;

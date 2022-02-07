@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 #define PI 3.1415926535897932384626433832795
-#define GRU_OUTPUT  10
+#define GRU_OUTPUT  15
 
 #include "nn4mc.h"
 #include "matrix.hpp"

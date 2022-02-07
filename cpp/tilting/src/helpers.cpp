@@ -53,16 +53,16 @@ void build_input_vector(
                   int num_sig
 ){
    int input_size = ndm + ddn + num_sig;
-   roll_window(m, ndm - 1, m, vector);
+   roll_window(m, 11, m, vector);
    for (int i = 0; i < m; i++){
       vector[i] = u[i];
    }   
-   roll_window(ndm + n, ndm + ddn - 1, n, vector);
+   roll_window(15, 20, n, vector);
    for (int i = 0; i < n; i++){
-      vector[i + ndm] = posish[i];
+      vector[i + 12] = posish[i];
    }
-   for (int i = 0; i < num_sig; i++){ 
-     vector[i + ndm+ddn] = sensors[i];
+   for (int i = ndm + ddn + num_sig - 1; i >= ndm + ddn; i--){ 
+     vector[i] = sensors[i - ndm - ddn];
    }
 }
 

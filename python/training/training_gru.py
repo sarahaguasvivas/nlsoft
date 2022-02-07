@@ -28,10 +28,10 @@ from collections import deque
 NUM_SENSORS = 18
 N_D = 2
 D_D = 2
-DATA_SIZE = N_D*6 + D_D*3 + NUM_SENSORS + 2
+DATA_SIZE = N_D*6 + D_D*3 + NUM_SENSORS
 TRAINING = True
 
-data_files_location = "../data/12_23_2021/12_23_2021"
+data_files_location = "../../data/12_23_2021"
 regions = ['SV_tilt_' + str(i) for i in range(1, 20)]
 
 def prepare_data_file_vani(signals, position, inputs, nd=3, dd=3):
@@ -48,7 +48,6 @@ def prepare_data_file_vani(signals, position, inputs, nd=3, dd=3):
     U = np.empty((signals.shape[0] - N + 1, 6))
     Y = np.empty((signals.shape[0] - N + 1, 3))
     L = signals.shape[0]
-
     # TODO: Test for when nd neq dd
     for i in range(nd):
         U = np.concatenate((U, inputs[nd - i - 1 + (N - nd):L - i, :]), axis=1)
@@ -72,8 +71,8 @@ def huber_loss(y_true, y_pred):
 
 def create_gru_network(x_train_shape: Tuple[int]):
     model = Sequential()
-    model.add(GRU(units = 10, input_shape = (1, x_train_shape[-1])))
-    model.add(Dense(10, activation = 'relu'))
+    model.add(GRU(units = 15, input_shape = (1, x_train_shape[-1])))
+    model.add(Dense(15, activation = 'relu'))
     model.add(Dense(3, activation = 'tanh', kernel_initializer='random_normal',
                             bias_constraint = tf.keras.constraints.max_norm(0.0)))
     model.compile(optimizer = "adam", loss = huber_loss, metrics=["mse"])
@@ -89,7 +88,7 @@ def create_data_labels(data):
 
         position = data[i][:, 41:44]
         signals = np.concatenate((mag_x, mag_y, mag_z), axis = 1)
-        pwm_inputs = data[i][:, 19:26]
+        pwm_inputs = data[i][:, 19:25]
 
         dataset, labels = prepare_data_file_vani(signals = signals,
                                                 position = position,
@@ -108,7 +107,7 @@ def gru_training(data):
     for train, test in kfold.split(X, y):
         x_train = X[train].reshape(-1, 1, DATA_SIZE)
         y_train = y[train]
-        model.fit(x_train, y_train, epochs = 20, batch_size = 100)
+        model.fit(x_train, y_train, epochs = 20, batch_size = 50)
     model.save('forward_kinematics_jan_10_2022.hdf5')
     return X, y, model
 
@@ -131,7 +130,6 @@ if __name__=='__main__':
     else:
         X, y = create_data_labels(data)
 
-    print(X.shape)
     forward_kinematics_model = keras.models.load_model('forward_kinematics_jan_10_2022.hdf5', compile=False)
     samples = 10000
     X_sysint = X[:samples, :]

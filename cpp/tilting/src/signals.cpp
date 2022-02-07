@@ -220,6 +220,11 @@ void collect_signal(float * signal_to_read, float* calibration_vector,
          *(signal_to_read + 6 + chip_iterator) = max((float)magnetic_mG[1][chip_iterator] / calibration_vector[6 + chip_iterator], 0);
          *(signal_to_read + 12 + chip_iterator) = max((float)magnetic_mG[2][chip_iterator] / calibration_vector[12 + chip_iterator], 0);
         }
+        for (int i = 0; i < 18; i++){
+            if (isinf(signal_to_read[i])){
+                signal_to_read[i] = 0.0;
+            }
+        }
         digitalWriteFast(PROBEPIN, !digitalRead(PROBEPIN));
         while (micros() < (loop_timing + loop_control_period))
         {
