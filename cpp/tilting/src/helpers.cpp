@@ -33,15 +33,15 @@ void clip_action(
   }
 }
 
-void roll_window(int start, int finish, int buffer_size, float * array)
+void roll_window(int start, int end, int buffer_size, float * array)
 {
-    for (int i = finish; i >= buffer_size + start; i--) 
-    {
-        array[i] = array[i - buffer_size];
-    }
+  for (int i = end; i >= start + buffer_size; i--) 
+  {
+      array[i] = array[i - buffer_size];
+  }
 }
 
-void build_input_vector(
+float* build_input_vector(
                   float * vector, 
                   float * u,  
                   float * sensors, 
@@ -52,18 +52,19 @@ void build_input_vector(
                   int n, 
                   int num_sig
 ){
-   int input_size = ndm + ddn + num_sig;
-   roll_window(m, 11, m, vector);
-   for (int i = 0; i < m; i++){
+  int input_size = ndm + ddn + num_sig;
+  roll_window(ndm, ddn + ndm - 1, n, vector);
+  for (int i = 0; i < n; i++){
+     vector[i + ndm] = posish[i];
+  }
+  roll_window(0, ndm - 1, m, vector);
+  for (int i = 0; i < m; i++){
       vector[i] = u[i];
-   }   
-   roll_window(15, 20, n, vector);
-   for (int i = 0; i < n; i++){
-      vector[i + 12] = posish[i];
-   }
-   for (int i = ndm + ddn + num_sig - 1; i >= ndm + ddn; i--){ 
-     vector[i] = sensors[i - ndm - ddn];
-   }
+  }   
+  for (int i = ndm + ddn + num_sig - 1; i >= ndm + ddn; i--){ 
+    vector[i] = sensors[i - ndm - ddn];
+  }
+  return vector; 
 }
 
 Matrix2 nn_prediction(
@@ -74,10 +75,14 @@ Matrix2 nn_prediction(
               int input_size, 
               int nd, 
               int dd, 
-              float * previous_input, 
+              float * prev_input, 
               float * u,
               float * h_tm1
 ){
+    float * previous_input = (float*)malloc(input_size*sizeof(float));
+    for (int i = 0; i < input_size; i++){
+      previous_input[i] = prev_input[i];
+    }
     Matrix2 y_output;
     set(y_output, N, n);
     set_to_zero(y_output);
@@ -103,7 +108,7 @@ Matrix2 nn_prediction(
         {
            motor_input[k] = u[input_index*m + k];
         } 
-        build_input_vector(previous_input, motor_input, signals, 
+        previous_input = build_input_vector(previous_input, motor_input, signals, 
                                       output_next, nd*m, dd*n, 
                                       m, n, NUM_SIGNAL);
         for (int j = 0; j < n; j++)
@@ -113,11 +118,13 @@ Matrix2 nn_prediction(
         free(output_next);
     }
     free(signals);
+    free(previous_input);
     return y_output;
 }
 
 void nn_gradients(Matrix2 * first_derivative, Matrix2 * second_derivative, 
-                      const int n, int m, int nd, int input_size, float * input, float epsilon)
+                  const int n, int m, int nd, int input_size, 
+                  float * input, float epsilon)
 {
     set_to_zero(*first_derivative);
     set_to_zero(*second_derivative);

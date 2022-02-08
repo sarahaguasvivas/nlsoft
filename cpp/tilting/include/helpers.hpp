@@ -1,7 +1,7 @@
 #ifndef __HELPERS_H__
 #define __HELPERS_H__
 
-//#include <Arduino.h>
+#include <Arduino.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,7 +29,7 @@ void normalize_array(float*, float*, int, float);
 
 Matrix2 nn_prediction(int, int, int, int, int, int, int, float*, float*, float*);
 
-void build_input_vector(float *, float * u, float * signal_, float * posish, int ndm, int ddn, int m, int n, int);
+float* build_input_vector(float *, float * u, float * signal_, float * posish, int ndm, int ddn, int m, int n, int);
 
 float partial_delta_u_partial_u(int, int);
 float kronecker_delta(int, int);
