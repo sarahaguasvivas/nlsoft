@@ -1,8 +1,6 @@
 #ifndef __HELPERS_H__
 #define __HELPERS_H__
 
-#include <Arduino.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif

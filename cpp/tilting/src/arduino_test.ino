@@ -65,15 +65,12 @@ void loop() {
       nn_input[i] = controller.past_nn_input[i];
     }
     if (timestamp > 0){
-      print_array(nn_input, NN_INPUT_LENGTH);
       nn_input = build_input_vector(&nn_input[0], &controller.u[0], 
                          &signal[0], &current_position[0], 
                          controller.nd * controller.m, 
                          controller.dd * controller.n, 
                          controller.m, controller.n, NUM_SIGNAL);
     }
-    print_array(nn_input, NN_INPUT_LENGTH);
-    Serial.println(); 
     for (int i = 0 ; i < NN_INPUT_LENGTH; i++) {
          controller.past_nn_input[i] = nn_input[i];
     }
@@ -86,8 +83,6 @@ void loop() {
     prediction = nn_prediction(controller.N, controller.Nc, controller.n, controller.m, 
                                NN_INPUT_LENGTH, controller.nd, controller.dd, &nn_input[0], 
                                 controller.normalized_u, &h_tm[0]);
-    print_matrix(prediction);
-    Serial.println();
     for (int i = 0; i < GRU_OUTPUT; i++){
       h_tm1[i] = h_tm[i];
     }
@@ -103,9 +98,7 @@ void loop() {
     spin_swirl_target(timestamp, 0, controller.N, 
                               controller.n, &target, controller.neutral_point);
     del_y = subtract(target, prediction);
-    for (int i = 0; i < controller.N*controller.n; i++){
-       controller.y[i] = prediction.data[i];
-    }
+
     release(prediction);
     release(target);
     //// jacobian ////////////////////////////////////////////////////////////////////
@@ -127,6 +120,9 @@ void loop() {
     set(u_matrix, controller.Nc, controller.m);
     for (int i = 0; i < controller.Nc*controller.m; i++) { 
       u_matrix.data[i] = controller.prev_u[i] - del_u_matrix.data[i];
+      if (isnan(u_matrix.data[i])){
+        u_matrix.data[i] = controller.min_max_input_saturation[0];
+      }
     }
     clip_action(u_matrix, &controller);
     for (int i = 0; i < controller.Nc*controller.m; i++) {

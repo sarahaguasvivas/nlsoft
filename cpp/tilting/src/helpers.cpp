@@ -61,7 +61,7 @@ float* build_input_vector(
   for (int i = 0; i < m; i++){
       vector[i] = u[i];
   }   
-  for (int i = ndm + ddn + num_sig - 1; i >= ndm + ddn; i--){ 
+  for (int i = input_size - 1; i >= ndm + ddn; i--){ 
     vector[i] = sensors[i - ndm - ddn];
   }
   return vector; 
@@ -108,7 +108,8 @@ Matrix2 nn_prediction(
         {
            motor_input[k] = u[input_index*m + k];
         } 
-        previous_input = build_input_vector(previous_input, motor_input, signals, 
+        previous_input = build_input_vector(previous_input, 
+                                      motor_input, signals, 
                                       output_next, nd*m, dd*n, 
                                       m, n, NUM_SIGNAL);
         for (int j = 0; j < n; j++)

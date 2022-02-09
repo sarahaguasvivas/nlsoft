@@ -6,7 +6,7 @@
 #include "swirl_target.hpp"
 
 #define NUM_SIGNAL 18
-#define NN_INPUT_LENGTH   68
+#define NN_INPUT_LENGTH   36
 
 void print_matrix(Matrix2);
 void print_array(float *, int);
@@ -34,6 +34,7 @@ void setup() {
 
 int main() {
     setup();
+    for (int i = 0; i < 3; i++){
     //elapsed = millis();
     float * signal = (float*)malloc(NUM_SIGNAL*sizeof(float));
     Matrix2 Q;
@@ -66,19 +67,19 @@ int main() {
     for (int i = 0; i < controller.nn_input_size; i++) {
       nn_input[i] = controller.past_nn_input[i];
     }
-    //collect_signal(&signal[0], &controller.signal_calibration[0], NUM_SIGNAL);
-
+    ////collect_signal(&signal[0], &controller.signal_calibration[0], NUM_SIGNAL);
+    print_array(nn_input, NN_INPUT_LENGTH);
     if (timestamp > 0){
       build_input_vector(nn_input, controller.normalized_u, signal, current_position, 
                         controller.nd*controller.m, controller.dd*controller.n, 
                         controller.m, controller.n, NUM_SIGNAL);
     } 
-
+    print_array(nn_input, NN_INPUT_LENGTH);
     for (int i = 0 ; i < controller.nn_input_size ; i++) {
       controller.past_nn_input[i] = nn_input[i];
     }
-    normalize_array(&controller.u[0], &controller.normalized_u[0], 
-                                        controller.m*controller.Nc, PI);
+    //normalize_array(&controller.u[0], &controller.normalized_u[0], 
+    //                                    controller.m*controller.Nc, 1.);
     float* h_tm = (float*)malloc(GRU_OUTPUT * sizeof(float));
     for (int i = 0; i < GRU_OUTPUT; i++){
       h_tm[i] = h_tm1[i];
@@ -86,6 +87,10 @@ int main() {
     prediction = nn_prediction(controller.N, controller.Nc, controller.n, controller.m, 
                                NN_INPUT_LENGTH, controller.nd, controller.dd, nn_input, 
                                 controller.normalized_u, &h_tm[0]);
+    print_matrix(prediction);
+    print_array(nn_input, NN_INPUT_LENGTH);
+    std::cout << std::endl;
+
     for (int i = 0; i < GRU_OUTPUT; i++){
       h_tm1[i] = h_tm[i];
     }
@@ -98,20 +103,21 @@ int main() {
     nn_gradients(&ynu, &dynu_du, controller.n, controller.m, 
                               controller.nd, controller.nn_input_size, 
                               nn_input, controller.epsilon);
+    
     spin_swirl_target(timestamp, 0, controller.N, 
                               controller.n, &target, controller.neutral_point);
     del_y = subtract(target, prediction);
-    for (int i = 0; i < controller.N*controller.n; i++){
-       controller.y[i] = prediction.data[i];
-    }
+
     release(prediction);
     release(target);
-    //// jacobian ////////////////////////////////////////////////////////////////////
+
+    // jacobian ////////////////////////////////////////////////////////////////////
     Matrix2 jacobian;
     jacobian = get_jacobian(del_y, Q, Lambda, ynu, 
                               dynu_du, del_u_matrix, &controller.u[0], 
                               &controller.del_u[0], controller);
     
+
     //// hessian /////////////////////////////////////////////////////////////////////
     Matrix2 hessian;
     hessian = get_hessian(del_y, Q, Lambda, ynu, dynu_du, 
@@ -138,7 +144,7 @@ int main() {
       controller.del_u[i] = del_u_matrix.data[i];
     }
 
-    //print_matrix(u_matrix);
+    print_matrix(u_matrix);
     
     //step_motor(&u_matrix.data[0], controller.m);
     release(u_matrix);
@@ -149,7 +155,9 @@ int main() {
     release(del_u_matrix);
     free(signal);
     free(nn_input);
-    ////timestamp++;
+    timestamp++;
+    }
+    
     ////Serial.println(millis() - elapsed);
     return 0;
 }
@@ -157,8 +165,7 @@ int main() {
 void print_array(float * arr, int arr_size)
 {
     for (int i = 0; i < arr_size; i++) {
-        std::cout << arr[i] << std::endl;
-        std::cout << std::endl; 
+        std::cout << arr[i] << " ";
     }
     std::cout << std::endl;
 }
@@ -167,8 +174,7 @@ void print_matrix(Matrix2 matrix)
 {
   for (int i=0; i< matrix.rows; i++){
     for (int j=0; j< matrix.cols; j++){
-        std::cout << matrix.data[i*matrix.cols + j] << std::endl;
-        std::cout << std::endl; 
+        std::cout << matrix.data[i*matrix.cols + j] << " ";
     }
     //Serial.println();
     std::cout << std::endl;
