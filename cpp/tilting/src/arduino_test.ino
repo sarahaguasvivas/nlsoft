@@ -3,6 +3,7 @@
 #include "matrix.hpp"
 #include "motors.hpp"
 #include "swirl_target.hpp"
+#include <Arduino_LSM6DS3.h>
 
 #define NUM_SIGNAL 18
 #define NN_INPUT_LENGTH   36
