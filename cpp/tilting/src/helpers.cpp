@@ -279,8 +279,9 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
     trn2 = sum_axis(temp4, 1);
     release(temp4);
     
-    for (int i = 0 ; i < controller.Nc*controller.Nc; i++) hessian.data[i] = 
-                                          trn1.data[0] - trn2.data[0];
+    for (int i = 0 ; i < controller.Nc*controller.Nc; i++) {
+      hessian.data[i] = trn1.data[0] - trn2.data[0];
+    }
     release(trn1);
     release(trn2);
     set(hessian1, controller.Nc, controller.Nc);
@@ -319,7 +320,7 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
         release(multt);
         release(scale_1);
         release(mult);
-        hessian1.data[h*controller.Nc + mm] += multtt.data[0];
+        hessian1.data[h*controller.Nc + mm] += multtt.data[0] + controller.machine_zero;
         release(multtt);
          
          for (int jj = 0; jj < controller.m; jj++)
@@ -334,7 +335,6 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
             }
         }
        release(mult1);
-
       }
     }
     release(sum2);

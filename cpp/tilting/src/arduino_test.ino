@@ -87,7 +87,7 @@ void loop() {
                                NN_INPUT_LENGTH, controller.nd, controller.dd, &nn_input[0], 
                                 controller.normalized_u, &h_tm[0]);
     //Serial.println("PREDICTION:");
-    print_matrix(prediction);
+    //print_matrix(prediction);
     for (int i = 0; i < GRU_OUTPUT; i++){
       h_tm1[i] = h_tm[i];
     }
@@ -103,7 +103,6 @@ void loop() {
     spin_swirl_target(timestamp, 0, controller.N, 
                               controller.n, &target, controller.neutral_point);
     del_y = subtract(target, prediction);
-
     release(prediction);
     release(target);
     //// jacobian ////////////////////////////////////////////////////////////////////
@@ -111,11 +110,15 @@ void loop() {
     jacobian = get_jacobian(del_y, Q, Lambda, ynu, 
                               dynu_du, del_u_matrix, &controller.u[0], 
                               &controller.del_u[0], controller);
+    Serial.println("JACOBIAN:");
+    print_matrix(jacobian);
     //// hessian /////////////////////////////////////////////////////////////////////
     Matrix2 hessian;
     hessian = get_hessian(del_y, Q, Lambda, ynu, dynu_du, 
                             del_u_matrix, &controller.u[0], 
                               &controller.del_u[0], controller);
+    Serial.println("HESSIAN:");
+    print_matrix(hessian);
     ////////////////////////////////////////////////////////////////////////////////
     release(del_y);
     release(ynu);
@@ -125,9 +128,9 @@ void loop() {
     set(u_matrix, controller.Nc, controller.m);
     for (int i = 0; i < controller.Nc*controller.m; i++) { 
       u_matrix.data[i] = controller.prev_u[i] - del_u_matrix.data[i];
-      if (isnan(u_matrix.data[i])){
-        u_matrix.data[i] = controller.min_max_input_saturation[0];
-      }
+      //if (isnan(u_matrix.data[i])){
+      //  u_matrix.data[i] = controller.min_max_input_saturation[0];
+      //}
     }
     clip_action(u_matrix, &controller);
     for (int i = 0; i < controller.Nc*controller.m; i++) {
@@ -136,7 +139,7 @@ void loop() {
       controller.del_u[i] = del_u_matrix.data[i];
     }
     //Serial.println("CONTROL INPUTS:");
-    //print_matrix(u_matrix);
+    print_matrix(u_matrix);
     step_motor(&u_matrix.data[0], controller.m);
     release(u_matrix);
     release(hessian);

@@ -20,10 +20,10 @@ from collections import deque
 #  Channel 13--18: Mag_z data
 #  Channel 19--25: PWM inputs
 #  Channel 26--39: Other positions markers
-#  Channel 40: Timestamp marker
-#  Channel 41--43: {x, y, z} markers
-#  Channel 44--48: Centroid position
-#  Channel 49--52: {q0, q1, q2, q3}
+#  Channel 39: Timestamp marker
+#  Channel 40--43: {x, y, z} markers
+#  Channel 43--47: Centroid position
+#  Channel 47--52: {q0, q1, q2, q3}
 #
 NUM_SENSORS = 18
 N_D = 2
@@ -41,7 +41,7 @@ def prepare_data_file_vani(signals, position, inputs, nd=3, dd=3):
     position = position - position[0, :]
     #max_signals = np.clip(np.max(signals, axis=0), 1, np.inf)
     #print(max_signals)
-    signals = np.clip(signals / 1e4 - 0.5, 0, np.inf)
+    signals = np.clip(signals / 1e4, 0, np.inf) - 0.5
     inputs = inputs / np.max(inputs, axis = 0) - 0.5
 
     N = max(nd, dd)  # data sample where we will start first
@@ -106,7 +106,7 @@ def gru_training(data):
     for train, test in kfold.split(X, y):
         x_train = X[train].reshape(-1, 1, DATA_SIZE)
         y_train = y[train]
-        model.fit(x_train, y_train, epochs = 20, batch_size = 50)
+        model.fit(x_train, y_train, epochs = 30, batch_size = 50)
     model.save('forward_kinematics_jan_10_2022.hdf5')
     return X, y, model
 
@@ -128,6 +128,7 @@ if __name__=='__main__':
         X, y, forward_kinematics_model = gru_training(data)
     else:
         X, y = create_data_labels(data)
+    print("first: ", X[0, :])
     forward_kinematics_model = keras.models.load_model('forward_kinematics_jan_10_2022.hdf5', compile=False)
     samples = 10000
     X_sysint = X[:samples, :]
@@ -155,7 +156,7 @@ if __name__=='__main__':
     plt.subplot(3, 2, 5)
     plt.plot(1000 * y_true_sysint[:, 2], '--k', linewidth=2)
     plt.plot(1000 * y_pred_sysint[:, 2], 'r', linewidth=2)
-    plt.ylim(-10, 10)
+    plt.ylim(-15, 15)
     plt.legend([r'$z_{true}$', r'$\hat{z}_{GRU}$'])
     plt.ylabel('z [mm]')
 
