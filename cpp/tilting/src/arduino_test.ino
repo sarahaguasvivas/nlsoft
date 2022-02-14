@@ -100,7 +100,7 @@ void loop() {
                               nn_input, controller.epsilon);
     Serial.println("gradients");
     spin_swirl_target(timestamp, 0, controller.N, 
-                              controller.n, &target, controller.neutral_point);
+                              controller.n, &target, controller.neutral_point, 10);
     del_y = subtract(target, prediction);
     release(prediction);
     release(target);
@@ -127,9 +127,9 @@ void loop() {
     set(u_matrix, controller.Nc, controller.m);
     for (int i = 0; i < controller.Nc*controller.m; i++) { 
       u_matrix.data[i] = controller.prev_u[i] - del_u_matrix.data[i];
-      //if (isnan(u_matrix.data[i])){
-      //  u_matrix.data[i] = controller.min_max_input_saturation[0];
-      //}
+      if (isnan(u_matrix.data[i])){
+        u_matrix.data[i] = controller.min_max_input_saturation[0];
+      }
     }
     clip_action(u_matrix, &controller);
     for (int i = 0; i < controller.Nc*controller.m; i++) {

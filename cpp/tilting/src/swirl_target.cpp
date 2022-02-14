@@ -849,20 +849,22 @@ const float tar[3390] = {0.0000000e+00, 0.0000000e+00, 0.0000000e+00, 0.0000000e
    1.5105073e-05, 3.8047312e-07, 5.0755493e-04, 0.0000000e+00,
    0.0000000e+00, 5.0000000e-04};
 
-void spin_swirl_target(int timestep, int n1, int n2, int dims, Matrix2 * target, float * center)
+void spin_swirl_target(int timestep, int n1, int n2, 
+                      int dims, Matrix2 * target, float * center,
+                      int wavelength)
 {
   int n = target->cols;
   
   Matrix2 temp;
   set(temp, target->rows, target->cols);
 
-  timestep = timestep % 1130;
+  timestep = timestep % (1130 * wavelength);
   
   for (int i = n1; i < n2; i++)
   {
-    temp.data[i * n + 0] = tar[timestep * 3 + 0];
-    temp.data[i * n + 1] = tar[timestep * 3 + 1];     
-    temp.data[i * n + 2] = tar[timestep * 3 + 2];
+    temp.data[i * n + 0] = tar[timestep / wavelength * 3 + 0];
+    temp.data[i * n + 1] = tar[timestep / wavelength * 3 + 1];     
+    temp.data[i * n + 2] = tar[timestep / wavelength * 3 + 2];
   }
     
   for (int i = n1; i < n2; i++)

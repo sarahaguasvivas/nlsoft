@@ -5,6 +5,6 @@
 #include "matrix.hpp"
 #include "math.h"
 
-void spin_swirl_target(int, int, int, int, Matrix2 *, float *);
+void spin_swirl_target(int, int, int, int, Matrix2 *, float *, int);
 
 #endif
