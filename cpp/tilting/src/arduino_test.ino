@@ -75,6 +75,8 @@ void loop() {
     for (int i = 0 ; i < NN_INPUT_LENGTH; i++) {
          controller.past_nn_input[i] = nn_input[i];
     }
+    Serial.println("NN_INPUT: ");
+    print_array(nn_input, NN_INPUT_LENGTH);
     normalize_array(&controller.u[0], &controller.normalized_u[0], 
                                         controller.m*controller.Nc, 1.);
     float* h_tm = (float*)malloc(GRU_OUTPUT * sizeof(float));
@@ -84,6 +86,8 @@ void loop() {
     prediction = nn_prediction(controller.N, controller.Nc, controller.n, controller.m, 
                                NN_INPUT_LENGTH, controller.nd, controller.dd, &nn_input[0], 
                                 controller.normalized_u, &h_tm[0]);
+    Serial.println("PREDICTION:");
+    print_matrix(prediction);
     for (int i = 0; i < GRU_OUTPUT; i++){
       h_tm1[i] = h_tm[i];
     }
@@ -131,6 +135,7 @@ void loop() {
       controller.u[i] = u_matrix.data[i];
       controller.del_u[i] = del_u_matrix.data[i];
     }
+    Serial.println("CONTROL INPUTS:");
     print_matrix(u_matrix);
     step_motor(&u_matrix.data[0], controller.m);
     release(u_matrix);
@@ -142,7 +147,7 @@ void loop() {
     free(signal);
     free(nn_input);
     timestamp++;
-    Serial.println(millis() - elapsed);
+    //Serial.println(millis() - elapsed);
 }
 
 void print_array(float * arr, int arr_size)

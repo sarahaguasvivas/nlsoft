@@ -39,8 +39,9 @@ def prepare_data_file_vani(signals, position, inputs, nd=3, dd=3):
     signals = signals.astype(np.float32)
     position = position.astype(np.float32)
     position = position - position[0, :]
-    max_signals = np.clip(np.max(signals, axis=0), 1, np.inf)
-    signals = np.clip(signals / max_signals - 0.5, 0, np.inf)
+    #max_signals = np.clip(np.max(signals, axis=0), 1, np.inf)
+    #print(max_signals)
+    signals = np.clip(signals / 1e4 - 0.5, 0, np.inf)
     inputs = inputs / np.max(inputs, axis = 0) - 0.5
 
     N = max(nd, dd)  # data sample where we will start first

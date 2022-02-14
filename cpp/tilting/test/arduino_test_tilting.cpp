@@ -68,9 +68,9 @@ int main() {
       nn_input[i] = controller.past_nn_input[i];
     }
     ////collect_signal(&signal[0], &controller.signal_calibration[0], NUM_SIGNAL);
-    print_array(nn_input, NN_INPUT_LENGTH);
     if (timestamp > 0){
-      build_input_vector(nn_input, controller.normalized_u, signal, current_position, 
+      nn_input = build_input_vector(&nn_input[0], &controller.u[0], &signal[0], 
+                        &current_position[0], 
                         controller.nd*controller.m, controller.dd*controller.n, 
                         controller.m, controller.n, NUM_SIGNAL);
     } 
@@ -87,10 +87,6 @@ int main() {
     prediction = nn_prediction(controller.N, controller.Nc, controller.n, controller.m, 
                                NN_INPUT_LENGTH, controller.nd, controller.dd, nn_input, 
                                 controller.normalized_u, &h_tm[0]);
-    print_matrix(prediction);
-    print_array(nn_input, NN_INPUT_LENGTH);
-    std::cout << std::endl;
-
     for (int i = 0; i < GRU_OUTPUT; i++){
       h_tm1[i] = h_tm[i];
     }
@@ -144,7 +140,7 @@ int main() {
       controller.del_u[i] = del_u_matrix.data[i];
     }
 
-    print_matrix(u_matrix);
+    //print_matrix(u_matrix);
     
     //step_motor(&u_matrix.data[0], controller.m);
     release(u_matrix);

@@ -17,9 +17,9 @@ float deg2rad(float deg)
     return deg*PI/180.;
 }
 
-void normalize_array(float* original_array, float* new_array, int array_size, float factor){
+void normalize_array(float* original_array, float* new_array, int array_size, float divisor){
   for (int i= 0; i< array_size; i++){
-    new_array[i] = original_array[i] / factor;
+    new_array[i] = original_array[i] / divisor; 
   }
 }
 
@@ -61,7 +61,7 @@ float* build_input_vector(
   for (int i = 0; i < m; i++){
       vector[i] = u[i];
   }   
-  for (int i = input_size - 1; i >= ndm + ddn; i--){ 
+  for (int i = ndm + ddn; i < input_size; i++){ 
     vector[i] = sensors[i - ndm - ddn];
   }
   return vector; 
