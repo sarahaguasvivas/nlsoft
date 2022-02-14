@@ -158,6 +158,14 @@ struct Matrix2 hadamard (struct Matrix2 a, struct Matrix2 b)
     return result;
 }
 
+float total_sum(struct Matrix2 a){
+    int total_sum = 0;
+    for (int i = 0; i < a.cols*a.rows; i++){
+        total_sum += a.data[i];
+    }
+    return total_sum;
+}
+
 void set_to_zero(struct Matrix2 & a){
     int size = a.rows*a.cols;
     for (int i = size - 1; i >= 0; i--) a.data[i] = 0.0;

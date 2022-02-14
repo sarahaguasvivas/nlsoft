@@ -8,7 +8,7 @@ from python.utilities.util import *
 from python.target.vanis_target_swirl import VanisSwirl
 import numpy as np
 
-model_filename = str(os.environ['HOME']) + '/nlsoft/python/models/forward_kinematics_may_29_2021.hdf5'
+model_filename = str(os.environ['HOME']) + '/nlsoft/python/training/forward_kinematics_jan_10_2022.hdf5'
 sensor_signal_model_filename = str(os.environ['HOME']) + '/nlsoft/python/models/model_signals_may_25_2021.hdf5'
 target_filename = str(os.environ['HOME']) + '/nlsoft/python/models/ref_data.mat'
 NUM_EXPERIMENTS = 1
@@ -20,7 +20,7 @@ savelog = True
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu= 1,
-                                      nd = 3, dd = 3, K = 1,
+                                      nd = 2, dd = 2, K = 1,
                                       Q = np.array([[1e3, 0., 0.],
                                                     [0., 1e5, 0.],
                                                     [0., 0., 1e4]]),
@@ -30,11 +30,11 @@ NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                                         [0, 0, 0, 1., 0, 0],
                                                         [0, 0, 0, 0, 1., 0],
                                                         [0, 0, 0, 0, 0, 1.]]),
-                                      s = 1e-20, b = 1., r = 4.,
+                                      s = 1e-20, b = 1e10, r = 4e3,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
                                       u0 = [0., 0., 0., 0., 0., 0.],
-                                      step_size = 8e-3)
+                                      step_size = 5e-2)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGymVani(signal_simulator_model=sensor_signal_model_filename)
 
@@ -45,7 +45,7 @@ neutral_point = [0.]*3
 
 NNP.y0 = neutral_point
 motors_calibration = [800]*6
-Block.calibration_max = [1., 1., 1., 1., 1., 1.]
+Block.calibration_max = [1e4]*18
 target = VanisSwirl(source_filename = target_filename, neutral_point= [0.]*3,
                             wavelength = WAVELENGTH)
 
@@ -80,16 +80,16 @@ try:
         log.log({str(e) : {'predicted' : NNP.y0, 'actual' : NNP.y0,
                            'yn' : NNP.y0, 'elapsed' : 0.0, 'u' : [NNP.u0]}})
         if (e == 0):
-            log.log({'metadata': {'ym': neutral_point, 'num_signals' : 6, 'm' : NNP.m,
+            log.log({'metadata': {'ym': neutral_point, 'num_signals' : 18, 'm' : NNP.m,
                                                                     'n' : NNP.nx}})
         for n in range(NUM_TIMESTEPS):
             seconds = time.time()
-            signal = np.array(Block.get_observation(u_optimal_old)).tolist()
+            signal = [0.0] * 18 #np.array(Block.get_observation(u_optimal_old)).tolist()
             NNP.yn = []
             ydeq = y_deque.copy()
             for k in range(NNP.K):
                 neural_network_input = np.array((np.array(list(u_deque))).flatten().tolist() + \
-                                np.array(list(ydeq)).flatten().tolist() + signal).reshape(1, 1, -1)
+                                np.array(list(ydeq)).flatten().tolist() + signal).reshape(1, 1, 36)
                 predicted_states = NNP.predict(neural_network_input).flatten()
                 NNP.yn += [(NNP.C @ predicted_states).tolist()]
                 ydeq = roll_deque(ydeq, predicted_states.tolist())
@@ -101,7 +101,7 @@ try:
             u_optimal, del_u, _ = NR_opt.optimize(u = u_optimal_old, delu = del_u,
                                         maxit = 1, rtol = 1e-4, verbose = False)
 
-            u_optimal = np.clip(u_optimal, -1.04875/2., 1.04875/2.)
+            u_optimal = np.clip(u_optimal, -0.5, 0.5)
 
             u_action = u_optimal[0, :].tolist()
             del_u_action = del_u[0, :].tolist()

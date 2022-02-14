@@ -12,7 +12,7 @@ struct Controller{
   float s = 1e-10, b = 1e-15, r = 4e5;
   int nn_input_size = NN_INPUT_S;
   float neutral_point[3] = { 3.10689211e-06, -8.02683644e-08, -1.13993883e-06 };
-  float q_matrix[3] = {1e3};
+  float q_matrix[3] = {1e3, 1e5, 1e4};
   float lambda_matrix[6] = {1.};
   float min_max_input_saturation[2] = {-0.5, 0.5};
   float u[6] = { -0.5 };

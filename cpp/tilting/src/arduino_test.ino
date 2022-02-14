@@ -86,8 +86,6 @@ void loop() {
     prediction = nn_prediction(controller.N, controller.Nc, controller.n, controller.m, 
                                NN_INPUT_LENGTH, controller.nd, controller.dd, &nn_input[0], 
                                 controller.normalized_u, &h_tm[0]);
-    //Serial.println("PREDICTION:");
-    //print_matrix(prediction);
     for (int i = 0; i < GRU_OUTPUT; i++){
       h_tm1[i] = h_tm[i];
     }
@@ -100,6 +98,7 @@ void loop() {
     nn_gradients(&ynu, &dynu_du, controller.n, controller.m, 
                               controller.nd, controller.nn_input_size, 
                               nn_input, controller.epsilon);
+    Serial.println("gradients");
     spin_swirl_target(timestamp, 0, controller.N, 
                               controller.n, &target, controller.neutral_point);
     del_y = subtract(target, prediction);

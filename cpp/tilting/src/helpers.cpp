@@ -185,17 +185,15 @@ float partial_delta_u_partial_u(int j, int h){
 Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, 
                         Matrix2 dynu_du, Matrix2 del_u_matrix, float * u, 
                           float * del_u, struct Controller controller){
-     
     Matrix2 jacobian;
     Matrix2 sub_sum;
     Matrix2 temp;
     Matrix2 temp1;
     Matrix2 temp2;
     Matrix2 accum;
-
     set(accum, controller.Nc, controller.m);
     set_to_zero(accum);
-    
+    set_to_zero(jacobian); 
     sub_sum = multiply(del_y, Q);
     temp = multiply(sub_sum, ynu);
     release(sub_sum);
@@ -238,7 +236,7 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
         }
       }
     }
-    
+     
     return jacobian;
 }
 
@@ -278,9 +276,9 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
     release(temp1);
     trn2 = sum_axis(temp4, 1);
     release(temp4);
-    
+     
     for (int i = 0 ; i < controller.Nc*controller.Nc; i++) {
-      hessian.data[i] = trn1.data[0] - trn2.data[0];
+      hessian.data[i] = trn1.data[0] - trn1.data[0];  
     }
     release(trn1);
     release(trn2);
@@ -323,16 +321,17 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
         hessian1.data[h*controller.Nc + mm] += multtt.data[0] + controller.machine_zero;
         release(multtt);
          
-         for (int jj = 0; jj < controller.m; jj++)
-         {
-            for (int i = 0; i < controller.m; i++)
-            {
-              hessian1.data[h*hessian1.cols + mm] += 2.0* controller.s / 
-                                                            pow((u[jj*controller.m + i] + controller.machine_zero + 
-                                                                controller.r / 2. - controller.b), 3.0) + 
-                                                             2.0 * controller.s / pow(controller.r/2. + controller.b - (u[jj*controller.m + i] + 
-                                                              controller.machine_zero), 3.0) + controller.machine_zero;
-            }
+        for (int jj = 0; jj < controller.m; jj++)
+        {
+           for (int i = 0; i < controller.m; i++)
+           {
+            hessian1.data[h*hessian1.cols + mm] += 2.0* controller.s / 
+                    pow((u[jj*controller.m + i] + controller.machine_zero + 
+                    controller.r / 2. - controller.b), 3.0) + 
+                     2.0 * controller.s / pow(controller.r/2. + controller.b - 
+                     (u[jj*controller.m + i] + 
+                    controller.machine_zero), 3.0) + controller.machine_zero;
+           }
         }
        release(mult1);
       }
