@@ -58,7 +58,6 @@ def prepare_data_file_vani(signals, position, inputs, nd=3, dd=3):
 
     U = U[:, 6:]  # np.deg2rad(U[:, 2:])
     S = signals[N - 1:, :]
-
     Y = Y[:, 3:-3]  # Y
 
     X = np.concatenate((U, Y[:, 3:]), axis=1)
@@ -86,8 +85,7 @@ def create_data_labels(data):
         mag_x = data[i][:, 1:7]
         mag_y = data[i][:, 7:13]
         mag_z = data[i][:, 13:19]
-
-        position = data[i][:, 41:44]
+        position = data[i][:, 40:43]
         signals = np.concatenate((mag_x, mag_y, mag_z), axis = 1)
         pwm_inputs = data[i][:, 19:25]
 
@@ -130,7 +128,6 @@ if __name__=='__main__':
         X, y, forward_kinematics_model = gru_training(data)
     else:
         X, y = create_data_labels(data)
-
     forward_kinematics_model = keras.models.load_model('forward_kinematics_jan_10_2022.hdf5', compile=False)
     samples = 10000
     X_sysint = X[:samples, :]
