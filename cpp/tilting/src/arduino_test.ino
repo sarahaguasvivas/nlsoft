@@ -78,7 +78,7 @@ void loop() {
     //Serial.println("NN_INPUT: ");
     //print_array(nn_input, NN_INPUT_LENGTH);
     normalize_array(&controller.u[0], &controller.normalized_u[0], 
-                                        controller.m*controller.Nc, 1.);
+                                        controller.m*controller.Nc, 1., 0.);
     float* h_tm = (float*)malloc(GRU_OUTPUT * sizeof(float));
     for (int i = 0; i < GRU_OUTPUT; i++){
       h_tm[i] = h_tm1[i];

@@ -1,10 +1,10 @@
 #include "helpers.hpp"
 
 float max (float a, float b) {
-  return (a<b)?b:a;     // or: return comp(a,b)?b:a; for version (2)
+  return (a<b)?b:a;     
 }
 float min (float a, float b) {
-  return (a>b)?b:a;     // or: return comp(a,b)?b:a; for version (2)
+  return (a>b)?b:a;     
 }
 
 void setup_nn_utils()
@@ -17,9 +17,12 @@ float deg2rad(float deg)
     return deg*PI/180.;
 }
 
-void normalize_array(float* original_array, float* new_array, int array_size, float divisor){
+void normalize_array(float* original_array, 
+          float* new_array, int array_size, 
+          float divisor, float offset){
   for (int i= 0; i< array_size; i++){
-    new_array[i] = original_array[i] / divisor; 
+    new_array[i] = (original_array[i] - offset) / 
+                      divisor; 
   }
 }
 
@@ -27,13 +30,17 @@ void clip_action(
             Matrix2 &u_matrix, 
             Controller* controller
 ){
-  for (int i = 0; i < controller->Nc*controller->m; i++){
-    u_matrix.data[i] = min(u_matrix.data[i], controller->min_max_input_saturation[1]); 
-    u_matrix.data[i] = max(u_matrix.data[i], controller->min_max_input_saturation[0]); 
+  for (int i = 0; 
+      i < controller->Nc*controller->m; i++){
+    u_matrix.data[i] = min(u_matrix.data[i], 
+          controller->min_max_input_saturation[1]); 
+    u_matrix.data[i] = max(u_matrix.data[i], 
+          controller->min_max_input_saturation[0]); 
   }
 }
 
-void roll_window(int start, int end, int buffer_size, float * array)
+void roll_window(int start, int end, 
+            int buffer_size, float * array)
 {
   for (int i = end; i >= start + buffer_size; i--) 
   {
@@ -79,14 +86,16 @@ Matrix2 nn_prediction(
               float * u,
               float * h_tm1
 ){
-    float * previous_input = (float*)malloc(input_size*sizeof(float));
+    float * previous_input = (float*)malloc(
+                      input_size*sizeof(float));
     for (int i = 0; i < input_size; i++){
       previous_input[i] = prev_input[i];
     }
     Matrix2 y_output;
     set(y_output, N, n);
     set_to_zero(y_output);
-    float * signals = (float*)malloc(NUM_SIGNAL*sizeof(float));
+    float * signals = (float*)malloc(
+                    NUM_SIGNAL*sizeof(float));
     for (int i = 0; i < NUM_SIGNAL; i++) {
       signals[i] = previous_input[nd*m+dd*n + i];
     }
@@ -94,7 +103,8 @@ Matrix2 nn_prediction(
     float motor_input[mnd];
     for (int i = 0; i < N; i++)
     {
-        float * input_next = (float*)malloc(input_size*sizeof(float));        
+        float * input_next = (float*)malloc(
+                      input_size*sizeof(float));        
         for (int j = 0; j < input_size; j++) {
           input_next[j] = previous_input[j];
         }
@@ -108,10 +118,11 @@ Matrix2 nn_prediction(
         {
            motor_input[k] = u[input_index*m + k];
         } 
-        previous_input = build_input_vector(previous_input, 
-                                      motor_input, signals, 
-                                      output_next, nd*m, dd*n, 
-                                      m, n, NUM_SIGNAL);
+        previous_input = build_input_vector(
+                                previous_input, 
+                                motor_input, signals, 
+                                output_next, nd*m, 
+                                dd*n, m, n, NUM_SIGNAL);
         for (int j = 0; j < n; j++)
         {
             y_output.data[i * n + j] = output_next[j];
@@ -123,13 +134,16 @@ Matrix2 nn_prediction(
     return y_output;
 }
 
-void nn_gradients(Matrix2 * first_derivative, Matrix2 * second_derivative, 
-                  const int n, int m, int nd, int input_size, 
-                  float * input, float epsilon)
-{
+void nn_gradients(Matrix2 * first_derivative, 
+                  Matrix2 * second_derivative, 
+                  const int n, int m, int nd, 
+                  int input_size, 
+                  float * input, float epsilon
+){
     set_to_zero(*first_derivative);
     set_to_zero(*second_derivative);
-    float * h_tm1 = (float*)malloc(GRU_OUTPUT*sizeof(float)); 
+    float * h_tm1 = (float*)malloc(
+                    GRU_OUTPUT * sizeof(float)); 
     for (int i = 0; i < GRU_OUTPUT; i++){
         h_tm1[i] = 0.0;
     }
@@ -139,9 +153,12 @@ void nn_gradients(Matrix2 * first_derivative, Matrix2 * second_derivative,
       float * output_minus_h;
       float * output_plus_h;  
 
-      float * input_center = (float*)malloc(input_size*sizeof(float));
-      float * input_plus_h = (float*)malloc(input_size*sizeof(float));
-      float * input_minus_h = (float*)malloc(input_size*sizeof(float));
+      float * input_center = (float*)malloc(
+                          input_size*sizeof(float));
+      float * input_plus_h = (float*)malloc(
+                          input_size*sizeof(float));
+      float * input_minus_h = (float*)malloc(
+                          input_size*sizeof(float));
 
       for (int i = 0; i < input_size; i++)
       {
@@ -157,10 +174,15 @@ void nn_gradients(Matrix2 * first_derivative, Matrix2 * second_derivative,
       output = fwdNN(input_center, h_tm1);
       int j = nn % m;
       for (int i = 0 ; i < n; i++){
-        first_derivative->data[i*first_derivative->cols + j] += 
-                                (output_plus_h[i] - output_minus_h[i]) / (2. * epsilon);
-        second_derivative->data[i*second_derivative->cols + j] += 
-                              (output_plus_h[i] - 2.*output[i] + output_minus_h[i]) / (epsilon * epsilon);    
+        first_derivative->data[i * 
+            first_derivative->cols + j] += 
+             (output_plus_h[i] - output_minus_h[i]) / 
+             (2. * epsilon);
+        second_derivative->data[i * 
+              second_derivative->cols + j] += 
+                (output_plus_h[i] - 2.*output[i] + 
+                output_minus_h[i]) / 
+                (epsilon * epsilon);    
       }
       free(output);
       free(output_minus_h);
@@ -179,12 +201,16 @@ float kronecker_delta(int h, int j){
 }
 
 float partial_delta_u_partial_u(int j, int h){
-  return kronecker_delta(h, j) - kronecker_delta(h, j-1);
+  return kronecker_delta(h, j) - 
+            kronecker_delta(h, j-1);
 }
 
-Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, 
-                        Matrix2 dynu_du, Matrix2 del_u_matrix, float * u, 
-                          float * del_u, struct Controller controller){
+Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q, 
+                  Matrix2 Lambda, Matrix2 ynu, 
+                  Matrix2 dynu_du, 
+                  Matrix2 del_u_matrix, 
+                  float * u, float * del_u, 
+                  struct Controller controller){
     Matrix2 jacobian;
     Matrix2 sub_sum;
     Matrix2 temp;
@@ -208,9 +234,12 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
       for (int j = 0; j < controller.Nc; j++){
         Matrix2 accum1;
         Matrix2 accum2;
-        accum1 = scale(partial_delta_u_partial_u(h, j), temp1);
+        accum1 = scale(partial_delta_u_partial_u(h, j), 
+                        temp1);
         accum2 = add(accum, accum1);
-        for (int i = 0; i < accum2.rows*accum2.cols; i++) accum.data[i] += accum2.data[i];
+        for (int i = 0; i < accum2.rows*accum2.cols; i++) {
+            accum.data[i] += accum2.data[i];
+        }
         release(accum1);
         release(accum2);
       }
@@ -230,9 +259,14 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
       {
         for (int i = 0; i < controller.m; i++)
         {
-          jacobian.data[h*jacobian.cols + j] += -controller.s / pow(u[j*controller.m + i] + 
-                                                  controller.r / 2.0 - controller.b, 2) +  controller.s / 
-                                                  pow(controller.r / 2.0 + controller.b - u[j*controller.m + i], 2.0);
+          jacobian.data[h*jacobian.cols + j] += 
+                   -controller.s / 
+                   pow(u[j*controller.m + i] + 
+                  controller.r / 2.0 - 
+                  controller.b, 2) +  controller.s / 
+                  pow(controller.r / 2.0 + 
+                  controller.b - u[j*controller.m + i], 
+                  2.0);
         }
       }
     }
@@ -240,9 +274,12 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
     return jacobian;
 }
 
-Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu, 
-                          Matrix2 dynu_du, Matrix2 del_u_matrix, float * u, float * del_u, 
-                            struct Controller controller){
+Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, 
+                        Matrix2 Lambda, Matrix2 ynu, 
+                        Matrix2 dynu_du, 
+                        Matrix2 del_u_matrix, 
+                        float * u, float * del_u, 
+                        struct Controller controller){
     Matrix2 hessian;
     Matrix2 temp3;
     Matrix2 temp4;
@@ -277,7 +314,9 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
     trn2 = sum_axis(temp4, 1);
     release(temp4);
      
-    for (int i = 0 ; i < controller.Nc*controller.Nc; i++) {
+    for (int i = 0 ; 
+          i < controller.Nc*controller.Nc; 
+          i++) {
       hessian.data[i] = trn1.data[0] - trn1.data[0];  
     }
     release(trn1);
@@ -304,8 +343,10 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
                
         for (int j = 0; j < controller.m ; j++)
         { 
-          second_y.data[j] = partial_delta_u_partial_u(j, mm);
-          second_y1.data[j] = partial_delta_u_partial_u(j, h);
+          second_y.data[j] = 
+                      partial_delta_u_partial_u(j, mm);
+          second_y1.data[j] = 
+                      partial_delta_u_partial_u(j, h);
         }
        
         scale_1 = scale(2., Lambda);
@@ -318,19 +359,26 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
         release(multt);
         release(scale_1);
         release(mult);
-        hessian1.data[h*controller.Nc + mm] += multtt.data[0] + controller.machine_zero;
+        hessian1.data[h*controller.Nc + mm] += 
+              multtt.data[0] + controller.machine_zero;
         release(multtt);
          
         for (int jj = 0; jj < controller.m; jj++)
         {
            for (int i = 0; i < controller.m; i++)
            {
-            hessian1.data[h*hessian1.cols + mm] += 2.0* controller.s / 
-                    pow((u[jj*controller.m + i] + controller.machine_zero + 
-                    controller.r / 2. - controller.b), 3.0) + 
-                     2.0 * controller.s / pow(controller.r/2. + controller.b - 
-                     (u[jj*controller.m + i] + 
-                    controller.machine_zero), 3.0) + controller.machine_zero;
+            hessian1.data[h*hessian1.cols + mm] += 
+                    2.0* controller.s / 
+                    pow((u[jj*controller.m + i] + 
+                    controller.machine_zero + 
+                    controller.r / 2. - controller.b), 
+                    3.0) + 
+                    2.0 * controller.s / 
+                    pow(controller.r/2. + 
+                    controller.b - 
+                    (u[jj*controller.m + i] + 
+                    controller.machine_zero), 3.0) + 
+                    controller.machine_zero;
            }
         }
        release(mult1);
@@ -343,7 +391,8 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, Matrix2 Lambda, Matrix2 ynu,
     return hessian1;
 }
 
-void solve(Matrix2& jacobian, Matrix2& hessian, Matrix2 &del_u_matrix){
+void solve(Matrix2& jacobian, Matrix2& hessian, 
+          Matrix2 &del_u_matrix){
     Matrix2 inv;
     inv = inverse(hessian);
     Matrix2 minusj;
