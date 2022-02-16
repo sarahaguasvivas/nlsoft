@@ -75,8 +75,6 @@ void loop() {
     for (int i = 0 ; i < NN_INPUT_LENGTH; i++) {
          controller.past_nn_input[i] = nn_input[i];
     }
-    //Serial.println("NN_INPUT: ");
-    //print_array(nn_input, NN_INPUT_LENGTH);
     normalize_array(&controller.u[0], &controller.normalized_u[0], 
                                         controller.m*controller.Nc, 1., 0.);
     float* h_tm = (float*)malloc(GRU_OUTPUT * sizeof(float));
@@ -99,8 +97,9 @@ void loop() {
                               controller.nd, controller.nn_input_size, 
                               nn_input, controller.epsilon);
     spin_swirl_target(timestamp, 0, controller.N, 
-                              controller.n, &target, controller.neutral_point, 10);
+                              controller.n, &target, controller.neutral_point, 1);
     del_y = subtract(target, prediction);
+    print_matrix(del_y);
     release(prediction);
     release(target);
     //// jacobian ////////////////////////////////////////////////////////////////////
@@ -108,15 +107,11 @@ void loop() {
     jacobian = get_jacobian(del_y, Q, Lambda, ynu, 
                               dynu_du, del_u_matrix, &controller.u[0], 
                               &controller.del_u[0], controller);
-    Serial.println("JACOBIAN:");
-    print_matrix(jacobian);
     //// hessian /////////////////////////////////////////////////////////////////////
     Matrix2 hessian;
     hessian = get_hessian(del_y, Q, Lambda, ynu, dynu_du, 
                             del_u_matrix, &controller.u[0], 
                               &controller.del_u[0], controller);
-    Serial.println("HESSIAN:");
-    print_matrix(hessian);
     ////////////////////////////////////////////////////////////////////////////////
     release(del_y);
     release(ynu);
@@ -136,8 +131,7 @@ void loop() {
       controller.u[i] = u_matrix.data[i];
       controller.del_u[i] = del_u_matrix.data[i];
     }
-    //Serial.println("CONTROL INPUTS:");
-    print_matrix(u_matrix);
+    //print_matrix(u_matrix);
     step_motor(&u_matrix.data[0], controller.m);
     release(u_matrix);
     release(hessian);
