@@ -98,7 +98,6 @@ void loop() {
     nn_gradients(&ynu, &dynu_du, controller.n, controller.m, 
                               controller.nd, controller.nn_input_size, 
                               nn_input, controller.epsilon);
-    Serial.println("gradients");
     spin_swirl_target(timestamp, 0, controller.N, 
                               controller.n, &target, controller.neutral_point, 10);
     del_y = subtract(target, prediction);

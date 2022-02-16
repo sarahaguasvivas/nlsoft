@@ -220,15 +220,12 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q,
     release(sub_sum);
     sub_sum = sum_axis(temp, 0);
     release(temp);
-    
     temp = multiply(del_u_matrix, Lambda);
-    //release(temp);
-    
     for (int h = 0; h < controller.Nc; h++){
       for (int j = 0; j < controller.Nc; j++){
         Matrix2 accum1;
         Matrix2 accum2;
-        accum1 = scale(2.*partial_delta_u_partial_u(h, j), 
+        accum1 = scale(2.* partial_delta_u_partial_u(h, j), 
                         temp);
         accum2 = add(accum, accum1);
         for (int i = 0; i < accum2.rows*accum2.cols; i++) {
@@ -238,7 +235,6 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q,
         release(accum2);
       }
     }
-    
     release(temp);
     temp2 = repmat(sub_sum, controller.Nc, 0);
     release(sub_sum);
@@ -254,13 +250,10 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q,
         for (int i = 0; i < controller.m; i++)
         {
           jacobian.data[h*jacobian.cols + j] += 
-                   -controller.s / 
-                   pow(u[j*controller.m + i] + 
-                  controller.r / 2.0 - 
-                  controller.b, 2) +  controller.s / 
-                  pow(controller.r / 2.0 + 
-                  controller.b - u[j*controller.m + i], 
-                  2.0);
+                   (-controller.s / pow(u[j, i] + 
+                                controller.r / 2.0 - controller.b, 2) + 
+                                controller.s / pow(controller.r / 2.0 + 
+                                controller.b - u[j, i], 2.0));
         }
       }
     }
@@ -269,24 +262,16 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q,
 }
 
 Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q, 
-                        Matrix2 Lambda, Matrix2 ynu, 
-                        Matrix2 dynu_du, 
-                        Matrix2 del_u_matrix, 
-                        float * u, float * del_u, 
-                        struct Controller controller){
-    Matrix2 hessian;
-    Matrix2 temp3;
-    Matrix2 temp4;
-    Matrix2 temp1;
-    Matrix2 temp;
-    Matrix2 temp2;
-    Matrix2 hessian1;
-    Matrix2 trn;
-    Matrix2 trn1;
-    Matrix2 trn2;
+                    Matrix2 Lambda, Matrix2 ynu, 
+                    Matrix2 dynu_du, 
+                    Matrix2 del_u_matrix, 
+                    float * u, float * del_u, 
+                    struct Controller controller){
+    Matrix2 hessian, temp3, temp4, temp1, temp, temp2, 
+                hessian1, trn, trn1, trn2;
     set(hessian, controller.Nc, controller.Nc);
     set_to_zero(hessian);
-     
+    float sumando_0 = 0.0, sumando_1 = 0.0; 
     temp = hadamard(ynu, ynu);
     temp1 = multiply(Q, temp);
     release(temp);
@@ -297,33 +282,24 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q,
     release(temp1);
     trn = scale(2., temp2);
     release(temp2);
-    temp1 = transpose(trn);
-    release(trn);
-    temp3 = sum_axis(temp, 0);
+    for (int i = 0; i < trn.rows*trn.cols; i++){
+      sumando_0 += trn.data[i];
+    }
+    for (int i = 0; i < temp.rows*temp.cols; i++){
+      sumando_1 += temp.data[i];
+    }
+
     release(temp);
-    trn1 = sum_axis(temp3, 1);
-    release(temp3);
-    temp4 = sum_axis(temp1, 0);
     release(temp1);
-    trn2 = sum_axis(temp4, 1);
-    release(temp4);
      
     for (int i = 0 ; 
           i < controller.Nc*controller.Nc; 
           i++) {
-      hessian.data[i] = trn1.data[0] - trn1.data[0];  
+      hessian.data[i] = sumando_1 - sumando_0;  
     }
-    release(trn1);
-    release(trn2);
     set(hessian1, controller.Nc, controller.Nc);
     set_to_zero(hessian1);
-    Matrix2 second_y;
-    Matrix2 second_y1;
-    Matrix2 scale_1;
-    Matrix2 mult;
-    Matrix2 mult1;
-    Matrix2 sum1;
-    Matrix2 sum2;
+    Matrix2 second_y, second_y1, scale_1, mult, mult1, sum1, sum2;
     sum1 = sum_axis(hessian1, 0);
     sum2 = sum_axis(sum1, 1);
     release(sum1);
@@ -333,7 +309,7 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q,
     {
       for (int mm = 0; mm < controller.Nc; mm++)
       {
-       hessian1.data[h*controller.Nc+mm] = sum2.data[0];
+       hessian1.data[h*controller.Nc+mm] = sum2.data[0] + hessian.data[0];
                
         for (int j = 0; j < controller.m ; j++)
         { 

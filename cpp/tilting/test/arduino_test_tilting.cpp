@@ -74,7 +74,7 @@ int main() {
                         controller.nd*controller.m, controller.dd*controller.n, 
                         controller.m, controller.n, NUM_SIGNAL);
     } 
-    //print_array(nn_input, NN_INPUT_LENGTH);
+    print_array(nn_input, NN_INPUT_LENGTH);
     for (int i = 0 ; i < controller.nn_input_size ; i++) {
       controller.past_nn_input[i] = nn_input[i];
     }
