@@ -29,7 +29,7 @@ NUM_SENSORS = 18
 N_D = 2
 D_D = 2
 DATA_SIZE = N_D*6 + D_D*3 + NUM_SENSORS
-TRAINING = True
+TRAINING = False
 
 data_files_location = "../../data/12_23_2021"
 regions = ['SV_tilt_' + str(i) for i in range(1, 20)]
@@ -39,9 +39,11 @@ def prepare_data_file_vani(signals, position, inputs, nd=3, dd=3):
     signals = signals.astype(np.float32)
     position = position.astype(np.float32)
     position = position - position[0, :]
+    np.set_printoptions(precision=10)
+    print("initial position", position[0, :])
     #max_signals = np.clip(np.max(signals, axis=0), 1, np.inf)
     #print(max_signals)
-    signals = np.clip(signals / 1e4, 0, np.inf) - 0.5
+    signals = signals / 1e4
     inputs = inputs / np.max(inputs, axis = 0) - 0.5
 
     N = max(nd, dd)  # data sample where we will start first

@@ -21,7 +21,7 @@
 
 void toggle_CS_PINS(bool low_high); //declare the function before it's used
 void setup_signal_collector();
-void collect_signal(float *, float*, int);
+void collect_signal(float *, float, int);
 void toggle_CS_PINS(bool low_high);
 
 #endif

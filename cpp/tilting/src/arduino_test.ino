@@ -29,6 +29,7 @@ void setup() {
   setup_motors();
   timestamp = 0;
   Serial.begin(115200);
+  //Serial.begin(1000000);
 }
 
 void loop() {
@@ -60,8 +61,9 @@ void loop() {
           del_u_matrix.data[i] = controller.del_u[i];
       }
     }
-    collect_signal(&signal[0], &controller.signal_calibration[0], 
+    collect_signal(&signal[0], controller.signal_calibration, 
                                   NUM_SIGNAL);
+    //print_array(signal, NUM_CHANNELS);
     for (int i = 0; i < NN_INPUT_LENGTH; i++) {
       nn_input[i] = controller.past_nn_input[i];
     }
@@ -83,7 +85,8 @@ void loop() {
     }   
     prediction = nn_prediction(controller.N, controller.Nc, controller.n, controller.m, 
                                NN_INPUT_LENGTH, controller.nd, controller.dd, &nn_input[0], 
-                                controller.normalized_u, &h_tm[0]);
+                                controller.normalized_u, &h_tm[0], controller.neutral_point);
+    //print_with_scale(prediction, 100.);
     for (int i = 0; i < GRU_OUTPUT; i++){
       h_tm1[i] = h_tm[i];
     }
@@ -97,9 +100,9 @@ void loop() {
                               controller.nd, controller.nn_input_size, 
                               nn_input, controller.epsilon);
     spin_swirl_target(timestamp, 0, controller.N, 
-                              controller.n, &target, controller.neutral_point, 1);
+                              controller.n, &target, controller.neutral_point, 10);
     del_y = subtract(target, prediction);
-    print_matrix(del_y);
+    //print_matrix(del_y);
     release(prediction);
     release(target);
     //// jacobian ////////////////////////////////////////////////////////////////////
@@ -131,7 +134,7 @@ void loop() {
       controller.u[i] = u_matrix.data[i];
       controller.del_u[i] = del_u_matrix.data[i];
     }
-    //print_matrix(u_matrix);
+    print_matrix(u_matrix);
     step_motor(&u_matrix.data[0], controller.m);
     release(u_matrix);
     release(hessian);
@@ -159,6 +162,17 @@ void print_matrix(Matrix2 matrix)
   for (int i=0; i< matrix.rows; i++){
     for (int j=0; j< matrix.cols; j++){
       Serial.print(matrix.data[i*matrix.cols + j], 10);
+      Serial.print(",");
+    }
+    Serial.println();
+  }
+}
+
+void print_with_scale(Matrix2 matrix, float scale)
+{
+  for (int i=0; i< matrix.rows; i++){
+    for (int j=0; j< matrix.cols; j++){
+      Serial.print(scale * matrix.data[i*matrix.cols + j], 10);
       Serial.print(",");
     }
     Serial.println();

@@ -72,9 +72,9 @@ void setup_signal_collector(){
         delayMicroseconds(100);
         if (Chip_ID == 61)
         {
-            Serial.print("Identity of LIS3MDL# ");
-            Serial.print(i + 1);
-            Serial.println(" checked!");
+            //Serial.print("Identity of LIS3MDL# ");
+            //Serial.print(i + 1);
+            //Serial.println(" checked!");
         }
         Chip_ID = 0;
     }
@@ -162,7 +162,7 @@ void setup_signal_collector(){
     Serial.println("");
     delay(100);
     // Serial.println("Time(millis) Disp(mm) X-axis     Y-axis      Z-axis");
-    Serial.println("Time(millis)     X-axis     Y-axis      Z-axis");
+    //Serial.println("Time(millis)     X-axis     Y-axis      Z-axis");
 
     delay(2000);
     SPI.beginTransaction(SPISettings(SPISPEED, MSBFIRST, SPI_MODE0)); // start SPI
@@ -179,7 +179,7 @@ void setup_signal_collector(){
     // Serial.println("Calibration Over!");
 }
 
-void collect_signal(float * signal_to_read, float* calibration_vector, 
+void collect_signal(float * signal_to_read, float calibration, 
                                             int signal_size)
 {
     // channel driver
@@ -216,13 +216,13 @@ void collect_signal(float * signal_to_read, float* calibration_vector,
                     magnetic_mG[j][chip_iterator] -= 38300;
                 }
             }
-         *(signal_to_read + chip_iterator) = max((float)magnetic_mG[0][chip_iterator] / calibration_vector[chip_iterator], 0) - 0.5;
-         *(signal_to_read + 6 + chip_iterator) = max((float)magnetic_mG[1][chip_iterator] / calibration_vector[6 + chip_iterator], 0) - 0.5;
-         *(signal_to_read + 12 + chip_iterator) = max((float)magnetic_mG[2][chip_iterator] / calibration_vector[12 + chip_iterator], 0) - 0.5;
+         *(signal_to_read + chip_iterator) = (float)magnetic_mG[0][chip_iterator] / calibration;
+         *(signal_to_read + 6 + chip_iterator) =(float)magnetic_mG[1][chip_iterator] / calibration;
+         *(signal_to_read + 12 + chip_iterator) = (float)magnetic_mG[2][chip_iterator] / calibration;
         }
         for (int i = 0; i < 18; i++){
-            if (isinf(signal_to_read[i])){
-                signal_to_read[i] = -0.5;
+            if (isinf(signal_to_read[i]) || isnan(signal_to_read[i])){
+                signal_to_read[i] = 0.0;
             }
         }
         digitalWriteFast(PROBEPIN, !digitalRead(PROBEPIN));

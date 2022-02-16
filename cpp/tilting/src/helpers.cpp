@@ -84,7 +84,8 @@ Matrix2 nn_prediction(
               int dd, 
               float * prev_input, 
               float * u,
-              float * h_tm1
+              float * h_tm1,
+              float * neural_point
 ){
     float * previous_input = (float*)malloc(
                       input_size*sizeof(float));
@@ -125,7 +126,7 @@ Matrix2 nn_prediction(
                                 dd*n, m, n, NUM_SIGNAL);
         for (int j = 0; j < n; j++)
         {
-            y_output.data[i * n + j] = output_next[j];
+            y_output.data[i * n + j] = output_next[j] - neural_point[j];
         }
         free(output_next);
     }
