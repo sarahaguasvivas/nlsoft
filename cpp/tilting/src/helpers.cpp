@@ -210,16 +210,11 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q,
                   Matrix2 dynu_du, 
                   Matrix2 del_u_matrix, 
                   float * u, float * del_u, 
-                  struct Controller controller){
-    Matrix2 jacobian;
-    Matrix2 sub_sum;
-    Matrix2 temp;
-    Matrix2 temp1;
-    Matrix2 temp2;
-    Matrix2 accum;
+                  struct Controller controller
+){
+    Matrix2 jacobian, sub_sum, temp, temp1, temp2, accum;
     set(accum, controller.Nc, controller.m);
     set_to_zero(accum);
-    set_to_zero(jacobian); 
     sub_sum = multiply(del_y, Q);
     temp = multiply(sub_sum, ynu);
     release(sub_sum);
@@ -227,15 +222,14 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q,
     release(temp);
     
     temp = multiply(del_u_matrix, Lambda);
-    temp1 = scale(2., temp);
-    release(temp);
+    //release(temp);
     
     for (int h = 0; h < controller.Nc; h++){
       for (int j = 0; j < controller.Nc; j++){
         Matrix2 accum1;
         Matrix2 accum2;
-        accum1 = scale(partial_delta_u_partial_u(h, j), 
-                        temp1);
+        accum1 = scale(2.*partial_delta_u_partial_u(h, j), 
+                        temp);
         accum2 = add(accum, accum1);
         for (int i = 0; i < accum2.rows*accum2.cols; i++) {
             accum.data[i] += accum2.data[i];
@@ -245,7 +239,7 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q,
       }
     }
     
-    release(temp1);
+    release(temp);
     temp2 = repmat(sub_sum, controller.Nc, 0);
     release(sub_sum);
    

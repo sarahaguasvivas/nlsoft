@@ -34,7 +34,7 @@ void setup() {
 
 int main() {
     setup();
-    for (int i = 0; i < 3; i++){
+    for (int i = 0; i < 20; i++){
     //elapsed = millis();
     float * signal = (float*)malloc(NUM_SIGNAL*sizeof(float));
     Matrix2 Q;
@@ -74,7 +74,7 @@ int main() {
                         controller.nd*controller.m, controller.dd*controller.n, 
                         controller.m, controller.n, NUM_SIGNAL);
     } 
-    print_array(nn_input, NN_INPUT_LENGTH);
+    //print_array(nn_input, NN_INPUT_LENGTH);
     for (int i = 0 ; i < controller.nn_input_size ; i++) {
       controller.past_nn_input[i] = nn_input[i];
     }
@@ -92,7 +92,7 @@ int main() {
     }
     free(h_tm);
     for (int i = 0; i < controller.n; i++) {
-        current_position[i] = prediction.data[(controller.N - 1) + i * controller.n];
+        current_position[i] = prediction.data[(controller.N - 1) * controller.n + i];
     }
     set(ynu, controller.n, controller.m);
     set(dynu_du, controller.n, controller.m);
@@ -101,7 +101,7 @@ int main() {
                               nn_input, controller.epsilon);
     
     spin_swirl_target(timestamp, 0, controller.N, 
-                              controller.n, &target, controller.neutral_point);
+                              controller.n, &target, controller.neutral_point, 10);
     del_y = subtract(target, prediction);
 
     release(prediction);
