@@ -367,9 +367,9 @@ void solve(Matrix2& jacobian, Matrix2& hessian,
     Matrix2 inv;
     inv = inverse(hessian);
     Matrix2 minusj;
-    minusj = scale(-1., jacobian);
+    minusj = multiply(inv, jacobian);
     release(del_u_matrix);
-    del_u_matrix = multiply(inv, minusj); 
+    del_u_matrix = scale(1., minusj); 
     release(inv);
     release(minusj);
 }
