@@ -296,7 +296,7 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q,
     for (int i = 0 ; 
           i < controller.Nc*controller.Nc; 
           i++) {
-      hessian.data[i] = sumando_1 - sumando_0;  
+      hessian.data[i] = -sumando_1 + sumando_0;  
     }
     set(hessian1, controller.Nc, controller.Nc);
     set_to_zero(hessian1);
@@ -369,7 +369,7 @@ void solve(Matrix2& jacobian, Matrix2& hessian,
     Matrix2 minusj;
     minusj = multiply(inv, jacobian);
     release(del_u_matrix);
-    del_u_matrix = scale(1., minusj); 
+    del_u_matrix = scale(-1., minusj); 
     release(inv);
     release(minusj);
 }

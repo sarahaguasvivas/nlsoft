@@ -222,7 +222,7 @@ void collect_signal(float * signal_to_read, float calibration,
         }
         for (int i = 0; i < 18; i++){
             if (isinf(signal_to_read[i]) || isnan(signal_to_read[i])){
-                signal_to_read[i] = 0.0;
+                signal_to_read[i] = 0.5;
             }
         }
         digitalWriteFast(PROBEPIN, !digitalRead(PROBEPIN));

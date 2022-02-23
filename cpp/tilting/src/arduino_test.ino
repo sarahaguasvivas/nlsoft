@@ -21,7 +21,7 @@ MCUCore core;
 CoreChannel core_chnl(0);
 
 long int count = 0;
-float h_tm1[GRU_OUTPUT] = {0.0};
+float h_tm1[GRU_OUTPUT] = { 0.0 };
 
 void setup() {
   setup_signal_collector();
@@ -63,7 +63,7 @@ void loop() {
     }
     collect_signal(&signal[0], controller.signal_calibration, 
                                   NUM_SIGNAL);
-    //print_array(signal, NUM_CHANNELS);
+    print_array(signal, NUM_CHANNELS);
     for (int i = 0; i < NN_INPUT_LENGTH; i++) {
       nn_input[i] = controller.past_nn_input[i];
     }
@@ -87,7 +87,7 @@ void loop() {
     prediction = nn_prediction(controller.N, controller.Nc, controller.n, controller.m, 
                                NN_INPUT_LENGTH, controller.nd, controller.dd, &nn_input[0], 
                                 controller.normalized_u, &h_tm[0], controller.neutral_point);
-    print_with_scale(prediction, 1000.); 
+    //print_with_scale(prediction, 1000.); 
     for (int i = 0; i < GRU_OUTPUT; i++){
       h_tm1[i] = h_tm[i];
     }

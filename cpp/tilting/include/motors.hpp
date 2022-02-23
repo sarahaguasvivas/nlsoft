@@ -11,8 +11,8 @@
 #include <Arduino.h>
 #include "SRTxMCU.h"
 
-#define OLD_MIN -1
-#define OLD_MAX 1
+#define OLD_MIN -0.5
+#define OLD_MAX 0.5
 #define NEW_MIN 0
 #define NEW_MAX UINT8_MAX
 
