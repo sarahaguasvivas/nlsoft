@@ -139,7 +139,7 @@ void nn_gradients(Matrix2 * first_derivative,
                   Matrix2 * second_derivative, 
                   const int n, int m, int nd, 
                   int input_size, 
-                  float * input, float epsilon
+                  float * input_nn, float epsilon
 ){
     set_to_zero(*first_derivative);
     set_to_zero(*second_derivative);
@@ -163,9 +163,9 @@ void nn_gradients(Matrix2 * first_derivative,
 
       for (int i = 0; i < input_size; i++)
       {
-        input_center[i] =  input[i];
-        input_plus_h[i] =  input[i];
-        input_minus_h[i] = input[i];            
+        input_center[i] =  input_nn[i];
+        input_plus_h[i] =  input_nn[i];
+        input_minus_h[i] = input_nn[i];            
       }
       input_plus_h[nn] += epsilon;
       input_minus_h[nn] -= epsilon;
@@ -296,7 +296,7 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q,
     for (int i = 0 ; 
           i < controller.Nc*controller.Nc; 
           i++) {
-      hessian.data[i] = -sumando_1 + sumando_0;  
+      hessian.data[i] = 4.2; //sumando_1 - sumando_0;  
     }
     set(hessian1, controller.Nc, controller.Nc);
     set_to_zero(hessian1);

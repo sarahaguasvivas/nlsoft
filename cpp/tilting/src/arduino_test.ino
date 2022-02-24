@@ -34,8 +34,10 @@ void setup() {
 
 void loop() {
     elapsed = millis();
-    float * signal = (float*)malloc(NUM_SIGNAL*sizeof(float));
-    float * nn_input = (float*)malloc((controller.nn_input_size)*sizeof(float));
+    float * signal = (float*)malloc(
+                            NUM_SIGNAL*sizeof(float));
+    float * nn_input = (float*)malloc(
+                            (controller.nn_input_size)*sizeof(float));
     Matrix2 Q;
     Matrix2 Lambda;
     Matrix2 del_u_matrix;
@@ -63,7 +65,7 @@ void loop() {
     }
     collect_signal(&signal[0], controller.signal_calibration, 
                                   NUM_SIGNAL);
-    print_array(signal, NUM_CHANNELS);
+    //print_array(signal, NUM_CHANNELS);
     for (int i = 0; i < NN_INPUT_LENGTH; i++) {
       nn_input[i] = controller.past_nn_input[i];
     }
@@ -86,7 +88,7 @@ void loop() {
     //print_array(nn_input, NN_INPUT_LENGTH);  
     prediction = nn_prediction(controller.N, controller.Nc, controller.n, controller.m, 
                                NN_INPUT_LENGTH, controller.nd, controller.dd, &nn_input[0], 
-                                controller.normalized_u, &h_tm[0], controller.neutral_point);
+                               controller.normalized_u, &h_tm[0], controller.neutral_point);
     //print_with_scale(prediction, 1000.); 
     for (int i = 0; i < GRU_OUTPUT; i++){
       h_tm1[i] = h_tm[i];
@@ -100,6 +102,10 @@ void loop() {
     nn_gradients(&ynu, &dynu_du, controller.n, controller.m, 
                               controller.nd, controller.nn_input_size, 
                               nn_input, controller.epsilon);
+    //Serial.println("ynu");
+    //print_matrix(ynu);
+    //Serial.println("dynu_du");
+    //print_matrix(dynu_du);
     spin_swirl_target(timestamp, 0, controller.N, 
                               controller.n, &target, controller.neutral_point, 1.);
     del_y = subtract(target, prediction);
@@ -111,6 +117,7 @@ void loop() {
     jacobian = get_jacobian(del_y, Q, Lambda, ynu, 
                               dynu_du, del_u_matrix, &controller.u[0], 
                               &controller.del_u[0], controller);
+    //Serial.println("jacobian");
     //print_matrix(jacobian);
     //// hessian /////////////////////////////////////////////////////////////////////
     // TODO(sarahaguasvivas): Hessian too large
@@ -118,6 +125,8 @@ void loop() {
     hessian = get_hessian(del_y, Q, Lambda, ynu, dynu_du, 
                             del_u_matrix, &controller.u[0], 
                               &controller.del_u[0], controller);
+    //Serial.println("hessian");
+    //print_matrix(hessian);
     ////////////////////////////////////////////////////////////////////////////////
     release(del_y);
     release(ynu);
@@ -137,7 +146,7 @@ void loop() {
       controller.u[i] = u_matrix.data[i];
       controller.del_u[i] = del_u_matrix.data[i];
     }
-    //print_matrix(u_matrix);
+    print_matrix(u_matrix);
     step_motor(&u_matrix.data[0], controller.m);
     release(u_matrix);
     release(hessian);
