@@ -75,7 +75,7 @@ void loop() {
                          controller.nd * controller.m, 
                          controller.dd * controller.n, 
                          controller.m, controller.n, NUM_SIGNAL);
-    }
+    }     
     for (int i = 0 ; i < NN_INPUT_LENGTH; i++) {
          controller.past_nn_input[i] = nn_input[i];
     }
@@ -102,12 +102,15 @@ void loop() {
     nn_gradients(&ynu, &dynu_du, controller.n, controller.m, 
                               controller.nd, controller.nn_input_size, 
                               nn_input, controller.epsilon);
+    
     //Serial.println("ynu");
     //print_matrix(ynu);
     //Serial.println("dynu_du");
-    //print_matrix(dynu_du);
+    print_matrix(dynu_du);
+    
     spin_swirl_target(timestamp, 0, controller.N, 
-                              controller.n, &target, controller.neutral_point, 1.);
+                              controller.n, &target, controller.neutral_point, 1);
+    //print_two_arrays(prediction.data, controller.n, target.data, controller.n, 1000.); 
     del_y = subtract(target, prediction);
     //print_with_scale(del_y, 1000.);
     release(prediction);
@@ -117,22 +120,22 @@ void loop() {
     jacobian = get_jacobian(del_y, Q, Lambda, ynu, 
                               dynu_du, del_u_matrix, &controller.u[0], 
                               &controller.del_u[0], controller);
-    Serial.println("jacobian");
-    print_matrix(jacobian);
+    //Serial.println("jacobian");
+    //print_matrix(jacobian);
     //// hessian /////////////////////////////////////////////////////////////////////
     // TODO(sarahaguasvivas): Hessian too large
     Matrix2 hessian;
     hessian = get_hessian(del_y, Q, Lambda, ynu, dynu_du, 
                             del_u_matrix, &controller.u[0], 
                               &controller.del_u[0], controller);
-    Serial.println("hessian");
-    print_matrix(hessian);
+    //Serial.println("hessian");
+    //print_matrix(hessian);
     ////////////////////////////////////////////////////////////////////////////////
     release(del_y);
     release(ynu);
     release(dynu_du);
     Matrix2 u_matrix; 
-    solve(jacobian, hessian, del_u_matrix);
+    solve(jacobian, hessian, &del_u_matrix);
     set(u_matrix, controller.Nc, controller.m);
     for (int i = 0; i < controller.Nc*controller.m; i++) { 
       u_matrix.data[i] = controller.prev_u[i] - del_u_matrix.data[i];
@@ -140,7 +143,7 @@ void loop() {
         u_matrix.data[i] = controller.min_max_input_saturation[0];
       }
     }
-    clip_action(u_matrix, &controller);
+    //clip_action(u_matrix, &controller);
     for (int i = 0; i < controller.Nc*controller.m; i++) {
       controller.prev_u[i] = controller.u[i];
       controller.u[i] = u_matrix.data[i];
@@ -189,4 +192,14 @@ void print_with_scale(Matrix2 matrix, float scale)
     }
     Serial.println();
   }
+}
+
+void print_two_arrays(float* a, int n, float * b, int m, float scale){
+  for (int i = 0; i < n; i++){
+    Serial.print(scale*a[i], 10); Serial.print(",");
+  }
+  for (int i = 0; i < m; i++){
+    Serial.print(scale*b[i], 10); Serial.print(",");
+  }
+  Serial.println();
 }

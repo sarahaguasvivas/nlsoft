@@ -45,7 +45,7 @@ Matrix2 get_jacobian(Matrix2, Matrix2,
 Matrix2 get_hessian(Matrix2, Matrix2, 
             Matrix2, Matrix2, Matrix2, Matrix2, 
             float *, float *, struct Controller);
-void solve(Matrix2&, Matrix2&, Matrix2 &);
+void solve(Matrix2, Matrix2, Matrix2 *);
 void clip_action(Matrix2 &, Controller*);
 
 #ifdef __cplusplus

@@ -40,7 +40,6 @@ def prepare_data_file_vani(signals, position, inputs, nd=3, dd=3):
     position = position.astype(np.float32)
     position = position - position[0, :]
     np.set_printoptions(precision=10)
-    print("initial position", position[0, :])
     #max_signals = np.clip(np.max(signals, axis=0), 1, np.inf)
     #print(max_signals)
     signals = signals / 1e4
@@ -97,7 +96,6 @@ def create_data_labels(data):
                                                 nd = N_D, dd = D_D)
         X += [dataset]
         y += [labels]
-    print(X[0].shape)
     return np.vstack(X), np.vstack(y)
 
 def gru_training(data):
@@ -130,7 +128,6 @@ if __name__=='__main__':
         X, y, forward_kinematics_model = gru_training(data)
     else:
         X, y = create_data_labels(data)
-    print("first: ", X[0, :])
     forward_kinematics_model = keras.models.load_model('forward_kinematics_jan_10_2022.hdf5', compile=False)
     samples = 10000
     X_sysint = X[:samples, :]

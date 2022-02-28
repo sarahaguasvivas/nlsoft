@@ -173,17 +173,18 @@ void nn_gradients(Matrix2 * first_derivative,
       output_plus_h = fwdNN(input_plus_h, h_tm1);
       output_minus_h = fwdNN(input_minus_h, h_tm1);
       output = fwdNN(input_center, h_tm1);
-      int j = nn % m;
-      for (int i = 0 ; i < n; i++){
-        first_derivative->data[i * 
-            first_derivative->cols + j] += 
-             (output_plus_h[i] - output_minus_h[i]) / 
-             (2. * epsilon);
-        second_derivative->data[i * 
-              second_derivative->cols + j] += 
-                (output_plus_h[i] - 2.*output[i] + 
-                output_minus_h[i]) / 
-                (epsilon * epsilon);    
+      
+      int j = nn / nd;
+      for (int i = 0; i < n; i++){
+          first_derivative->data[i * 
+              first_derivative->cols + j] += 
+              (output_plus_h[i] - output_minus_h[i]) / 
+              (2. * epsilon);
+          second_derivative->data[i * 
+                second_derivative->cols + j] += 
+                  (output_plus_h[i] - 2.*output[i] + 
+                  output_minus_h[i]) / 
+                  (epsilon * epsilon);    
       }
       free(output);
       free(output_minus_h);
@@ -221,22 +222,24 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q,
     release(sub_sum);
     sub_sum = sum_axis(temp, 0);
     release(temp);
-    temp = multiply(del_u_matrix, Lambda);
+
     for (int h = 0; h < controller.Nc; h++){
       for (int j = 0; j < controller.Nc; j++){
         Matrix2 accum1;
         Matrix2 accum2;
+        Matrix2 accum3;
+        accum3 = multiply(del_u_matrix, Lambda);
         accum1 = scale(2.* partial_delta_u_partial_u(h, j), 
-                        temp);
+                        accum3);
         accum2 = add(accum, accum1);
         for (int i = 0; i < accum2.rows*accum2.cols; i++) {
             accum.data[i] += accum2.data[i];
         }
         release(accum1);
         release(accum2);
+        release(accum3);
       }
     }
-    release(temp);
     temp2 = repmat(sub_sum, controller.Nc, 0);
     release(sub_sum);
    
@@ -251,10 +254,10 @@ Matrix2 get_jacobian(Matrix2 del_y, Matrix2 Q,
         for (int i = 0; i < controller.m; i++)
         {
           jacobian.data[h*jacobian.cols + j] += 
-                   (-controller.s / pow(u[j, i] + 
+                   (-controller.s / pow(u[j * controller.m + i] + 
                                 controller.r / 2.0 - controller.b, 2) + 
                                 controller.s / pow(controller.r / 2.0 + 
-                                controller.b - u[j, i], 2.0));
+                                controller.b - u[j * controller.m + i], 2.0));
         }
       }
     }
@@ -361,14 +364,11 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q,
     return hessian1;
 }
 
-void solve(Matrix2& jacobian, Matrix2& hessian, 
-          Matrix2 &del_u_matrix){
-    Matrix2 inv;
-    inv = inverse(hessian);
-    Matrix2 minusj;
-    minusj = multiply(inv, jacobian);
-    release(del_u_matrix);
-    del_u_matrix = scale(-1., minusj); 
-    release(inv);
-    release(minusj);
+void solve(Matrix2 jacobian, Matrix2 hessian, 
+          Matrix2 * del_u_matrix){
+    Matrix2 minus_del_u;
+    minus_del_u = solve_matrix_eqn(hessian, jacobian); 
+    release(*del_u_matrix);
+    *del_u_matrix = scale(-1., minus_del_u); 
+    release(minus_del_u);
 }
