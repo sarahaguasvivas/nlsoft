@@ -399,7 +399,7 @@ class RecursiveNeuralNetworkPredictor():
                     #                         self.b - u[j, i], 2.0))
                 jacobian[j, :] += sub_sum
         jacobian += np.array(sum_output).reshape(self.nu, -1)
-        print(jacobian)
+        print("jacobian", jacobian)
         return jacobian
 
     def compute_cost(self):

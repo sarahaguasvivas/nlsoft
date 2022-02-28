@@ -117,16 +117,16 @@ void loop() {
     jacobian = get_jacobian(del_y, Q, Lambda, ynu, 
                               dynu_du, del_u_matrix, &controller.u[0], 
                               &controller.del_u[0], controller);
-    //Serial.println("jacobian");
-    //print_matrix(jacobian);
+    Serial.println("jacobian");
+    print_matrix(jacobian);
     //// hessian /////////////////////////////////////////////////////////////////////
     // TODO(sarahaguasvivas): Hessian too large
     Matrix2 hessian;
     hessian = get_hessian(del_y, Q, Lambda, ynu, dynu_du, 
                             del_u_matrix, &controller.u[0], 
                               &controller.del_u[0], controller);
-    //Serial.println("hessian");
-    //print_matrix(hessian);
+    Serial.println("hessian");
+    print_matrix(hessian);
     ////////////////////////////////////////////////////////////////////////////////
     release(del_y);
     release(ynu);
@@ -146,7 +146,7 @@ void loop() {
       controller.u[i] = u_matrix.data[i];
       controller.del_u[i] = del_u_matrix.data[i];
     }
-    print_matrix(u_matrix);
+    //print_matrix(u_matrix);
     step_motor(&u_matrix.data[0], controller.m);
     release(u_matrix);
     release(hessian);

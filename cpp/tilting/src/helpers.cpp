@@ -269,7 +269,7 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q,
                     float * u, float * del_u, 
                     struct Controller controller){
     Matrix2 hessian, temp3, temp4, temp1, temp, temp2, 
-                hessian1, trn, trn1, trn2;
+                hessian1;
     set(hessian, controller.Nc, controller.Nc);
     set_to_zero(hessian);
     float sumando_0 = 0.0, sumando_1 = 0.0; 
@@ -281,13 +281,12 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q,
     temp1 = multiply(Q, dynu_du);
     temp2 = multiply(del_y, temp1);
     release(temp1);
-    trn = scale(2., temp2);
     release(temp2);
-    for (int i = 0; i < trn.rows*trn.cols; i++){
-      sumando_0 += trn.data[i];
-    }
     for (int i = 0; i < temp.rows*temp.cols; i++){
-      sumando_1 += temp.data[i];
+      sumando_0 += temp.data[i];
+    }
+    for (int i = 0; i < temp2.rows*temp2.cols; i++){
+      sumando_1 += 2.*temp2.data[i];
     }
 
     release(temp);
@@ -296,7 +295,7 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q,
     for (int i = 0 ; 
           i < controller.Nc*controller.Nc; 
           i++) {
-      hessian.data[i] = 4.2; //sumando_1 - sumando_0;  
+      hessian.data[i] = sumando_0 - sumando_1;  
     }
     set(hessian1, controller.Nc, controller.Nc);
     set_to_zero(hessian1);
