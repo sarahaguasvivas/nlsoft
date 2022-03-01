@@ -174,7 +174,7 @@ void nn_gradients(Matrix2 * first_derivative,
       output_minus_h = fwdNN(input_minus_h, h_tm1);
       output = fwdNN(input_center, h_tm1);
       
-      int j = nn / nd;
+      int j = nn / nd; 
       for (int i = 0; i < n; i++){
           first_derivative->data[i * 
               first_derivative->cols + j] += 
@@ -284,14 +284,13 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q,
     temp1 = multiply(Q, dynu_du);
     temp2 = multiply(del_y, temp1);
     release(temp1);
-    release(temp2);
     for (int i = 0; i < temp.rows*temp.cols; i++){
       sumando_0 += temp.data[i];
     }
     for (int i = 0; i < temp2.rows*temp2.cols; i++){
       sumando_1 += 2.*temp2.data[i];
     }
-
+    release(temp2);
     release(temp);
     release(temp1);
      

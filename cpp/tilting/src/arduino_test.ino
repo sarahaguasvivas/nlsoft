@@ -103,9 +103,9 @@ void loop() {
                               controller.nd, controller.nn_input_size, 
                               nn_input, controller.epsilon);
     
-    //Serial.println("ynu");
-    //print_matrix(ynu);
-    //Serial.println("dynu_du");
+    Serial.println("ynu");
+    print_matrix(ynu);
+    Serial.println("dynu_du");
     print_matrix(dynu_du);
     
     spin_swirl_target(timestamp, 0, controller.N, 
@@ -143,13 +143,13 @@ void loop() {
         u_matrix.data[i] = controller.min_max_input_saturation[0];
       }
     }
-    //clip_action(u_matrix, &controller);
+    clip_action(u_matrix, &controller);
     for (int i = 0; i < controller.Nc*controller.m; i++) {
       controller.prev_u[i] = controller.u[i];
       controller.u[i] = u_matrix.data[i];
       controller.del_u[i] = del_u_matrix.data[i];
     }
-    //print_matrix(u_matrix);
+    print_matrix(u_matrix);
     step_motor(&u_matrix.data[0], controller.m);
     release(u_matrix);
     release(hessian);
