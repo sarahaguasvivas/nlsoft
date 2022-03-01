@@ -139,18 +139,14 @@ void nn_gradients(Matrix2 * first_derivative,
                   Matrix2 * second_derivative, 
                   const int n, int m, int nd, 
                   int input_size, 
-                  float * input_nn, float epsilon
+                  float * input_nn, float epsilon,
+                  float * h_tm1
 ){
     set_to_zero(*first_derivative);
     set_to_zero(*second_derivative);
-    float * h_tm1 = (float*)malloc(
-                    GRU_OUTPUT * sizeof(float)); 
-    for (int i = 0; i < GRU_OUTPUT; i++){
-        h_tm1[i] = 0.0;
-    }
     for (int nn = 0; nn < nd*m; nn++)
     {
-      float * output;
+      float * output_m;
       float * output_minus_h;
       float * output_plus_h;  
 
@@ -172,7 +168,7 @@ void nn_gradients(Matrix2 * first_derivative,
 
       output_plus_h = fwdNN(input_plus_h, h_tm1);
       output_minus_h = fwdNN(input_minus_h, h_tm1);
-      output = fwdNN(input_center, h_tm1);
+      output_m = fwdNN(input_center, h_tm1);
       
       int j = nn / nd; 
       for (int i = 0; i < n; i++){
@@ -182,15 +178,14 @@ void nn_gradients(Matrix2 * first_derivative,
               (2. * epsilon);
           second_derivative->data[i * 
                 second_derivative->cols + j] += 
-                  (output_plus_h[i] - 2.*output[i] + 
+                  (output_plus_h[i] - 2.*output_m[i] + 
                   output_minus_h[i]) / 
                   (epsilon * epsilon);    
       }
-      free(output);
+      free(output_m);
       free(output_minus_h);
       free(output_plus_h);  
     }
-    free(h_tm1);
 }
 
 

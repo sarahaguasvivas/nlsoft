@@ -20,7 +20,8 @@ float max(float, float);
 void setup_nn_utils();
 
 void nn_gradients(Matrix2 *, Matrix2 *, int, 
-                    int, int, int, float *, float);
+                    int, int, int, float *, float,
+                    float*);
 
 void roll_window(int, int, int, float *);
 

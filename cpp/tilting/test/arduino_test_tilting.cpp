@@ -94,7 +94,6 @@ int main() {
         for (int i = 0; i < GRU_OUTPUT; i++){
           h_tm1[i] = h_tm[i];
         }
-        free(h_tm);
         for (int i = 0; i < controller.n; ++i) {
             current_position[i] = prediction.data[(controller.N - 1) * controller.n + i];
         }
@@ -102,8 +101,9 @@ int main() {
         set(dynu_du, controller.n, controller.m);
         nn_gradients(&ynu, &dynu_du, controller.n, controller.m, 
                                   controller.nd, controller.nn_input_size, 
-                                  nn_input, controller.epsilon);
-        
+                                  nn_input, controller.epsilon, h_tm);
+        free(h_tm);
+
         //Serial.println("ynu");
         //print_matrix(ynu);
         //Serial.println("dynu_du");

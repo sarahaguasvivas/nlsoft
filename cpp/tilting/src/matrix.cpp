@@ -342,6 +342,7 @@ struct Matrix2 solve_matrix_eqn(struct Matrix2 a, struct Matrix2 b)
     }
     free(indx);
     free(col);
+    release(aa);
     return u;
 }
 
