@@ -29,6 +29,7 @@ void setup() {
   setup_motors();
   timestamp = 0;
   Serial.begin(115200);
+  Serial.println("u0, u1, u2, u3, u4, u5");
 }
 
 void loop() {
@@ -100,8 +101,8 @@ void loop() {
     jacobian = get_jacobian(del_y, Q, Lambda, ynu, 
                               dynu_du, del_u_matrix, &controller.u[0], 
                               &controller.del_u[0], controller);
-    Serial.println("jacobian");
-    print_matrix(jacobian);
+    //Serial.println("jacobian");
+    //print_matrix(jacobian);
     //// hessian /////////////////////////////////////////////////////////////////////
     // TODO(sarahaguasvivas): Hessian too large
     Matrix2 hessian;
@@ -129,7 +130,7 @@ void loop() {
       controller.u[i] = u_matrix.data[i];
       controller.del_u[i] = del_u_matrix.data[i];
     }
-    //print_matrix(u_matrix);
+    print_matrix(u_matrix);
     step_motor(&u_matrix.data[0], controller.m, 
                 controller.input_calibration, controller.input_offset);
     release(u_matrix);

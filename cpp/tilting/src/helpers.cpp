@@ -373,7 +373,7 @@ void solve(Matrix2 jacobian, Matrix2 hessian,
           Matrix2 * del_u_matrix){
     Matrix2 minus_del_u, inv;
     inv = inverse(hessian);
-    minus_del_u = scale(1/4., jacobian);//solve_matrix_eqn(hessian, jacobian); 
+    minus_del_u = scale(1/20., jacobian);//solve_matrix_eqn(hessian, jacobian); 
     release(*del_u_matrix);
     *del_u_matrix = scale(1., minus_del_u); 
     release(minus_del_u);

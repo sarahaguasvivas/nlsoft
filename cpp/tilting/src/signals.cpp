@@ -150,7 +150,7 @@ void setup_signal_collector(){
     toggle_CS_PINS(HIGH);
     delay(100);
 
-    Serial.println("Initialization complete");
+    //Serial.println("Initialization complete");
     delay(100);
 
     //    Ending the SPI transaction
@@ -158,7 +158,7 @@ void setup_signal_collector(){
 
     while (!Serial && (millis() <= 5000))
         ; // WAIT UP TO 5000 MILLISECONDS FOR SERIAL OUTPUT CONSOLE
-    Serial.println("configured, starting");
+    //Serial.println("configured, starting");
     Serial.println("");
     delay(100);
     // Serial.println("Time(millis) Disp(mm) X-axis     Y-axis      Z-axis");
