@@ -86,9 +86,9 @@ void loop() {
     spin_swirl_target(timestamp, 0, controller.N, 
                               controller.n, &target, controller.neutral_point, 1);
     for (int i = 0; i < controller.n; i++) {
-        current_position[i] = prediction.data[i];//prediction.data[(controller.N - 1) * controller.n + i];
+        current_position[i] = prediction.data[(controller.N - 1) * controller.n + i];
     }
-    print_two_arrays(prediction.data, controller.n, target.data, controller.n, 1000.); 
+    //print_two_arrays(prediction.data, controller.n, target.data, controller.n, 1000.); 
     del_y = subtract(target, prediction);
     //print_with_scale(del_y, 1000.);
     release(prediction);
@@ -127,8 +127,9 @@ void loop() {
       controller.u[i] = u_matrix.data[i];
       controller.del_u[i] = del_u_matrix.data[i];
     }
-    //print_matrix(u_matrix);
-    step_motor(&u_matrix.data[0], controller.m);
+    print_matrix(u_matrix);
+    step_motor(&u_matrix.data[0], controller.m, 
+                controller.input_calibration, controller.input_offset);
     release(u_matrix);
     release(hessian);
     release(jacobian);

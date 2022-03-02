@@ -1,5 +1,5 @@
 #include "motors.hpp"
-
+#include <Arduino.h>
 /* 
  * This module is responsible for actutating the motors. 
  *     For the sleeve setup it does so by sending
@@ -36,10 +36,11 @@ uint8_t convert_mapped_values(float angle)
 }
 
 float saturate(float u, int min_val, int max_val){
-    return max(min(u, max_val), min_val);
+    return min(max_val, max(u, min_val));
 }
 
-void step_motor(float * u, const int m) 
+void step_motor(float * u, const int m, float input_calibration, 
+                                        float input_offset) 
 {
   /*
    * This function sends the first step input to the board that
@@ -49,7 +50,7 @@ void step_motor(float * u, const int m)
    */
 
     uint8_t buffer[m];
-    for (int i = m - 1; i >=0; i--){
+    for (int i = 0; i < m; i++){
         buffer[i] = (uint8_t)convert_mapped_values(u[i]);
     }
 

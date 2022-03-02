@@ -142,6 +142,10 @@ void nn_gradients(Matrix2 * first_derivative,
                   float * input_nn, float epsilon,
                   float * h_tm1
 ){
+    Matrix2 der;
+    Matrix2 der2;
+    set(der, m*nd, n);
+    set(der2, m*nd, n);
     for (int k = 0; k < nd*m; k++)
     {
       float * output_m;
@@ -168,14 +172,11 @@ void nn_gradients(Matrix2 * first_derivative,
       output_minus_h = fwdNN(input_minus_h, h_tm1, true);
       output_m = fwdNN(input_center, h_tm1, true);
       
-      int j = k / nd; 
       for (int i = 0; i < n; i++){
-          first_derivative->data[i * 
-              first_derivative->cols + j] += 
+          der.data[k * n + i] += 
               (output_plus_h[i] - output_minus_h[i]) / 
               (2. * epsilon);
-          second_derivative->data[i * 
-                second_derivative->cols + j] += 
+          der2.data[k * n + i] += 
                   (output_plus_h[i] - 2.*output_m[i] + 
                   output_minus_h[i]) / 
                   (epsilon * epsilon);    
@@ -184,6 +185,18 @@ void nn_gradients(Matrix2 * first_derivative,
       free(output_minus_h);
       free(output_plus_h);  
     }
+    for (int i = 0; i < n; i++){
+      for (int j = 0; j < nd; j++){
+        for (int k = 0; k < m; k++){
+          first_derivative->data[i * m + k] += 
+                          der.data[i * nd * m + j * m + k];
+          second_derivative->data[i * m + k] += 
+                          der2.data[i * nd * m + j * m + k];
+        }
+      }
+    }
+    release(der);
+    release(der2);
 }
 
 
