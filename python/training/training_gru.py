@@ -29,7 +29,7 @@ NUM_SENSORS = 18
 N_D = 2
 D_D = 2
 DATA_SIZE = N_D*6 + D_D*3 + NUM_SENSORS
-TRAINING = False
+TRAINING = True
 
 data_files_location = "../../data/12_23_2021"
 regions = ['SV_tilt_' + str(i) for i in range(1, 20)]
@@ -42,7 +42,7 @@ def prepare_data_file_vani(signals, position, inputs, nd=3, dd=3):
     np.set_printoptions(precision=10)
     #max_signals = np.clip(np.max(signals, axis=0), 1, np.inf)
     #print(max_signals)
-    signals = signals / 1e4
+    signals = signals / 1e4 - 0.5
     inputs = inputs / np.max(inputs, axis = 0) - 0.5
 
     N = max(nd, dd)  # data sample where we will start first
@@ -69,13 +69,14 @@ def prepare_data_file_vani(signals, position, inputs, nd=3, dd=3):
 def huber_loss(y_true, y_pred):
     h = Huber()
     return h(y_true, y_pred)
-
 def create_gru_network(x_train_shape: Tuple[int]):
     model = Sequential()
     model.add(GRU(units = 15, input_shape = (1, x_train_shape[-1])))
     model.add(Dense(15, activation = 'relu'))
     model.add(Dense(3, activation = 'tanh', kernel_initializer='random_normal',
                             bias_constraint = tf.keras.constraints.max_norm(0.0)))
+    #model.add(Dense(10, activation = 'relu'))
+    #model.add(Dense(3, activation = 'tanh'))
     model.compile(optimizer = "adam", loss = huber_loss, metrics=["mse"])
     return model
 

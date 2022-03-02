@@ -35,6 +35,10 @@ uint8_t convert_mapped_values(float angle)
     return new_angle;
 }
 
+float saturate(float u, int min_val, int max_val){
+    return max(min(u, max_val), min_val);
+}
+
 void step_motor(float * u, const int m) 
 {
   /*

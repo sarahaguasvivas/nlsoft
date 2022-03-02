@@ -40,10 +40,10 @@ void buildLayers(){
 }
 
 
-float * fwdNN(float* data, float * h_tm1)
+float * fwdNN(float* data, float * h_tm1, bool store_hidden)
 {
     
-        data =  fwd_gru(gru, data, h_tm1);
+        data =  fwd_gru(gru, data, h_tm1, store_hidden);
 
         data = fwd_dense(dense, data);
 

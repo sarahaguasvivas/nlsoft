@@ -1,6 +1,8 @@
 #ifndef __SIGNALS_H__
 #define __SIGNALS_H__
 
+#include <Arduino.h>
+
 #include <stdlib.h>
 #include <string>
 #include "Arduino.h"

@@ -263,8 +263,6 @@ class RecursiveNeuralNetworkPredictor():
         hessian = np.zeros((self.nu, self.nu))
         ynu = self.gradient()
         dynu_du = self.second_derivative()
-        print("ynu hessian", ynu)
-        print("dydnu", dynu_du)
         hessian += np.sum(2. * self.Q @ (ynu * ynu)) - np.sum(2. * (self.Q @ dynu_du).T @ del_y.T)
 
         for h in range(self.nu):
@@ -287,7 +285,6 @@ class RecursiveNeuralNetworkPredictor():
                        #                                           self.b), 3.0) + \
                        #                  2.0 * self.s / np.power(self.r / 2. + \
                        #                                          self.b - u[j, i], 3.0))
-        print(hessian)
         return hessian
 
     @tf.function
@@ -334,7 +331,6 @@ class RecursiveNeuralNetworkPredictor():
                    2. * self.model.predict(xx.reshape(shape), batch_size=len(x)).flatten() +
                    self.model.predict(x_m.reshape(shape), batch_size=len(x)).flatten()) / \
                   (h * h)
-        print("second derivative", hessian)
         return np.array(hessian)
 
     @tf.function
@@ -377,7 +373,6 @@ class RecursiveNeuralNetworkPredictor():
 
         sub_sum = del_y @ self.Q
         ynu = self.gradient()
-        print("ynu", ynu);
         sum_output = np.sum(sub_sum @ ynu, axis=0)
 
         for h in range(self.nu):
@@ -399,7 +394,6 @@ class RecursiveNeuralNetworkPredictor():
                     #                         self.b - u[j, i], 2.0))
                 jacobian[j, :] += sub_sum
         jacobian += np.array(sum_output).reshape(self.nu, -1)
-        print("jacobian", jacobian)
         return jacobian
 
     def compute_cost(self):

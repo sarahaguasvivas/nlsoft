@@ -111,7 +111,7 @@ Matrix2 nn_prediction(
         }
         
         float * output_next;
-        output_next = fwdNN(input_next, h_tm1);
+        output_next = fwdNN(input_next, h_tm1, false);
         
         int input_index = (i < Nc) ? i : (Nc-1);
         
@@ -142,9 +142,7 @@ void nn_gradients(Matrix2 * first_derivative,
                   float * input_nn, float epsilon,
                   float * h_tm1
 ){
-    set_to_zero(*first_derivative);
-    set_to_zero(*second_derivative);
-    for (int nn = 0; nn < nd*m; nn++)
+    for (int k = 0; k < nd*m; k++)
     {
       float * output_m;
       float * output_minus_h;
@@ -163,14 +161,14 @@ void nn_gradients(Matrix2 * first_derivative,
         input_plus_h[i] =  input_nn[i];
         input_minus_h[i] = input_nn[i];            
       }
-      input_plus_h[nn] += epsilon;
-      input_minus_h[nn] -= epsilon;
+      input_plus_h[k] += epsilon;
+      input_minus_h[k] -= epsilon;
 
-      output_plus_h = fwdNN(input_plus_h, h_tm1);
-      output_minus_h = fwdNN(input_minus_h, h_tm1);
-      output_m = fwdNN(input_center, h_tm1);
+      output_plus_h = fwdNN(input_plus_h, h_tm1, true);
+      output_minus_h = fwdNN(input_minus_h, h_tm1, true);
+      output_m = fwdNN(input_center, h_tm1, true);
       
-      int j = nn / nd; 
+      int j = k / nd; 
       for (int i = 0; i < n; i++){
           first_derivative->data[i * 
               first_derivative->cols + j] += 

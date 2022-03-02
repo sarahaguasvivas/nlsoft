@@ -36,6 +36,6 @@ struct GRU build_layer_gru(const float*, const float*, const float*,
                             char, char, int,
                             int, int);
 
-float * fwd_gru(struct GRU, float*, float*);
+float * fwd_gru(struct GRU, float*, float*, bool);
 
 #endif

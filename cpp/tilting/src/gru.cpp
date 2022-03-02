@@ -51,7 +51,7 @@ struct GRU build_layer_gru(
 	return layer;
 }
 
-float * fwd_gru(struct GRU L, float * input, float * h_tm1)
+float * fwd_gru(struct GRU L, float * input, float * h_tm1, bool store_hidden)
 {
     const int M = L.output_shape[0];
     const int NM = L.input_shape[1] * L.output_shape[0];
@@ -106,9 +106,11 @@ float * fwd_gru(struct GRU L, float * input, float * h_tm1)
 
         }
     }
-    for (int i = 0; i < L.output_shape[0]; i++){
-        h_tm1[i] = h_t[i];
-    }    
+    if (store_hidden){
+        for (int i = 0; i < L.output_shape[0]; i++){
+            h_tm1[i] = h_t[i];
+        }    
+    }
     free(x_h);
     free(x_r);
     free(x_z);
