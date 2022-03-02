@@ -371,9 +371,10 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q,
 
 void solve(Matrix2 jacobian, Matrix2 hessian, 
           Matrix2 * del_u_matrix){
-    Matrix2 minus_del_u;
-    minus_del_u = solve_matrix_eqn(hessian, jacobian); 
+    Matrix2 minus_del_u, inv;
+    inv = inverse(hessian);
+    minus_del_u = scale(1/4., jacobian);//solve_matrix_eqn(hessian, jacobian); 
     release(*del_u_matrix);
-    *del_u_matrix = scale(-1., minus_del_u); 
+    *del_u_matrix = scale(1., minus_del_u); 
     release(minus_del_u);
 }

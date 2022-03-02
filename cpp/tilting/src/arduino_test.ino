@@ -88,7 +88,9 @@ void loop() {
     for (int i = 0; i < controller.n; i++) {
         current_position[i] = prediction.data[(controller.N - 1) * controller.n + i];
     }
+    //print_with_scale(prediction, 1000.);
     //print_two_arrays(prediction.data, controller.n, target.data, controller.n, 1000.); 
+    
     del_y = subtract(target, prediction);
     //print_with_scale(del_y, 1000.);
     release(prediction);
@@ -98,8 +100,8 @@ void loop() {
     jacobian = get_jacobian(del_y, Q, Lambda, ynu, 
                               dynu_du, del_u_matrix, &controller.u[0], 
                               &controller.del_u[0], controller);
-    //Serial.println("jacobian");
-    //print_matrix(jacobian);
+    Serial.println("jacobian");
+    print_matrix(jacobian);
     //// hessian /////////////////////////////////////////////////////////////////////
     // TODO(sarahaguasvivas): Hessian too large
     Matrix2 hessian;
@@ -127,7 +129,7 @@ void loop() {
       controller.u[i] = u_matrix.data[i];
       controller.del_u[i] = del_u_matrix.data[i];
     }
-    print_matrix(u_matrix);
+    //print_matrix(u_matrix);
     step_motor(&u_matrix.data[0], controller.m, 
                 controller.input_calibration, controller.input_offset);
     release(u_matrix);
