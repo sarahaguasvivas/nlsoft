@@ -85,12 +85,13 @@ void loop() {
     //Serial.println("dynu_du");
     //print_matrix(dynu_du);
     spin_swirl_target(timestamp, 0, controller.N, 
-                              controller.n, &target, controller.neutral_point, 1);
+                              controller.n, &target, controller.neutral_point, 
+                                        controller.wavelength);
     for (int i = 0; i < controller.n; i++) {
         current_position[i] = prediction.data[(controller.N - 1) * controller.n + i];
     }
     //print_with_scale(prediction, 1000.);
-    //print_two_arrays(prediction.data, controller.n, target.data, controller.n, 1000.); 
+    print_two_arrays(prediction.data, controller.n, target.data, controller.n, 1000.); 
     
     del_y = subtract(target, prediction);
     //print_with_scale(del_y, 1000.);
@@ -119,10 +120,10 @@ void loop() {
     solve(jacobian, hessian, &del_u_matrix);
     set(u_matrix, controller.Nc, controller.m);
     for (int i = 0; i < controller.Nc*controller.m; i++) { 
-      u_matrix.data[i] = controller.prev_u[i] + del_u_matrix.data[i];
-      if (isnan(u_matrix.data[i])){
-        u_matrix.data[i] = controller.min_max_input_saturation[0];
-      }
+      u_matrix.data[i] = controller.prev_u[i] - del_u_matrix.data[i];
+      //if (isnan(u_matrix.data[i])){
+      //  u_matrix.data[i] = controller.min_max_input_saturation[0];
+      //}
     }
     clip_action(u_matrix, &controller);
     for (int i = 0; i < controller.m; i++) {
@@ -130,7 +131,7 @@ void loop() {
       controller.u[i] = u_matrix.data[i];
       controller.del_u[i] = del_u_matrix.data[i];
     }
-    print_matrix(u_matrix);
+    //print_matrix(u_matrix);
     step_motor(&u_matrix.data[0], controller.m, 
                 controller.input_calibration, controller.input_offset);
     release(u_matrix);

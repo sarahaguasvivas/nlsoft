@@ -126,7 +126,7 @@ Matrix2 nn_prediction(
                                 dd*n, m, n, NUM_SIGNAL);
         for (int j = 0; j < n; j++)
         {
-            y_output.data[i * n + j] = output_next[j] - neural_point[j];
+            y_output.data[i * n + j] = output_next[j]; //- neural_point[j];
         }
         free(output_next);
     }
@@ -373,7 +373,7 @@ void solve(Matrix2 jacobian, Matrix2 hessian,
           Matrix2 * del_u_matrix){
     Matrix2 minus_del_u, inv;
     inv = inverse(hessian);
-    minus_del_u = scale(1/20., jacobian);//solve_matrix_eqn(hessian, jacobian); 
+    minus_del_u = scale(1/300., jacobian);//solve_matrix_eqn(hessian, jacobian); 
     release(*del_u_matrix);
     *del_u_matrix = scale(1., minus_del_u); 
     release(minus_del_u);

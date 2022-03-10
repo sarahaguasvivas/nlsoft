@@ -9,45 +9,35 @@
 */
 #include "nn4mc.h"
 #include <stdlib.h>
-#include "gru.h"
 #include "dense.h"
 
 
-struct GRU gru;
 struct Dense dense;
 struct Dense dense_1;
+struct Dense dense_2;
 
 
 void buildLayers(){
 
     
-        gru = build_layer_gru(
-                                &gru_W[0],
-                                &gru_Wrec[0],
-                                &gru_b[0],
-                                0x08,
-                                0x07,
-                                1,
-                                36,
-                                15
-        );
+        dense = build_layer_dense(&dense_W[0], dense_b, 36.0, 100, 0x06);
 
-        dense = build_layer_dense(&dense_W[0], dense_b, 15, 15, 0x06);
+        dense_1 = build_layer_dense(&dense_1_W[0], dense_1_b, 100, 15, 0x06);
 
-        dense_1 = build_layer_dense(&dense_1_W[0], dense_1_b, 15, 3, 0x07);
+        dense_2 = build_layer_dense(&dense_2_W[0], dense_2_b, 15, 3, 0x07);
 
 
 }
 
 
-float * fwdNN(float* data, float * h_tm1, bool store_hidden)
+float * fwdNN(float* data, float * h_tm1, bool reset)
 {
     
-        data =  fwd_gru(gru, data, h_tm1, store_hidden);
-
         data = fwd_dense(dense, data);
 
         data = fwd_dense(dense_1, data);
+
+        data = fwd_dense(dense_2, data);
 
 
     return data;

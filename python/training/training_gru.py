@@ -35,35 +35,33 @@ data_files_location = "../../data/12_23_2021"
 regions = ['SV_tilt_' + str(i) for i in range(1, 20)]
 
 def prepare_data_file_vani(signals, position, inputs, nd=3, dd=3):
-    dd = copy.copy(dd) + 2  # adjusting for shifted columns
+    assert nd == dd, "nd and dd need to be the same"
     signals = signals.astype(np.float32)
     position = position.astype(np.float32)
     position = position - position[0, :]
     np.set_printoptions(precision=10)
-    #max_signals = np.clip(np.max(signals, axis=0), 1, np.inf)
-    #print(max_signals)
     signals = signals / 1e4 - 0.5
     inputs = inputs / np.max(inputs, axis = 0) - 0.5
 
     N = max(nd, dd)  # data sample where we will start first
 
-    U = np.empty((signals.shape[0] - N + 1, 6))
-    Y = np.empty((signals.shape[0] - N + 1, 3))
+    U = np.empty((signals.shape[0] - N, 0))
+    Y = np.empty((signals.shape[0] - N, 0))
     L = signals.shape[0]
     # TODO: Test for when nd neq dd
     for i in range(nd):
-        U = np.concatenate((U, inputs[nd - i - 1 + (N - nd):L - i, :]), axis=1)
+        U = np.concatenate((U, inputs[i:L-nd + i, :]), axis=1)
 
-    for i in range(dd):
-        Y = np.concatenate((Y, position[dd - i - 1 + (N - dd): L - i, :]), axis=1)
+    for i in range(dd + 1):
+        Y = np.concatenate((Y, position[i:L-dd + i, :]), axis=1)
+    S = signals[N:, :]
+    Y = Y[:, 3:]  # Y
 
-    U = U[:, 6:]  # np.deg2rad(U[:, 2:])
-    S = signals[N - 1:, :]
-    Y = Y[:, 3:-3]  # Y
-
-    X = np.concatenate((U, Y[:, 3:]), axis=1)
+    X = np.concatenate((U, Y), axis=1)
     X = np.concatenate((X, S), axis=1)
     y = Y[:, :3]  # we are using all of this to estimate current
+    print(X.shape, y.shape)
+    assert DATA_SIZE == X.shape[1], "data size not consistent"
     return X, y
 
 def huber_loss(y_true, y_pred):
@@ -71,7 +69,9 @@ def huber_loss(y_true, y_pred):
     return h(y_true, y_pred)
 def create_gru_network(x_train_shape: Tuple[int]):
     model = Sequential()
-    model.add(GRU(units = 15, input_shape = (1, x_train_shape[-1])))
+    #model.add(GRU(units = 15, input_shape = (1, x_train_shape[-1])))
+    model.add(Flatten())
+    model.add(Dense(100, activation = 'relu'))
     model.add(Dense(15, activation = 'relu'))
     model.add(Dense(3, activation = 'tanh', kernel_initializer='random_normal',
                             bias_constraint = tf.keras.constraints.max_norm(0.0)))
