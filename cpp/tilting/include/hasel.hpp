@@ -8,7 +8,7 @@
 #define __HASEL_H__
 
 #include <stdlib.h>
-#include <Arduino.h>
+#include <math.h>
 
 /*
 #define VAR 1

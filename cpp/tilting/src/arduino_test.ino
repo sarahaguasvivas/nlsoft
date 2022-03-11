@@ -21,7 +21,6 @@ MCUCore core;
 CoreChannel core_chnl(0);
 
 long int count = 0;
-//float h_tm1[GRU_OUTPUT] = { 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.};
 
 void setup() {
   setup_signal_collector();
@@ -60,11 +59,11 @@ void loop() {
                         controller.dd * controller.n, 
                         controller.m, controller.n, NUM_SIGNAL);
     
-    //print_array(nn_input, NN_INPUT_LENGTH);  
+    print_array(nn_input, NN_INPUT_LENGTH);  
     prediction = nn_prediction(controller.N, controller.Nc, controller.n, controller.m, 
                                NN_INPUT_LENGTH, controller.nd, controller.dd, &nn_input[0], 
                                controller.u, controller.neutral_point);
-    
+    //print_with_scale(prediction, 1000.); 
     set(ynu, controller.n, controller.m);
     set(dynu_du, controller.n, controller.m);
     nn_gradients(&ynu, &dynu_du, controller.n, controller.m, 
@@ -81,34 +80,24 @@ void loop() {
         current_position[i] = prediction.data[(controller.N - 1) * controller.n + i];
     }
     //print_with_scale(prediction, 1000.);
-    print_two_arrays(prediction.data, controller.n, target.data, controller.n, 1000.); 
+    //print_two_arrays(prediction.data, controller.n, target.data, controller.n, 1000.); 
     del_y = subtract(target, prediction);
     //print_with_scale(del_y, 1000.);
     release(prediction);
     release(target);
-    float * u_ma = (float*)malloc(controller.Nc*controller.m * sizeof(float));
-    float * del_u_ma = (float*)malloc(controller.Nc*controller.m * sizeof(float));
-    for (int i = 0; i < controller.Nc*controller.m; i++){
-        u_ma[i] = controller.u[i];
-        del_u_ma[i] = controller.del_u[i];
-    }
-    //print_array(u_ma, 6);
-    //print_array(del_u_ma, 6);
     //// jacobian ////////////////////////////////////////////////////////////////////
     Matrix2 jacobian;
     jacobian = get_jacobian(del_y, Q, Lambda, ynu, 
-                              dynu_du, del_u_matrix, &u_ma[0], 
-                              &del_u_ma[0], controller);
+                              dynu_du, del_u_matrix, &controller.u[0], 
+                              &controller.del_u[0], controller);
     //Serial.println("jacobian");
     //print_matrix(jacobian);
     //// hessian /////////////////////////////////////////////////////////////////////
     // TODO(sarahaguasvivas): Hessian too large
     Matrix2 hessian;
     hessian = get_hessian(del_y, Q, Lambda, ynu, dynu_du, 
-                            del_u_matrix, &u_ma[0], 
-                              &del_u_ma[0], controller);
-    free(u_ma);
-    free(del_u_ma);
+                            del_u_matrix, &controller.u[0], 
+                              &controller.del_u[0], controller);
     //Serial.println("hessian");
     //print_matrix(hessian);
     ////////////////////////////////////////////////////////////////////////////////
@@ -119,7 +108,7 @@ void loop() {
     solve(jacobian, hessian, &del_u_matrix);
     set(u_matrix, controller.Nc, controller.m);
     for (int i = 0; i < controller.Nc*controller.m; i++) { 
-      u_matrix.data[i] = controller.prev_u[i] + del_u_matrix.data[i];
+      u_matrix.data[i] = controller.prev_u[i] - del_u_matrix.data[i];
       if (isnan(u_matrix.data[i])){
         u_matrix.data[i] = controller.min_max_input_saturation[0];
         del_u_matrix.data[i] = 0.0;

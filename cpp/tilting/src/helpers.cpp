@@ -125,7 +125,7 @@ Matrix2 nn_prediction(
                                 dd*n, m, n, NUM_SIGNAL);
         for (int j = 0; j < n; j++)
         {
-            y_output.data[i * n + j] = output_next[j]; //- neural_point[j];
+            y_output.data[i * n + j] = output_next[j];
         }
         free(output_next);
     }
@@ -298,12 +298,12 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q,
     release(temp2);
     release(temp);
     release(temp1);
-    for (int i = 0 ; 
+    for (int i = 0; 
           i < controller.Nc*controller.Nc; 
           i++) {
       hessian.data[i] = (sumando_0 - sumando_1);  
     }
-    Matrix2 second_y, second_y1, scale_1, mult, mult1;
+    struct Matrix2 second_y, second_y1, scale_1, mult, mult1;
     
     set(second_y, 1, controller.m);
     set(second_y1, controller.m, 1);
@@ -313,7 +313,7 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q,
       {
         for (int j = 0; j < controller.m ; j++)
         { 
-          second_y.data[j] = 
+          second_y.data[j * controller.m + h] = 
                       partial_delta_u_partial_u(j, mm);
           second_y1.data[j] = 
                       partial_delta_u_partial_u(j, h);
@@ -331,51 +331,33 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q,
         release(mult1);
         hessian.data[h*controller.Nc + mm] += multtt.data[0];
         release(multtt);
-        for (int jj = 0; jj < controller.m; jj++)
-          {
-            for (int i = 0; i < controller.m; i++)
-            {
-              hessian.data[h*hessian.cols + mm] += 
-                      2.0* controller.s / 
-                      pow((u[jj*controller.m + i] + 
-                      controller.machine_zero + 
-                      controller.r / 2. - controller.b), 
-                      3.0) + 
-                      2.0 * controller.s / 
-                      pow(controller.r/2. + 
-                      controller.b - 
-                      (u[jj*controller.m + i] + 
-                      controller.machine_zero), 3.0) + 
-                      controller.machine_zero;
-            }
-          }
+        for (int i = 0; i < controller.m; i++)
+        {
+          hessian.data[h*hessian.cols + mm] += 
+                  2.0* controller.s / 
+                  pow((u[mm*controller.m + i] + 
+                  controller.machine_zero + 
+                  controller.r / 2. - controller.b), 
+                  3.0) + 
+                  2.0 * controller.s / 
+                  pow(controller.r/2. + 
+                  controller.b - 
+                  (u[mm*controller.m + i] + 
+                  controller.machine_zero), 3.0);
+        }
         release(mult1);
         }
     }
     release(second_y);
     release(second_y1);
-    //if (isnan(hessian.data[0]) || isinf(hessian.data[0])){
-    //  hessian.data[0] = 2.;
-    //}
     return hessian;
 }
 
 void solve(Matrix2 jacobian, Matrix2 hessian, 
           Matrix2 * del_u_matrix){
-    /*Matrix2 minus_del_u, temp;
+    Matrix2 minus_del_u; 
     minus_del_u = solve_matrix_eqn(hessian, jacobian); 
-    temp = scale(-1./10., minus_del_u); 
-    for (int i = 0; i < minus_del_u.rows * minus_del_u.cols; i++){
-        del_u_matrix->data[i] = temp.data[i];
-    }
-    release(temp);
-    release(minus_del_u);
-    */
-    Matrix2 minus_del_u, inv;
-    inv = inverse(hessian);
-    minus_del_u = scale(1./50., jacobian); //solve_matrix_eqn(hessian, jacobian); 
     release(*del_u_matrix);
     *del_u_matrix = scale(-1., minus_del_u); 
-    release(inv);
     release(minus_del_u);
 }
