@@ -71,7 +71,7 @@ def create_gru_network(x_train_shape: Tuple[int]):
     model = Sequential()
     #model.add(GRU(units = 15, input_shape = (1, x_train_shape[-1])))
     model.add(Flatten())
-    model.add(Dense(100, activation = 'relu'))
+    model.add(Dense(50, activation = 'relu'))
     model.add(Dense(15, activation = 'relu'))
     model.add(Dense(3, activation = 'tanh', kernel_initializer='random_normal',
                             bias_constraint = tf.keras.constraints.max_norm(0.0)))

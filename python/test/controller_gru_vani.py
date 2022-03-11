@@ -12,7 +12,7 @@ model_filename = str(os.environ['HOME']) + '/nlsoft/python/training/forward_kine
 sensor_signal_model_filename = str(os.environ['HOME']) + '/nlsoft/python/models/model_signals_may_25_2021.hdf5'
 target_filename = str(os.environ['HOME']) + '/nlsoft/python/models/ref_data.mat'
 NUM_EXPERIMENTS = 1
-WAVELENGTH = 1
+WAVELENGTH = 5
 NUM_TIMESTEPS = (1130 - 5) * WAVELENGTH
 FILENAME = 'gru_log_output_vani_swirl.json'
 verbose = 1
@@ -22,19 +22,19 @@ NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 3, Nu= 1,
                                       nd = 2, dd = 2, K = 3,
                                       Q = np.array([[1e2, 0., 0.],
-                                                    [0., 1e2, 0.],
-                                                    [0., 0., 1e2]]),
-                                      Lambda = np.array([[1., 0, 0, 0, 0, 0],
+                                                    [0., 3e2, 0.],
+                                                    [0., 0., 5e2]]),
+                                      Lambda = 5e-2*np.array([[1., 0, 0, 0, 0, 0],
                                                         [0, 1., 0, 0, 0, 0],
                                                         [0, 0, 1., 0, 0, 0],
                                                         [0, 0, 0, 1., 0, 0],
                                                         [0, 0, 0, 0, 1., 0],
                                                         [0, 0, 0, 0, 0, 1.]]),
-                                      s = 1e-20, b = 1e-10, r = 4e3,
+                                      s = 1e-20, b = 1e5, r = 4e3,
                                       states_to_control = [1, 1, 1],
                                       y0= [0.0, 0.0, 0.0],
-                                      u0 = [0., 0., 0., 0., 0., 0.],
-                                      step_size = 5e-2)
+                                      u0 = [-0.5]*6,
+                                      step_size = 1./240.)
 
 NR_opt, Block = SolowayNR(d_model = NNP), BlockGymVani(signal_simulator_model=sensor_signal_model_filename)
 

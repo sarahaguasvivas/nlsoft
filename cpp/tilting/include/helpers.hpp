@@ -20,8 +20,7 @@ float max(float, float);
 void setup_nn_utils();
 
 void nn_gradients(Matrix2 *, Matrix2 *, int, 
-                    int, int, int, float *, float,
-                    float*);
+                    int, int, int, float *, float);
 
 void roll_window(int, int, int, float *);
 
@@ -29,8 +28,7 @@ void normalize_array(float*, float*, int,
                         float, float);
 
 Matrix2 nn_prediction(int, int, int, int, int, int, 
-                        int, float*, float*, float*,
-                        float*);
+                        int, float*, float*, float*);
 
 float* build_input_vector(float *, float * u, 
                     float * signal_, float * posish, 

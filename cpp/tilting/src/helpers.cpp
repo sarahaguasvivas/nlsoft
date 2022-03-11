@@ -84,7 +84,6 @@ Matrix2 nn_prediction(
               int dd, 
               float * prev_input, 
               float * u,
-              float * h_tm1,
               float * neural_point
 ){
     float * previous_input = (float*)malloc(
@@ -111,7 +110,7 @@ Matrix2 nn_prediction(
         }
         
         float * output_next;
-        output_next = fwdNN(input_next, h_tm1, false);
+        output_next = fwdNN(input_next);
         
         int input_index = (i < Nc) ? i : (Nc-1);
         
@@ -139,8 +138,9 @@ void nn_gradients(Matrix2 * first_derivative,
                   Matrix2 * second_derivative, 
                   const int n, int m, int nd, 
                   int input_size, 
-                  float * input_nn, float epsilon,
-                  float * h_tm1
+                  float * input_nn, 
+                  float epsilon
+                  //float * h_tm1
 ){
     Matrix2 der;
     Matrix2 der2;
@@ -168,9 +168,9 @@ void nn_gradients(Matrix2 * first_derivative,
       input_plus_h[k] += epsilon;
       input_minus_h[k] -= epsilon;
 
-      output_plus_h = fwdNN(input_plus_h, h_tm1, true);
-      output_minus_h = fwdNN(input_minus_h, h_tm1, true);
-      output_m = fwdNN(input_center, h_tm1, true);
+      output_plus_h = fwdNN(input_plus_h);
+      output_minus_h = fwdNN(input_minus_h);
+      output_m = fwdNN(input_center);
       
       for (int i = 0; i < n; i++){
           der.data[k * n + i] += 
@@ -277,8 +277,7 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q,
                     Matrix2 del_u_matrix, 
                     float * u, float * del_u, 
                     struct Controller controller){
-    Matrix2 hessian, temp3, temp4, temp1, temp, temp2, 
-                hessian1;
+    Matrix2 hessian, temp3, temp4, temp1, temp, temp2;
     set(hessian, controller.Nc, controller.Nc);
     set_to_zero(hessian);
     float sumando_0 = 0.0, sumando_1 = 0.0; 
@@ -299,26 +298,19 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q,
     release(temp2);
     release(temp);
     release(temp1);
-     
     for (int i = 0 ; 
           i < controller.Nc*controller.Nc; 
           i++) {
-      hessian.data[i] = sumando_0 - sumando_1;  
+      hessian.data[i] = (sumando_0 - sumando_1);  
     }
-    set(hessian1, controller.Nc, controller.Nc);
-    set_to_zero(hessian1);
-    Matrix2 second_y, second_y1, scale_1, mult, mult1, sum1, sum2;
-    sum1 = sum_axis(hessian1, 0);
-    sum2 = sum_axis(sum1, 1);
-    release(sum1);
+    Matrix2 second_y, second_y1, scale_1, mult, mult1;
+    
     set(second_y, 1, controller.m);
     set(second_y1, controller.m, 1);
     for (int h = 0; h < controller.Nc; h++)
     {
       for (int mm = 0; mm < controller.Nc; mm++)
       {
-       hessian1.data[h*controller.Nc+mm] = sum2.data[0] + hessian.data[0];
-               
         for (int j = 0; j < controller.m ; j++)
         { 
           second_y.data[j] = 
@@ -326,7 +318,6 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q,
           second_y1.data[j] = 
                       partial_delta_u_partial_u(j, h);
         }
-       
         scale_1 = scale(2., Lambda);
         mult = multiply(second_y, second_y1);
         mult1 = multiply(scale_1, mult);
@@ -337,44 +328,54 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q,
         release(multt);
         release(scale_1);
         release(mult);
-        hessian1.data[h*controller.Nc + mm] += 
-              multtt.data[0] + controller.machine_zero;
+        release(mult1);
+        hessian.data[h*controller.Nc + mm] += multtt.data[0];
         release(multtt);
-         
         for (int jj = 0; jj < controller.m; jj++)
-        {
-           for (int i = 0; i < controller.m; i++)
-           {
-            hessian1.data[h*hessian1.cols + mm] += 
-                    2.0* controller.s / 
-                    pow((u[jj*controller.m + i] + 
-                    controller.machine_zero + 
-                    controller.r / 2. - controller.b), 
-                    3.0) + 
-                    2.0 * controller.s / 
-                    pow(controller.r/2. + 
-                    controller.b - 
-                    (u[jj*controller.m + i] + 
-                    controller.machine_zero), 3.0) + 
-                    controller.machine_zero;
-           }
+          {
+            for (int i = 0; i < controller.m; i++)
+            {
+              hessian.data[h*hessian.cols + mm] += 
+                      2.0* controller.s / 
+                      pow((u[jj*controller.m + i] + 
+                      controller.machine_zero + 
+                      controller.r / 2. - controller.b), 
+                      3.0) + 
+                      2.0 * controller.s / 
+                      pow(controller.r/2. + 
+                      controller.b - 
+                      (u[jj*controller.m + i] + 
+                      controller.machine_zero), 3.0) + 
+                      controller.machine_zero;
+            }
+          }
+        release(mult1);
         }
-       release(mult1);
-      }
     }
-    release(sum2);
     release(second_y);
     release(second_y1);
-    release(hessian);
-    return hessian1;
+    //if (isnan(hessian.data[0]) || isinf(hessian.data[0])){
+    //  hessian.data[0] = 2.;
+    //}
+    return hessian;
 }
 
 void solve(Matrix2 jacobian, Matrix2 hessian, 
           Matrix2 * del_u_matrix){
+    /*Matrix2 minus_del_u, temp;
+    minus_del_u = solve_matrix_eqn(hessian, jacobian); 
+    temp = scale(-1./10., minus_del_u); 
+    for (int i = 0; i < minus_del_u.rows * minus_del_u.cols; i++){
+        del_u_matrix->data[i] = temp.data[i];
+    }
+    release(temp);
+    release(minus_del_u);
+    */
     Matrix2 minus_del_u, inv;
     inv = inverse(hessian);
-    minus_del_u = scale(1/300., jacobian);//solve_matrix_eqn(hessian, jacobian); 
+    minus_del_u = scale(1./50., jacobian); //solve_matrix_eqn(hessian, jacobian); 
     release(*del_u_matrix);
-    *del_u_matrix = scale(1., minus_del_u); 
+    *del_u_matrix = scale(-1., minus_del_u); 
+    release(inv);
     release(minus_del_u);
 }
