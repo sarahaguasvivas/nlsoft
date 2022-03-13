@@ -14,7 +14,7 @@ struct Controller{
   float neutral_point[3] = { 0., 0., 0.};
   float input_calibration = 20;
   float input_offset = 0.5;
-  int wavelength = 1;
+  int wavelength = 5;
   float previous_input[NN_INPUT_S] = {0.0};
   float q_matrix[3] = { 1e2, 3e2, 5e2 };
   float lambda_matrix[6] = { 5e-2, 5e-2, 5e-2, 5e-2, 5e-2, 5e-2 };

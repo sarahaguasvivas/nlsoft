@@ -66,7 +66,12 @@ int main() {
                           controller.nd * controller.m, 
                           controller.dd * controller.n, 
                           controller.m, controller.n, NUM_SIGNAL);
-      
+
+      if (timestamp == 0){
+        for (int i = 0; i < controller.m; i++){
+          nn_input[i + controller.m] = controller.u[i];
+        }
+      } 
       //float* h_tm = (float*)malloc(GRU_OUTPUT * sizeof(float));
       //for (int i = 0; i < GRU_OUTPUT; i++){
       //  h_tm[i] = h_tm1[i];
@@ -137,7 +142,7 @@ int main() {
         controller.u[i] = u_matrix.data[i];
         controller.del_u[i] = del_u_matrix.data[i];
       }
-      //print_matrix(u_matrix);
+      print_matrix(u_matrix);
       //step_motor(&u_matrix.data[0], controller.m, 
       //            controller.input_calibration, controller.input_offset);
       release(u_matrix);
