@@ -315,7 +315,7 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q,
         { 
           second_y.data[j] = 
                       partial_delta_u_partial_u(j, mm);
-          second_y1.data[h * controller.m + j] = 
+          second_y1.data[0 * controller.m + j] = 
                       partial_delta_u_partial_u(j, h);
         }
         scale_1 = scale(2., Lambda);

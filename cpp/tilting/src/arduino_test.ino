@@ -53,12 +53,17 @@ void loop() {
     collect_signal(&signal[0], controller.signal_calibration, 
                                   NUM_SIGNAL);
     //print_array(signal, NUM_CHANNELS);
+    for (int i = 0; i < NN_INPUT_LENGTH; i++){
+      nn_input[i] = controller.previous_input[i];
+    }
     nn_input = build_input_vector(&nn_input[0], &controller.u[0], 
                         &signal[0], &current_position[0], 
                         controller.nd * controller.m, 
                         controller.dd * controller.n, 
                         controller.m, controller.n, NUM_SIGNAL);
-    
+    for (int i = 0; i < NN_INPUT_LENGTH; i++){
+      controller.previous_input[i] = nn_input[i];
+    } 
     print_array(nn_input, NN_INPUT_LENGTH);  
     prediction = nn_prediction(controller.N, controller.Nc, controller.n, controller.m, 
                                NN_INPUT_LENGTH, controller.nd, controller.dd, &nn_input[0], 

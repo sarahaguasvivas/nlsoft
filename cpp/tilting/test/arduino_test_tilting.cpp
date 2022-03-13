@@ -75,6 +75,7 @@ int main() {
       prediction = nn_prediction(controller.N, controller.Nc, controller.n, controller.m, 
                                 NN_INPUT_LENGTH, controller.nd, controller.dd, &nn_input[0], 
                                 &controller.u[0], &controller.neutral_point[0]);
+      print_matrix(prediction); 
       //print_with_scale(prediction, 1000.); 
       //for (int i = 0; i < GRU_OUTPUT; i++){
       //  h_tm1[i] = h_tm[i];
