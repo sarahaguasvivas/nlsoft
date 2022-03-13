@@ -18,15 +18,9 @@ struct Dense dense_2;
 
 
 void buildLayers(){
-
-    
         dense = build_layer_dense(&dense_W[0], dense_b, 36, 50, 0x06);
-
         dense_1 = build_layer_dense(&dense_1_W[0], dense_1_b, 50, 15, 0x06);
-
         dense_2 = build_layer_dense(&dense_2_W[0], dense_2_b, 15, 3, 0x07);
-
-
 }
 
 

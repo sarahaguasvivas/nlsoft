@@ -22,7 +22,7 @@ struct Controller controller; // controller struct instantiation
 
 long int count = 0;
 //int actuators_turn = 0;
-float h_tm1[GRU_OUTPUT] = {0.0};
+//float h_tm1[GRU_OUTPUT] = {0.0};
 
 void setup() {
   //setup_signal_collector();
@@ -39,6 +39,9 @@ int main() {
                               NUM_SIGNAL*sizeof(float));
       float * nn_input = (float*)malloc(
                               (controller.nn_input_size)*sizeof(float));
+      for (int i = 0; i < controller.nn_input_size; i++){
+        nn_input[i] = 0.0;
+      }
       struct Matrix2 Q, Lambda, del_u_matrix, del_y, target, prediction, 
                   ynu, dynu_du;
       set(Q, controller.n, controller.n);

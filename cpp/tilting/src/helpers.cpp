@@ -313,9 +313,9 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q,
       {
         for (int j = 0; j < controller.m ; j++)
         { 
-          second_y.data[j * controller.m + h] = 
+          second_y.data[j] = 
                       partial_delta_u_partial_u(j, mm);
-          second_y1.data[j] = 
+          second_y1.data[h * controller.m + j] = 
                       partial_delta_u_partial_u(j, h);
         }
         scale_1 = scale(2., Lambda);
