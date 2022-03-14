@@ -309,8 +309,8 @@ class RecursiveNeuralNetworkPredictor():
         x_m = x - np.eye(len(x))*h
         shape[0] = len(x)
         shape = tuple(shape)
-        jacobian = np.array((self.model.predict(x_p.reshape(shape), batch_size = len(x)).flatten() - \
-                              self.model.predict(x_m.reshape(shape), batch_size = len(x)).flatten()))\
+        jacobian = np.array(self.model.predict(x_p.reshape(shape), batch_size = len(x)) - \
+                              self.model.predict(x_m.reshape(shape), batch_size = len(x)))\
                    / (2.*h)
         #jacobian = np.array((self.model.predict(x_p.reshape(shape), batch_size = len(x)).flatten() - \
         #                    self.model.predict(np.tile(x, reps = len(x)).reshape(shape),
@@ -347,8 +347,9 @@ class RecursiveNeuralNetworkPredictor():
         """
             Gradient tapes: https://www.tensorflow.org/api_docs/python/tf/GradientTape
         """
-        gradient = self.num_grads(self.input_vector).reshape(-1, self.nx).T
-        ynu = gradient[:, :self.m * self.nd]
+        #gradient = self.num_grads(self.input_vector).reshape(-1, self.nx).T
+        #ynu = gradient[:, :self.m * self.nd]
+        ynu = self.num_grads(self.input_vector)[:self.m * self.nd, :].T
         ynu = ynu.reshape(self.nx, -1, self.m)
         ynu = np.sum(ynu, axis = 1)
         return self.C @ ynu

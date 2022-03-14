@@ -86,6 +86,7 @@ Matrix2 nn_prediction(
               float * u,
               float * neural_point
 ){
+    // TESTED
     float * previous_input = (float*)malloc(
                       input_size*sizeof(float));
     for (int i = 0; i < input_size; i++){
@@ -129,6 +130,9 @@ Matrix2 nn_prediction(
         }
         free(output_next);
     }
+    for (int i = 0; i < input_size; i++){
+      prev_input[i] = previous_input[i];
+    }
     free(signals);
     free(previous_input);
     return y_output;
@@ -144,8 +148,8 @@ void nn_gradients(Matrix2 * first_derivative,
 ){
     Matrix2 der;
     Matrix2 der2;
-    set(der, m*nd, n);
-    set(der2, m*nd, n);
+    set(der, n, m*nd);
+    set(der2, n, m*nd);
     for (int k = 0; k < nd*m; k++)
     {
       float * output_m;
@@ -173,10 +177,10 @@ void nn_gradients(Matrix2 * first_derivative,
       output_m = fwdNN(input_center);
       
       for (int i = 0; i < n; i++){
-          der.data[k * n + i] += 
+          der.data[i * m*nd + k] += 
               (output_plus_h[i] - output_minus_h[i]) / 
               (2. * epsilon);
-          der2.data[k * n + i] += 
+          der2.data[i * m*nd + k] += 
                   (output_plus_h[i] - 2.*output_m[i] + 
                   output_minus_h[i]) / 
                   (epsilon * epsilon);    
