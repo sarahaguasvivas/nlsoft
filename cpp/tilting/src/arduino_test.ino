@@ -53,6 +53,9 @@ void loop() {
     collect_signal(&signal[0], controller.signal_calibration, 
                                   NUM_SIGNAL);
     //print_array(signal, NUM_CHANNELS);
+    for (int i = 0; i < NUM_SIGNAL; i++){
+      signal[i] = 0.0; // TODO(sarahaguasvivas): delete this
+    }
     for (int i = 0; i < NN_INPUT_LENGTH; i++){
       nn_input[i] = controller.previous_input[i];
     }
@@ -61,10 +64,15 @@ void loop() {
                         controller.nd * controller.m, 
                         controller.dd * controller.n, 
                         controller.m, controller.n, NUM_SIGNAL);
+    if (timestamp == 0){
+      for (int i = 0; i < controller.m; i++){
+        nn_input[i + controller.m] = controller.u[i];
+      }
+    } 
     for (int i = 0; i < NN_INPUT_LENGTH; i++){
       controller.previous_input[i] = nn_input[i];
     } 
-    print_array(nn_input, NN_INPUT_LENGTH);  
+    //print_array(nn_input, NN_INPUT_LENGTH);  
     prediction = nn_prediction(controller.N, controller.Nc, controller.n, controller.m, 
                                NN_INPUT_LENGTH, controller.nd, controller.dd, &nn_input[0], 
                                controller.u, controller.neutral_point);
@@ -85,7 +93,7 @@ void loop() {
         current_position[i] = prediction.data[(controller.N - 1) * controller.n + i];
     }
     //print_with_scale(prediction, 1000.);
-    //print_two_arrays(prediction.data, controller.n, target.data, controller.n, 1000.); 
+    print_two_arrays(prediction.data, controller.n, target.data, controller.n, 1000.); 
     del_y = subtract(target, prediction);
     //print_with_scale(del_y, 1000.);
     release(prediction);

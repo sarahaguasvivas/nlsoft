@@ -324,7 +324,7 @@ Matrix2 get_hessian(Matrix2 del_y, Matrix2 Q,
         }
         scale_1 = scale(2., Lambda);
         mult = multiply(second_y, second_y1);
-        mult1 = multiply(scale_1, mult);
+        mult1 = scale(mult.data[0], scale_1);
         Matrix2 multt;
         Matrix2 multtt;
         multt = sum_axis(mult1, 0);
