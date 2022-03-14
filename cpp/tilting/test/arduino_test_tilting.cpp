@@ -60,6 +60,9 @@ int main() {
       for (int i = 0; i < NUM_SIGNAL; i++){
         signal[i] = 0.0;
       }
+      for (int i = 0; i < NN_INPUT_LENGTH; i++){
+        nn_input[i] = controller.previous_input[i];
+      }
       //print_array(signal, NUM_CHANNELS);
       nn_input = build_input_vector(&nn_input[0], &controller.u[0], 
                           &signal[0], &current_position[0], 
@@ -71,6 +74,10 @@ int main() {
         for (int i = 0; i < controller.m; i++){
           nn_input[i + controller.m] = controller.u[i];
         }
+      } 
+      
+      for (int i = 0; i < NN_INPUT_LENGTH; i++){
+        controller.previous_input[i] = nn_input[i];
       } 
       //float* h_tm = (float*)malloc(GRU_OUTPUT * sizeof(float));
       //for (int i = 0; i < GRU_OUTPUT; i++){
