@@ -131,7 +131,7 @@ int main() {
       solve(jacobian, hessian, &del_u_matrix);
       set(u_matrix, controller.Nc, controller.m);
       for (int i = 0; i < controller.Nc*controller.m; i++) { 
-        u_matrix.data[i] = controller.prev_u[i] + del_u_matrix.data[i];
+        u_matrix.data[i] = controller.prev_u[i] - del_u_matrix.data[i];
         if (isnan(u_matrix.data[i])){
           u_matrix.data[i] = controller.min_max_input_saturation[0];
         }
