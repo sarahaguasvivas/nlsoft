@@ -43,7 +43,7 @@ void step_motor(float * u, const int m, float input_calibration,
                                         float input_offset) 
 {
   /*
-   * This function sends the first step input to the board that
+   *  This function sends the first step input to the board that
    *  connects the dynamixels (OpenCM)
    *  u is the optimal control input matrix
    *  m is the number of motors
@@ -51,7 +51,7 @@ void step_motor(float * u, const int m, float input_calibration,
 
     uint8_t buffer[m];
     for (int i = 0; i < m; i++){
-        buffer[i] = (uint8_t)convert_mapped_values(u[i]);
+        buffer[i] = (uint8_t)convert_mapped_values((u[i] + 0.5));
     }
 
     chnl_1.charge_pwm = buffer[0];
@@ -107,4 +107,5 @@ void step_motor(float * u, const int m, float input_calibration,
     //Serial.print(c4); Serial.print(" ");
     //Serial.print(c5); Serial.print(" ");
     //Serial.println();
+    delay(2);
 }

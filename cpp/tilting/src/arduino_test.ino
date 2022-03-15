@@ -28,7 +28,7 @@ void setup() {
   setup_motors();
   timestamp = 0;
   Serial.begin(115200);
-  Serial.println("u0, u1, u2, u3, u4, u5");
+  //Serial.println("u0, u1, u2, u3, u4, u5");
 }
 
 void loop() {
@@ -43,8 +43,8 @@ void loop() {
     set(Lambda, controller.m, controller.m);
     set(del_u_matrix, controller.Nc, controller.m);
     
-    for (int i = 0; i < controller.n; i++) Q.data[i*controller.n+i] = controller.q_matrix[i];
-    for (int i = 0; i < controller.m; i++) Lambda.data[i*controller.m + i] = controller
+    for (int i = 0; i < controller.n*controller.n; i++) Q.data[i] = controller.q_matrix[i];
+    for (int i = 0; i < controller.m*controller.m; i++) Lambda.data[i] = controller
                                                                             .lambda_matrix[i];
     set(target, controller.N, controller.n);
     for (int i = 0; i < controller.Nc*controller.m; i++){
@@ -122,7 +122,7 @@ void loop() {
         del_u_matrix.data[i] = 0.0;
       }
     }
-    clip_action(u_matrix, &controller);
+    //clip_action(u_matrix, &controller);
     for (int i = 0; i < controller.m; i++) {
       controller.prev_u[i] = u_matrix.data[i];
       controller.u[i] = u_matrix.data[i];
