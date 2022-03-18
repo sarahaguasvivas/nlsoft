@@ -8,8 +8,8 @@ struct Controller{
   float machine_zero = 1e-20;
   float epsilon = 4e-3;
   float signal_calibration = 5e5;
-  int m = 6, n = 3, nd = 2, dd = 2, N = 2, Nc = 1;
-  float s = 1e-35, b = 1e-10, r = 4e5; 
+  int m = 6, n = 3, nd = 2, dd = 2, N = 1, Nc = 1;
+  float s = 1e-25, b = 1e10, r = 4e3; 
   int nn_input_size = NN_INPUT_S;
   float neutral_point[3] = { 0., 0., 0.};
   int wavelength = 10;
@@ -20,9 +20,9 @@ struct Controller{
                                  0.5650999546,  0.6205999851,  0.6116000414,        
                                         };
   float previous_input[NN_INPUT_S] = { 0.0 };
-  float q_matrix[9] = { 1e6, 0., 0.,
-                        0., 1e6,  0., 
-                        0., 0., 2e6 };
+  float q_matrix[9] = { 5e6, 0., 0.,
+                        0., 5e6,  0., 
+                        0., 0., 5e6 };
   float lambda_matrix[36] = { 1., 0., 0., 0., 0., 0.,
                              0., 1., 0., 0., 0., 0., 
                              0., 0., 1., 0., 0., 0.,
