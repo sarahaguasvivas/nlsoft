@@ -51,7 +51,8 @@ void loop() {
         del_u_matrix.data[i] = controller.del_u[i];
     }
     collect_signal(&signal[0], controller.signal_calibration, 
-                                  NUM_SIGNAL);
+                                  NUM_SIGNAL, controller.medians_signals);
+    //print_array(signal, NUM_SIGNAL);
     for (int i = 0; i < NN_INPUT_LENGTH; i++){
       nn_input[i] = controller.previous_input[i];
     }
@@ -60,6 +61,7 @@ void loop() {
                         controller.nd * controller.m, 
                         controller.dd * controller.n, 
                         controller.m, controller.n, NUM_SIGNAL);
+    //print_array(nn_input, NN_INPUT_LENGTH);
     if (timestamp == 0){
       for (int i = 0; i < controller.m; i++){
         nn_input[i + controller.m] = controller.u[i];
@@ -129,8 +131,7 @@ void loop() {
       controller.del_u[i] = del_u_matrix.data[i];
     }
     //print_matrix(u_matrix);
-    step_motor(&u_matrix.data[0], controller.m, 
-                controller.input_calibration, controller.input_offset);
+    step_motor(&u_matrix.data[0], controller.m);
     release(u_matrix);
     release(hessian);
     release(jacobian);

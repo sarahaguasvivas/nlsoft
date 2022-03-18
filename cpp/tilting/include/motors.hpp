@@ -18,7 +18,7 @@
 
 
 void setup_motors();
-void step_motor(float *, int, float, float);
+void step_motor(float *, int);
 uint8_t convert_mapped_values(float);
 
 #endif

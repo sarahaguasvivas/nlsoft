@@ -39,8 +39,7 @@ float saturate(float u, int min_val, int max_val){
     return min(max_val, max(u, min_val));
 }
 
-void step_motor(float * u, const int m, float input_calibration, 
-                                        float input_offset) 
+void step_motor(float * u, const int m) 
 {
   /*
    *  This function sends the first step input to the board that

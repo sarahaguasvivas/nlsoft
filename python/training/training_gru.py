@@ -29,10 +29,12 @@ NUM_SENSORS = 18
 N_D = 2
 D_D = 2
 DATA_SIZE = N_D*6 + D_D*3 + NUM_SENSORS
-TRAINING = True
+TRAINING = False
+MODEL_NAME = "forward_kinermatics_mar_18_2022.hdf5"
 
 data_files_location = "../../data/12_23_2021"
 regions = ['SV_tilt_' + str(i) for i in range(1, 20)]
+
 
 def prepare_data_file_vani(signals, position, inputs, nd=3, dd=3):
     assert nd == dd, "nd and dd need to be the same"
@@ -71,8 +73,8 @@ def create_gru_network(x_train_shape: Tuple[int]):
     model = Sequential()
     #model.add(GRU(units = 15, input_shape = (1, x_train_shape[-1])))
     model.add(Flatten())
-    model.add(Dense(50, activation = 'relu'))
-    model.add(Dense(15, activation = 'relu'))
+    model.add(Dense(10, activation = 'relu'))
+    model.add(Dense(10, activation = 'relu'))
     model.add(Dense(3, activation = 'tanh', kernel_initializer='random_normal',
                             bias_constraint = tf.keras.constraints.max_norm(0.0)))
     #model.add(Dense(10, activation = 'relu'))
@@ -97,19 +99,24 @@ def create_data_labels(data):
                                                 nd = N_D, dd = D_D)
         X += [dataset]
         y += [labels]
-    return np.vstack(X), np.vstack(y)
+    X_data = np.vstack(X)
+    y_data = np.vstack(y)
+    print(np.median(X_data[:, -NUM_SENSORS:], axis = 0))
+    X_data[:, -NUM_SENSORS:] = np.clip(X_data[:, -NUM_SENSORS:] - np.median(X_data[:, -NUM_SENSORS:], axis = 0), -0.5, 0.5)
+    return X_data, y_data
 
 def gru_training(data):
     data_shape = data[0].shape
     model = create_gru_network(x_train_shape = (None, 1, DATA_SIZE))
     X, y = create_data_labels(data)
     kfold = TimeSeriesSplit(n_splits = 10)
+    test = None
     for train, test in kfold.split(X, y):
         x_train = X[train].reshape(-1, 1, DATA_SIZE)
         y_train = y[train]
         model.fit(x_train, y_train, epochs = 30, batch_size = 50)
-    model.save('forward_kinematics_jan_10_2022.hdf5')
-    return X, y, model
+    model.save(MODEL_NAME)
+    return X, y, model, test
 
 if __name__=='__main__':
     #plt.style.use('seaborn')
@@ -126,13 +133,13 @@ if __name__=='__main__':
                               invalid_raise = False)]
 
     if TRAINING:
-        X, y, forward_kinematics_model = gru_training(data)
+        X, y, forward_kinematics_model, test = gru_training(data)
     else:
         X, y = create_data_labels(data)
-    forward_kinematics_model = keras.models.load_model('forward_kinematics_jan_10_2022.hdf5', compile=False)
+    forward_kinematics_model = keras.models.load_model(MODEL_NAME, compile=False)
     samples = 10000
-    X_sysint = X[:samples, :]
-    y_true_sysint = y[:samples, :]
+    X_sysint = X[test, :]
+    y_true_sysint = y[test, :]
     y_pred_sysint = forward_kinematics_model.predict(
         X_sysint.reshape(X_sysint.shape[0], 1, X_sysint.shape[1])
     )  # our predictions!
@@ -156,7 +163,7 @@ if __name__=='__main__':
     plt.subplot(3, 2, 5)
     plt.plot(1000 * y_true_sysint[:, 2], '--k', linewidth=2)
     plt.plot(1000 * y_pred_sysint[:, 2], 'r', linewidth=2)
-    plt.ylim(-15, 15)
+    plt.ylim(-15, 20)
     plt.legend([r'$z_{true}$', r'$\hat{z}_{GRU}$'])
     plt.ylabel('z [mm]')
 

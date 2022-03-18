@@ -180,7 +180,7 @@ void setup_signal_collector(){
 }
 
 void collect_signal(float * signal_to_read, float calibration, 
-                                            int signal_size)
+                                            int signal_size, float * medians_signal)
 {
     // channel driver
     // float displacement_laser = analogRead(DISP_PIN);
@@ -224,6 +224,7 @@ void collect_signal(float * signal_to_read, float calibration,
             if (isinf(signal_to_read[i]) || isnan(signal_to_read[i])){
                 signal_to_read[i] = -0.5;
             }
+            //signal_to_read[i] = min(0.5, max(signal_to_read[i], -0.5));
         }
         digitalWriteFast(PROBEPIN, !digitalRead(PROBEPIN));
         while (micros() < (loop_timing + loop_control_period))
