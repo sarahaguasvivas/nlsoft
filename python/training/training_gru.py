@@ -13,6 +13,10 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 from collections import deque
 
+plt.style.use('seaborn-whitegrid')
+import matplotlib.gridspec as gridspec
+
+
 #  Channel description:
 #  Channel 0: Timestamp
 #  Channel 1--6: Mag_x data
@@ -31,7 +35,7 @@ D_D = 2
 DATA_SIZE = N_D*6 + D_D*3 + NUM_SENSORS
 TRAINING = True
 
-data_files_location = "../../data/12_23_2021"
+data_files_location = "../data/12_23_2021/12_23_2021/"
 regions = ['SV_tilt_' + str(i) for i in range(1, 20)]
 
 def prepare_data_file_vani(signals, position, inputs, nd=3, dd=3):
@@ -40,7 +44,7 @@ def prepare_data_file_vani(signals, position, inputs, nd=3, dd=3):
     position = position.astype(np.float32)
     position = position - position[0, :]
     np.set_printoptions(precision=10)
-    signals = signals / 1e4 - 0.5
+    signals = np.clip(signals / 1e4 - 0.5, -0.5, 0.5)
     inputs = inputs / np.max(inputs, axis = 0) - 0.5
 
     N = max(nd, dd)  # data sample where we will start first
@@ -71,8 +75,8 @@ def create_gru_network(x_train_shape: Tuple[int]):
     model = Sequential()
     #model.add(GRU(units = 15, input_shape = (1, x_train_shape[-1])))
     model.add(Flatten())
-    model.add(Dense(50, activation = 'relu'))
-    model.add(Dense(15, activation = 'relu'))
+    model.add(Dense(10, activation = 'relu'))
+    model.add(Dense(5, activation = 'relu'))
     model.add(Dense(3, activation = 'tanh', kernel_initializer='random_normal',
                             bias_constraint = tf.keras.constraints.max_norm(0.0)))
     #model.add(Dense(10, activation = 'relu'))
@@ -129,6 +133,8 @@ if __name__=='__main__':
         X, y, forward_kinematics_model = gru_training(data)
     else:
         X, y = create_data_labels(data)
+
+    print((np.max(y, axis = 0) - np.min(y, axis = 0))*1000)
     forward_kinematics_model = keras.models.load_model('forward_kinematics_jan_10_2022.hdf5', compile=False)
     samples = 10000
     X_sysint = X[:samples, :]
@@ -137,47 +143,68 @@ if __name__=='__main__':
         X_sysint.reshape(X_sysint.shape[0], 1, X_sysint.shape[1])
     )  # our predictions!
 
-    plt.figure(figsize=(7, 5))
-    plt.subplot(3, 2, 1)
-    plt.plot(1000 * y_true_sysint[:, 0], '--k', linewidth=2)
-    plt.plot(1000 * y_pred_sysint[:, 0], 'r', linewidth=2)
+    plt.figure(figsize = (7, 5))
+    plt.subplot(4, 1, 1)
+    plt.plot(np.arange(samples)*1/240, 1000 * X[:samples, :6], linewidth=2)
+    #plt.plot(1000 * y_true_sysint[:, 0], '--k', linewidth=2)
+    plt.legend([r'$u_0$',r'$u_1$',r'$u_2$',r'$u_3$', r'$u_4$', r'$u_5$'],
+               shadow=True, fontsize=10, bbox_to_anchor=(0.94, 0.4, 0.3, 0.2),
+               frameon=True, loc='center left')
+    plt.locator_params(axis='x', nbins=15)
+    plt.subplot(4, 1, 2)
+    plt.plot(np.arange(samples) * 1 / 240, 1000 * y_true_sysint[:, 0], 'k', linewidth=2)
+    plt.plot(np.arange(samples) * 1 / 240, 1000 * y_pred_sysint[:, 0], '--r', alpha=0.8, linewidth=2)
+
     plt.tick_params(axis = 'x', which = 'both', bottom = False, top = False, labelbottom = False)
-    plt.legend([r'$x_{true}$', r'$\hat{x}_{GRU}$'])
-    plt.title("Predictions on Test Set Data")
-    plt.ylabel('x [mm]')
+    plt.legend([r'$y_{0, true}$', r'$\hat{y}_{0, GRU}$'],
+               shadow=True, fontsize=10, bbox_to_anchor=(0.94, 0.4, 0.3, 0.2),
+               frameon=True, loc='center left')
+    #plt.title("Predictions on Test Set Data")
+    #plt.ylabel('x [mm]')
+    plt.locator_params(axis='x', nbins=15)
+    plt.subplot(4, 1, 3)
+    plt.plot(np.arange(samples) * 1 / 240, 1000 * y_true_sysint[:, 1], 'k', linewidth=2)
+    plt.plot(np.arange(samples) * 1 / 240, 1000 * y_pred_sysint[:, 1], '--r', alpha=0.8, linewidth=2)
 
-    plt.subplot(3, 2, 3)
-    plt.plot(1000 * y_true_sysint[:, 1], '--k', linewidth=2)
-    plt.plot(1000 * y_pred_sysint[:, 1], 'r', linewidth=2)
     plt.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
-    plt.legend([r'$y_{true}$', r'$\hat{y}_{GRU}$'])
-    plt.ylabel('y [mm]')
+    plt.legend([r'$y_{1, true}$', r'$\hat{y}_{1, GRU}$'],
+               shadow=True, fontsize=10, bbox_to_anchor=(0.94, 0.4, 0.3, 0.2),
+               frameon=True, loc='center left')
+    #plt.ylabel('y [mm]')
+    plt.locator_params(axis='x', nbins=15)
+    plt.subplot(4, 1, 4)
+    plt.plot(np.arange(samples)*1/240,1000 * y_true_sysint[:, 2], 'k', linewidth=2)
+    plt.plot(np.arange(samples) * 1 / 240, 1000 * y_pred_sysint[:, 2], '--r', alpha = 0.8, linewidth=2)
 
-    plt.subplot(3, 2, 5)
-    plt.plot(1000 * y_true_sysint[:, 2], '--k', linewidth=2)
-    plt.plot(1000 * y_pred_sysint[:, 2], 'r', linewidth=2)
     plt.ylim(-15, 15)
-    plt.legend([r'$z_{true}$', r'$\hat{z}_{GRU}$'])
-    plt.ylabel('z [mm]')
+    plt.legend([r'$y_{2,true}$', r'$\hat{y}_{2, GRU}$'],
+                shadow=True, fontsize=10, bbox_to_anchor=(0.94, 0.4, 0.3, 0.2),
+                frameon=True, loc='center left')
 
-    plt.subplot(3, 2, 2)
-    plt.plot(1000 * y_true_sysint[:, 0] - 1000 * y_pred_sysint[:, 0])
-    plt.ylim([-2, 2])
-    plt.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
-    plt.title("Error in Prediction on Testing Set Data")
-    plt.ylabel('error x [mm]')
+    #plt.legend(shadow=True, fontsize=10, bbox_to_anchor=(1, 1, 1, 1),
+    #           frameon=True, loc='center left')
 
-    plt.subplot(3, 2, 4)
-    plt.plot(1000 * y_true_sysint[:, 1] - 1000 * y_pred_sysint[:, 1])
-    plt.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
-    plt.ylim([-2, 2])
-    plt.ylabel('error y [mm]')
+    #plt.ylabel('z [mm]')
 
-    plt.subplot(3, 2, 6)
-    plt.plot(1000 * y_true_sysint[:, 2] - 1000 * y_pred_sysint[:, 2])
-    plt.ylim([-2, 2])
-    plt.ylabel('error z [mm]')
-    plt.savefig('sysint.png', dpi=300, format='png')
+    #plt.subplot(3, 2, 2)
+    #plt.plot(1000 * y_true_sysint[:, 0] - 1000 * y_pred_sysint[:, 0])
+    #plt.ylim([-2, 2])
+    #plt.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+    #plt.title("Error in Prediction on Testing Set Data")
+    #plt.ylabel('error x [mm]')
+
+    #plt.subplot(3, 2, 4)
+    #plt.plot(1000 * y_true_sysint[:, 1] - 1000 * y_pred_sysint[:, 1])
+    #plt.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+    #plt.ylim([-2, 2])
+    #plt.ylabel('error y [mm]')
+
+    #plt.subplot(3, 2, 6)
+    #plt.plot(1000 * y_true_sysint[:, 2] - 1000 * y_pred_sysint[:, 2])
+    #plt.ylim([-2, 2])
+    #plt.ylabel('error z [mm]')
+    plt.locator_params(axis='x', nbins=15)
+    plt.savefig('sysint_hasel.pdf', format='pdf', bbox_inches = 'tight')
 
     plt.figure()
     plt.plot(X[:, -18:])
