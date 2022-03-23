@@ -11,21 +11,36 @@
 #include <stdlib.h>
 #include "dense.h"
 
+
 struct Dense dense;
 struct Dense dense_1;
 struct Dense dense_2;
 
+
 void buildLayers(){
-        dense = build_layer_dense(&dense_W[0], dense_b, 36, 50, 0x06);
-        dense_1 = build_layer_dense(&dense_1_W[0], dense_1_b, 50, 15, 0x06);
-        dense_2 = build_layer_dense(&dense_2_W[0], dense_2_b, 15, 3, 0x07);
+
+    
+        dense = build_layer_dense(&dense_W[0], dense_b, 36.0, 5, 0x06);
+
+        dense_1 = build_layer_dense(&dense_1_W[0], dense_1_b, 5, 5, 0x06);
+
+        dense_2 = build_layer_dense(&dense_2_W[0], dense_2_b, 5, 3, 0x07);
+
+
 }
+
 
 float * fwdNN(float* data)
 {
-    data = fwd_dense(dense, data);
-    data = fwd_dense(dense_1, data);
-    data = fwd_dense(dense_2, data);
+
+    
+        data = fwd_dense(dense, data);
+
+        data = fwd_dense(dense_1, data);
+
+        data = fwd_dense(dense_2, data);
+
+
     return data;
 }
 

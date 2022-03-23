@@ -52,9 +52,7 @@ void loop() {
     }
     collect_signal(&signal[0], controller.signal_calibration, 
                                   NUM_SIGNAL, controller.medians_signals);
-    for (int i = 0; i < NUM_CHANNELS; i++){
-      signal[i] = 0.0;
-    }
+    //print_array(signal, NUM_SIGNAL);
     for (int i = 0; i < NN_INPUT_LENGTH; i++){
       nn_input[i] = controller.previous_input[i];
     }
@@ -92,7 +90,7 @@ void loop() {
         current_position[i] = prediction.data[(controller.N - 1) * controller.n + i];
     }
     //print_with_scale(prediction, 1000.);
-    print_two_arrays(prediction.data, controller.n, target.data, controller.n, 1000.); 
+    //print_two_arrays(prediction.data, controller.n, target.data, controller.n, 1000.); 
     del_y = subtract(target, prediction);
     //print_with_scale(del_y, 1000.);
     release(prediction);
@@ -132,7 +130,7 @@ void loop() {
       controller.u[i] = u_matrix.data[i];
       controller.del_u[i] = del_u_matrix.data[i];
     }
-    //print_matrix(u_matrix);
+    print_matrix(u_matrix);
     step_motor(&u_matrix.data[0], controller.m);
     release(u_matrix);
     release(hessian);

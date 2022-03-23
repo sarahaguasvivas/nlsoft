@@ -216,15 +216,15 @@ void collect_signal(float * signal_to_read, float calibration,
                     magnetic_mG[j][chip_iterator] -= 38300;
                 }
             }
-         *(signal_to_read + chip_iterator) = (float)magnetic_mG[0][chip_iterator] / calibration - 0.5;
-         *(signal_to_read + 6 + chip_iterator) =(float)magnetic_mG[1][chip_iterator] / calibration - 0.5;
-         *(signal_to_read + 12 + chip_iterator) = (float)magnetic_mG[2][chip_iterator]/ calibration - 0.5;
+         *(signal_to_read + chip_iterator) = (float)magnetic_mG[0][chip_iterator] / calibration;
+         *(signal_to_read + 6 + chip_iterator) =(float)magnetic_mG[1][chip_iterator] / calibration;
+         *(signal_to_read + 12 + chip_iterator) = (float)magnetic_mG[2][chip_iterator]/ calibration;
         }
         for (int i = 0; i < 18; i++){
             if (isinf(signal_to_read[i]) || isnan(signal_to_read[i])){
                 signal_to_read[i] = -0.5;
             }
-            //signal_to_read[i] = min(0.5, max(signal_to_read[i], -0.5));
+            signal_to_read[i] = min(0.5, max(signal_to_read[i] - 0.5, -0.5));
         }
         digitalWriteFast(PROBEPIN, !digitalRead(PROBEPIN));
         while (micros() < (loop_timing + loop_control_period))
