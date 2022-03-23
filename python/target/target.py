@@ -268,4 +268,4 @@ class SMDTarget:
     def find_projection_along_path(self, current_point):
         pass
     def spin(self, timestep, n1, n2, dims):
-        return np.array([self.distance, 0] * (n2 - n1))
+        return np.array([self.distance, 0] * (n2 - n1)).reshape(n2 - n1, dims)
