@@ -11,7 +11,7 @@ import numpy as np
 model_filename = 'sys_id_spring_mass_GRU.hdf5'
 NUM_EXPERIMENTS = 1
 WAVELENGTH = 1
-NUM_TIMESTEPS = 100
+NUM_TIMESTEPS = 1000
 FILENAME = 'gru_log_output_spring_mass_damper.json'
 verbose = 1
 savelog = True
@@ -19,10 +19,10 @@ savelog = True
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 3, Nu= 1,
                                       nd = 2, dd = 2, K = 3,
-                                      Q = np.array([[1e3, 0.],
-                                                    [0., 1e3]]),
+                                      Q = np.array([[1e6, 0.],
+                                                    [0., 1e6]]),
                                       Lambda = np.array([[1.]]),
-                                      s = 1e-20, b = 1e5, r = 4e3,
+                                      s = 1e-20, b = 1e-5, r = 4e2,
                                       states_to_control = [1, 1],
                                       y0= [0.0, 0.0],
                                       u0 = [0.0],
@@ -69,11 +69,12 @@ for e in range(NUM_EXPERIMENTS):
                        'yn' : NNP.y0, 'elapsed' : 0.0, 'u' : [NNP.u0]}})
     if (e == 0):
         log.log({'metadata': {'ym': neutral_point, 'num_signals' : 18, 'm' : NNP.m,
-                                                                'n' : NNP.nx}})
+                                                                'n' : 2}})
     for n in range(NUM_TIMESTEPS):
         seconds = time.time()
         NNP.yn = []
         ydeq = y_deque.copy()
+        signal = [0.]*18
         for k in range(NNP.K):
             neural_network_input = np.array((np.array(list(u_deque))).flatten().tolist() + \
                             np.array(list(ydeq)).flatten().tolist()).reshape(1, 1, 6)
@@ -110,10 +111,11 @@ for e in range(NUM_EXPERIMENTS):
         log.log({str(e) : { 'actual' : actual_,
                         'yn' : predicted_states.tolist(),
                         'elapsed' : elapsed,
-                        'u' : [u_action]}})
+                        'u' : [u_action],
+                        'signal': signal}})
         if e==0:
             log.log({'metadata' : {'ym' : target_path[0, :].tolist()}})
-
+        print(np.linalg.norm(np.array(NNP.ym) - np.array(NNP.yn)))
     u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, NNP.m))
     Block.reset()
 
