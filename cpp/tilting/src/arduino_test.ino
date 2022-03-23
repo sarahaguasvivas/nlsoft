@@ -52,7 +52,9 @@ void loop() {
     }
     collect_signal(&signal[0], controller.signal_calibration, 
                                   NUM_SIGNAL, controller.medians_signals);
-    //print_array(signal, NUM_SIGNAL);
+    for (int i = 0; i < NUM_CHANNELS; i++){
+      signal[i] = 0.0;
+    }
     for (int i = 0; i < NN_INPUT_LENGTH; i++){
       nn_input[i] = controller.previous_input[i];
     }
