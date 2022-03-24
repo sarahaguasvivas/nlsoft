@@ -17,10 +17,10 @@ verbose = 1
 savelog = True
 
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
-                                      N1 = 0, N2 = 3, Nu= 1,
-                                      nd = 2, dd = 2, K = 3,
-                                      Q = np.array([[1e6, 0.],
-                                                    [0., 1e6]]),
+                                      N1 = 0, N2 = 1, Nu= 1,
+                                      nd = 2, dd = 2, K = 1,
+                                      Q = np.array([[1., 0.],
+                                                    [0., 1e-3]]),
                                       Lambda = np.array([[1.]]),
                                       s = 1e-20, b = 1e-5, r = 4e2,
                                       states_to_control = [1, 1],
@@ -37,7 +37,7 @@ neutral_point = [0.]
 NNP.y0 = neutral_point
 Block.calibration_max = 1
 
-target = SMDTarget(distance = 5)
+target = SMDTarget(distance = 0.2)
 
 u_optimal_old = np.reshape([NNP.u0] * NNP.nu, (-1, 1))
 del_u = np.zeros(u_optimal_old.shape)
@@ -115,7 +115,7 @@ for e in range(NUM_EXPERIMENTS):
                         'signal': signal}})
         if e==0:
             log.log({'metadata' : {'ym' : target_path[0, :].tolist()}})
-        print(np.linalg.norm(np.array(NNP.ym) - np.array(NNP.yn)))
+        print(NNP.yn[0])
     u_optimal_old = np.reshape(NNP.u0 * NNP.nu, (-1, NNP.m))
     Block.reset()
 
