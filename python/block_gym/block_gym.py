@@ -13,7 +13,7 @@ class BlockGym():
         self.info = ""
 
         self.motors_port = motors_port
-        self.motors = DynamixelActor(port = self.motors_port)
+        self.motors = DynamixelActor(port = self.motors_port, baudrate = 2000000)
         self.sensor_signals = OpticalSignal()
         self.state = None
         self.vrpn_ip = vrpn_ip
