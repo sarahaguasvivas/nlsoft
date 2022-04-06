@@ -52,9 +52,9 @@ void loop() {
     }
     collect_signal(&signal[0], controller.signal_calibration, 
                                   NUM_SIGNAL, controller.medians_signals);
-    for (int i = 0; i < NUM_CHANNELS; i++){
-      signal[i] = 0.0;
-    }
+    //for (int i = 0; i < NUM_CHANNELS; i++){
+    //  signal[i] = 0.0;
+    //}
     for (int i = 0; i < NN_INPUT_LENGTH; i++){
       nn_input[i] = controller.previous_input[i];
     }
@@ -92,7 +92,7 @@ void loop() {
         current_position[i] = prediction.data[(controller.N - 1) * controller.n + i];
     }
     //print_with_scale(prediction, 1000.);
-    print_two_arrays(prediction.data, controller.n, target.data, controller.n, 1000.); 
+    //print_two_arrays(prediction.data, controller.n, target.data, controller.n, 1000.); 
     del_y = subtract(target, prediction);
     //print_with_scale(del_y, 1000.);
     release(prediction);
@@ -143,7 +143,7 @@ void loop() {
     free(signal);
     free(nn_input);
     timestamp++;
-    //Serial.println(millis() - elapsed);
+    Serial.println(millis() - elapsed);
 }
 
 void print_array(float * arr, int arr_size)

@@ -18,16 +18,10 @@ class VRPNclient:
 
         self.tracker = vrpn.receiver.Tracker(tracker_name + "@" + hostID)
         self.tracker.register_change_handler(self.tracker_name, self.callback, "position")
-        self.analog = vrpn.receiver.Analog(tracker_name+"@"+hostID)
-        self.analog.register_change_handler("analog", self.callback)
-        self.button = vrpn.receiver.Button(tracker_name+"@"+hostID)
-        self.button.register_change_handler("button", self.callback)
         self.info = []
 
     def sample_data(self):
         self.tracker.mainloop()
-        self.analog.mainloop()
-        self.button.mainloop()
 
     def get_observation(self):
         while not self.tracked:
@@ -54,9 +48,6 @@ class BlockState():
         base = self.base.get_observation()
         head_o = head[:3]
         base_o = base[:3]
-        #base_orientation = np.array([-np.pi/2., -np.pi/2., np.pi/2.])
-        #base_orientation = np.array([3.*np.pi/2., -np.pi/2., np.pi/2.])
-        #Rot = R.from_rotvec(base_orientation)
         v = np.array(head_o) - np.array(base_o)
         return v.tolist()
 
@@ -69,12 +60,10 @@ class BlockState():
 
 if __name__=='__main__':
     import time
-    C = VRPNclient("DHead", "tcp://192.168.50.24:3883")
-    B = VRPNclient("DBase", "tcp://192.168.50.24:3883")
+    C = VRPNclient("Hand", "tcp://192.168.50.10:3883")
     while True:
         start = time.time()
-        print("head: ", C.get_observation()) # collect a single observation
-        print("base: ", B.get_observation()) # collect a single observation
+        print("hand: ", C.get_observation()) # collect a single observation
         elapsed = time.time() - start
         print("vrpn elapsed: ", 1./elapsed, " Hz")
 
