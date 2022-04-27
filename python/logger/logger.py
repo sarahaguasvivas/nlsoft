@@ -73,23 +73,23 @@ class Logger:
         elapsed_ = np.reshape(elapsed, (NUM_EXPERIMENTS, -1, 1))
         #np.sqrt(((predictions - targets) ** 2).mean())
         error_p= np.sqrt(((yn - actual_) **2).mean(axis = -1))
-        error_e=np.sqrt(((actual_ - ym)**2).mean( axis = -1))
+       # error_e=np.sqrt(((actual_ - ym)**2).mean( axis = -1))
 
         print("Average prediction error: ", error_p.mean()) #np.mean(error_p, axis = (0, 1))
-        print("Average control error: ",  error_e.mean()) #np.mean(error_e, axis = (0, 1))
+       # print("Average control error: ",  error_e.mean()) #np.mean(error_e, axis = (0, 1))
 
         print("Standard error prediction: ", np.std(error_p, ddof=0))
-        print("Standard error control: ", np.std(error_e,  ddof=0))
+       # print("Standard error control: ", np.std(error_e,  ddof=0))
         print(np.array(u_optimal_list).shape)
         u_optimal_list = np.reshape(u_optimal_list, (NUM_EXPERIMENTS, -1, m))
-        error_mm = actual_ - ym
+        #error_mm = actual_ - ym
         error_pred = yn - actual_
         signal = np.reshape(signal, (NUM_EXPERIMENTS, -1, num_sig))
 
         # Zeroing each state:
         max_target = np.max(ym, axis = 0)
         min_target = np.min(ym, axis = 0)
-        shift = (max_target + min_target) / 2.
+        shift = [0.0] #(max_target + min_target) / 2.
 
         color_palette = ['#1446A0', '#DB3069', '#F5D547', '#F5D547', '#3C3C3B']
         labels = ['x', 'y', 'z', 'u']
@@ -98,7 +98,7 @@ class Logger:
         timesteps = range(max(yn.shape))
         for i in range(n):
             plt.subplot(n, 1, i+1)
-            plt.plot(ym[:, i] - shift[i], color = color_palette[-1], linestyle = 'dashed', label =r"$" + labels[i] + "_{target}$")
+            #plt.plot(ym[:, i] - shift[i], color = color_palette[-1], linestyle = 'dashed', label =r"$" + labels[i] + "_{target}$")
             plt.plot(np.mean(yn, axis = AXIS)[:, i] - shift[i], color_palette[0], label = r"$\hat{" + labels[i] + "}$" )
             plt.fill_between(timesteps, np.mean(yn, axis = AXIS)[:, i] - np.std(yn, axis = AXIS)[:, i] - shift[i],
                                 np.mean(yn, axis = AXIS)[:, i] + np.std(yn, axis = AXIS)[:, i] - shift[i],
@@ -169,7 +169,7 @@ class Logger:
         """
 
         plt.figure()
-
+        """
         AXIS = 0
         timesteps = range(max(yn.shape))
         for i in range(3):
@@ -194,6 +194,7 @@ class Logger:
             if i==0:
                 plt.title("RMS Error", **font)
         plt.show()
+        """
         """
             Elapsed Time Plot
         """

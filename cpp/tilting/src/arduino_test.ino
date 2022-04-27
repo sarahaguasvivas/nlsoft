@@ -130,7 +130,7 @@ void loop() {
       controller.u[i] = u_matrix.data[i];
       controller.del_u[i] = del_u_matrix.data[i];
     }
-    print_matrix(u_matrix);
+    //print_matrix(u_matrix);
     step_motor(&u_matrix.data[0], controller.m);
     release(u_matrix);
     release(hessian);
@@ -141,7 +141,7 @@ void loop() {
     free(signal);
     free(nn_input);
     timestamp++;
-    //Serial.println(millis() - elapsed);
+    Serial.println(millis() - elapsed);
 }
 
 void print_array(float * arr, int arr_size)

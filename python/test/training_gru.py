@@ -17,11 +17,11 @@ from mpl_toolkits.mplot3d import axes3d, Axes3D
 from scipy.spatial.transform import Rotation as R
 import random
 NUM_DATA_RUNS = 200
-TRAIN = True
+TRAIN = False
 from typing import List, Tuple
 
 plt.style.use('seaborn')
-filename = str(os.environ["HOME"]) + "/nlsoft/python/test/data_May_28_2021.csv"
+filename = str(os.environ["HOME"]) + "/github_repos/nlsoft/python/data/data_May_24_2021.csv"
 
 font = FontProperties()
 font.set_family('serif')

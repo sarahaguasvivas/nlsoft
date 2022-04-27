@@ -19,7 +19,7 @@ savelog = True
 NNP = RecursiveNeuralNetworkPredictor(model_file = model_filename,
                                       N1 = 0, N2 = 1, Nu= 1,
                                       nd = 2, dd = 2, K = 1,
-                                      Q = np.array([[1., 0.],
+                                      Q = np.array([[1e6, 0.],
                                                     [0., 1e-3]]),
                                       Lambda = np.array([[1.]]),
                                       s = 1e-20, b = 1e-5, r = 4e2,
@@ -69,7 +69,7 @@ for e in range(NUM_EXPERIMENTS):
                        'yn' : NNP.y0, 'elapsed' : 0.0, 'u' : [NNP.u0]}})
     if (e == 0):
         log.log({'metadata': {'ym': neutral_point, 'num_signals' : 18, 'm' : NNP.m,
-                                                                'n' : 2}})
+                                                                'n' : 1}})
     for n in range(NUM_TIMESTEPS):
         seconds = time.time()
         NNP.yn = []

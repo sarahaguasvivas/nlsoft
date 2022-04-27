@@ -352,7 +352,7 @@ class RecursiveNeuralNetworkPredictor():
         ynu = self.num_grads(self.input_vector)[:self.m * self.nd, :].T
         ynu = ynu.reshape(self.nx, -1, self.m)
         ynu = np.sum(ynu, axis = 1)
-        return self.C @ ynu
+        return np.power(self.C @ ynu, self.K)
 
     def second_derivative(self):
         """
