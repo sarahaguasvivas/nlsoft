@@ -6,9 +6,9 @@
 
 struct Controller{
   float machine_zero = 1e-20;
-  float epsilon = 6e-3;
-  float signal_calibration = 5e5;
-  int m = 6, n = 3, nd = 2, dd = 2, N = 1, Nc = 1;
+  float epsilon = 2./250.;
+  float signal_calibration = 1e4;
+  int m = 6, n = 3, nd = 2, dd = 2, N = 3, Nc = 1;
   float s = 1e-25, b = 1e-5, r = 4e2; 
   int nn_input_size = NN_INPUT_S;
   float neutral_point[3] = { 0., 0., 0.};

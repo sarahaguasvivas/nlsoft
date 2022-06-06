@@ -50,7 +50,7 @@ void step_motor(float * u, const int m)
 
     uint8_t buffer[m];
     for (int i = 0; i < m; i++){
-        buffer[i] = (uint8_t)convert_mapped_values((u[i] + 0.5));
+        buffer[i] = (uint8_t)convert_mapped_values((u[i]));
     }
 
     chnl_1.charge_pwm = buffer[0];

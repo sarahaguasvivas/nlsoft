@@ -81,8 +81,8 @@ def create_gru_network(x_train_shape: Tuple[int]):
     model = Sequential()
     #model.add(GRU(units = 15, input_shape = (1, x_train_shape[-1])))
     model.add(Flatten(input_shape = (1, x_train_shape[-1])))
-    model.add(Dense(15, activation = 'relu', input_shape = (1, x_train_shape[-1])))
-    #model.add(Dense(10, activation = 'relu'))
+    model.add(Dense(10, activation = 'relu', input_shape = (1, x_train_shape[-1])))
+    model.add(Dense(5, activation = 'relu'))
     model.add(Dense(3, activation = 'tanh', kernel_initializer='random_normal',
                             bias_constraint = tf.keras.constraints.max_norm(0.0)))
     model.compile(optimizer = "adam", loss = huber_loss, metrics=["mse"])
@@ -109,8 +109,11 @@ def create_data_labels(data):
     y_data = np.vstack(y)
     print(np.median(X_data[:, -NUM_SENSORS:], axis = 0))
     X_data[:, -NUM_SENSORS:] = np.clip(X_data[:, -NUM_SENSORS:] - np.median(X_data[:, -NUM_SENSORS:], axis = 0), -0.5, 0.5)
+
+    # Downsampling to match control Ts:
     X_data = X_data[::2, :]
     y_data = y_data[::2, :]
+
     return X_data, y_data
 
 def gru_training(data):
@@ -124,6 +127,7 @@ def gru_training(data):
         y_train = y[train]
         model.fit(x_train, y_train, epochs = 30, batch_size = 50)
     model.save(MODEL_NAME)
+    print(model.summary())
     return X, y, model, test
 
 if __name__=='__main__':
@@ -190,7 +194,7 @@ if __name__=='__main__':
     plt.plot(test * Ts, 1000 * y_pred_sysint[:, 2], '--r', alpha = 0.8, linewidth=2)
 
 
-    plt.ylim(-15, 15)
+    #plt.ylim(-15, 15)
     plt.legend([r'$y_{2,true}$', r'$\hat{y}_{2, GRU}$'],
                 shadow=True, fontsize=10, bbox_to_anchor=(0.94, 0.4, 0.3, 0.2),
                 frameon=True, loc='center left')

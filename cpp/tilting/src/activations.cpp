@@ -116,7 +116,7 @@ float * exp_activation(float * input, int m)
 
 float * hyper_tan(float * input, int m)
 {
-  for (int i = 0; i < m; i++){
+  for (int i = m - 1; i>= 0; i--){
         input[i] = tanh(input[i]);
   }
   return input;
