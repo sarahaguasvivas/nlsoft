@@ -50,8 +50,6 @@ keras.losses.custom_loss = custom_loss
 def create_network(x_train_shape : Tuple[int]):
     model = Sequential()
     model.add(GRU(units = 10, input_shape = (1,x_train_shape[-1])))
-    #model.add(Flatten())
-    #model.add(Dense(3, activation = 'relu', kernel_initializer='random_normal'))
     model.add(Dense(3, activation='tanh', kernel_initializer='random_normal'))
     model.compile(optimizer="adam", loss=huber_loss, metrics=['mse'])
     return model
@@ -148,15 +146,16 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
         if max_signals[i] == 0:
             max_signals[i] = 1
         signals[:, i]/= max_signals[i]
-    neutral_position = [-0.09223248064517975, 0.00512850284576416, 0.0041762664914131165] #[-0.09272462129592896, 0.0020720958709716797, 0.0129413902759552]
+
     position = data_array[:, 11:14] # not using Euler angles
-    position = position - np.array(neutral_position)
+    med_positions = np.median(position, axis=0)
+    position = position - np.array(med_positions)
     inputs = data_array[:, 14:]
 
     N = max(nd, dd) # data sample where we will start first
 
-    U = np.empty((signals.shape[0] - N + 1, 2))
-    Y = np.empty((signals.shape[0] - N + 1, 3))
+    U = np.empty((signals.shape[0] - N + 1, 0))
+    Y = np.empty((signals.shape[0] - N + 1, 0))
     L = signals.shape[0]
 
     # TODO: Test for when nd neq dd
@@ -170,7 +169,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
     S = signals[N - 1:, :]
 
     print("Y", Y)
-    Y = Y[:, 3:-3] # Y
+    Y = Y[:, 3:] # Y
 
     X = np.concatenate((U, Y[:, 3:]), axis = 1)
     X = np.concatenate((X, S), axis = 1)
@@ -182,7 +181,7 @@ def prepare_data_file(filename = '../data/model_data.csv', nd = 5, dd = 5):
 if __name__ == "__main__":
     # dd is dd+2
     # nd is nd
-    X, y = prepare_data_file([filename], nd = 2, dd = 2+2)
+    X, y = prepare_data_file([filename], nd = 2, dd = 2)
     if TRAIN:
         modelfile, k_fold_summary = neural_network_training(X, y)
         print(k_fold_summary)
