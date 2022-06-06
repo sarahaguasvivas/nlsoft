@@ -128,6 +128,7 @@ def gru_training(data):
 
 if __name__=='__main__':
     #plt.style.use('seaborn')
+    Ts = 2./250.
     files = []
     for region in regions:
       files += [f for f in listdir(data_files_location)
@@ -147,6 +148,7 @@ if __name__=='__main__':
     print((np.max(y, axis = 0) - np.min(y, axis = 0))*1000)
     forward_kinematics_model = keras.models.load_model(MODEL_NAME, compile=False)
     samples = 10000
+    print(X.shape, y.shape)
     X_sysint = X[test, :]
     y_true_sysint = y[test, :]
     y_pred_sysint = forward_kinematics_model.predict(
@@ -155,15 +157,16 @@ if __name__=='__main__':
 
     plt.figure(figsize = (7, 5))
     plt.subplot(4, 1, 1)
-    plt.plot(np.arange(samples)*1/240, 1000 * X[:samples, :6], linewidth=2)
+    plt.plot(test * Ts, 1000 * X[test, :6], linewidth=2)
     #plt.plot(1000 * y_true_sysint[:, 0], '--k', linewidth=2)
     plt.legend([r'$u_0$',r'$u_1$',r'$u_2$',r'$u_3$', r'$u_4$', r'$u_5$'],
                shadow=True, fontsize=10, bbox_to_anchor=(0.94, 0.4, 0.3, 0.2),
                frameon=True, loc='center left')
     plt.locator_params(axis='x', nbins=15)
+
     plt.subplot(4, 1, 2)
-    plt.plot(np.arange(samples) * 1 / 240, 1000 * y_true_sysint[:, 0], 'k', linewidth=2)
-    plt.plot(np.arange(samples) * 1 / 240, 1000 * y_pred_sysint[:, 0], '--r', alpha=0.8, linewidth=2)
+    plt.plot(test * Ts, 1000 * y_true_sysint[:, 0], 'k', linewidth=2)
+    plt.plot(test * Ts, 1000 * y_pred_sysint[:, 0], '--r', alpha=0.8, linewidth=2)
 
     plt.tick_params(axis = 'x', which = 'both', bottom = False, top = False, labelbottom = False)
     plt.legend([r'$y_{0, true}$', r'$\hat{y}_{0, GRU}$'],
@@ -173,8 +176,8 @@ if __name__=='__main__':
     #plt.ylabel('x [mm]')
     plt.locator_params(axis='x', nbins=15)
     plt.subplot(4, 1, 3)
-    plt.plot(np.arange(samples) * 1 / 240, 1000 * y_true_sysint[:, 1], 'k', linewidth=2)
-    plt.plot(np.arange(samples) * 1 / 240, 1000 * y_pred_sysint[:, 1], '--r', alpha=0.8, linewidth=2)
+    plt.plot(test * Ts, 1000 * y_true_sysint[:, 1], 'k', linewidth=2)
+    plt.plot(test * Ts, 1000 * y_pred_sysint[:, 1], '--r', alpha=0.8, linewidth=2)
 
     plt.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
     plt.legend([r'$y_{1, true}$', r'$\hat{y}_{1, GRU}$'],
@@ -183,8 +186,8 @@ if __name__=='__main__':
     #plt.ylabel('y [mm]')
     plt.locator_params(axis='x', nbins=15)
     plt.subplot(4, 1, 4)
-    plt.plot(np.arange(samples)*1/240,1000 * y_true_sysint[:, 2], 'k', linewidth=2)
-    plt.plot(np.arange(samples) * 1 / 240, 1000 * y_pred_sysint[:, 2], '--r', alpha = 0.8, linewidth=2)
+    plt.plot(test * Ts, 1000 * y_true_sysint[:, 2], 'k', linewidth=2)
+    plt.plot(test * Ts, 1000 * y_pred_sysint[:, 2], '--r', alpha = 0.8, linewidth=2)
 
 
     plt.ylim(-15, 15)
