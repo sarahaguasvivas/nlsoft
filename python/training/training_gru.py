@@ -33,12 +33,16 @@ NUM_SENSORS = 18
 N_D = 2
 D_D = 2
 DATA_SIZE = N_D*6 + D_D*3 + NUM_SENSORS
-TRAINING = False
-MODEL_NAME = "forward_kinermatics_mar_18_2022.hdf5"
+TRAINING = True
 
-data_files_location = "../../data/12_23_2021/"
-regions = ['SV_tilt_' + str(i) for i in range(1, 20)]
+MODEL_NAME = "forward_kinermatics_jun_6_2022.hdf5"
 
+#data_files_location = "../../data/12_23_2021/"
+#regions = ['SV_tilt_' + str(i) for i in range(1, 20)]
+
+data_files_location = "../../../tilting/tilty_boi/data/may_26_2022/"
+regions = ['random_pwm_' + str(i) + '_250hz_t1' for i in range(1, 21)]
+PREFIX = 'rand'
 
 def prepare_data_file_vani(signals, position, inputs, nd=3, dd=3):
     assert nd == dd, "nd and dd need to be the same"
@@ -76,9 +80,9 @@ def huber_loss(y_true, y_pred):
 def create_gru_network(x_train_shape: Tuple[int]):
     model = Sequential()
     #model.add(GRU(units = 15, input_shape = (1, x_train_shape[-1])))
-    model.add(Flatten())
-    model.add(Dense(10, activation = 'relu'))
-    model.add(Dense(10, activation = 'relu'))
+    model.add(Flatten(input_shape = (1, x_train_shape[-1])))
+    model.add(Dense(15, activation = 'relu', input_shape = (1, x_train_shape[-1])))
+    #model.add(Dense(10, activation = 'relu'))
     model.add(Dense(3, activation = 'tanh', kernel_initializer='random_normal',
                             bias_constraint = tf.keras.constraints.max_norm(0.0)))
     model.compile(optimizer = "adam", loss = huber_loss, metrics=["mse"])
@@ -105,6 +109,8 @@ def create_data_labels(data):
     y_data = np.vstack(y)
     print(np.median(X_data[:, -NUM_SENSORS:], axis = 0))
     X_data[:, -NUM_SENSORS:] = np.clip(X_data[:, -NUM_SENSORS:] - np.median(X_data[:, -NUM_SENSORS:], axis = 0), -0.5, 0.5)
+    X_data = X_data[::2, :]
+    y_data = y_data[::2, :]
     return X_data, y_data
 
 def gru_training(data):
@@ -125,7 +131,7 @@ if __name__=='__main__':
     files = []
     for region in regions:
       files += [f for f in listdir(data_files_location)
-                  if isfile(join(data_files_location, region)) and f[:4] == 'SV_t']
+                  if isfile(join(data_files_location, region)) and f[:4] == PREFIX]
     print(files)
 
     data = []
@@ -139,7 +145,7 @@ if __name__=='__main__':
     else:
         X, y = create_data_labels(data)
     print((np.max(y, axis = 0) - np.min(y, axis = 0))*1000)
-    forward_kinematics_model = keras.models.load_model('forward_kinematics_jan_10_2022.hdf5', compile=False)
+    forward_kinematics_model = keras.models.load_model(MODEL_NAME, compile=False)
     samples = 10000
     X_sysint = X[test, :]
     y_true_sysint = y[test, :]
